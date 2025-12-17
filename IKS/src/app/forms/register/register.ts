@@ -1,11 +1,56 @@
 import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-register',
-  imports: [],
+  standalone: true,
+  imports: [ReactiveFormsModule, RouterModule, CommonModule],
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
 export class Register {
+  registerForm: FormGroup;
+  selectedPhoto: File | null = null;
+  photoPreview: string | null = null;
 
+  constructor(private fb: FormBuilder) {
+    this.registerForm = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      surname: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      address: ['', Validators.required],
+      repeatPassword: ['', Validators.required],
+      phoneNumber: ['', Validators.required]
+    });
+  }
+
+  onSubmit() {
+    if (this.registerForm.invalid) return;
+    if (this.registerForm.value.password !== this.registerForm.value.repeatPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+    console.log(this.registerForm.value);
+    console.log('Selected photo:', this.selectedPhoto);
+  }
+
+  onPhotoSelect(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedPhoto = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.photoPreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  onRemovePhoto() {
+    this.selectedPhoto = null;
+    this.photoPreview = null;
+  }
 }
