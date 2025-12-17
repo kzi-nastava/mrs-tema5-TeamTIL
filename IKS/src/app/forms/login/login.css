@@ -153,9 +153,9 @@
   transform: none;
 } */
 
-.login-btn:active:not(:disabled) {
+/* .login-btn:active:not(:disabled) {
   transform: translateY(0);
-}
+} */
 
 .forgot-link {
   color: #fff;
