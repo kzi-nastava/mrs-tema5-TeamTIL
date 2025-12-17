@@ -1,1 +1,40 @@
-<p>login works!</p>
+<div class="auth-wrapper">
+  <div class="top-left-logo">
+    <img src="assets/logo.png" alt="TilTaxi Logo" class="top-logo" />
+    <h1 class="top-brand-name">tilTaxi</h1>
+  </div>
+  
+  <h2 class="login-title">Log in</h2>
+
+  <div class="auth-card">
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          placeholder="Enter your email"
+          formControlName="email"
+          class="form-input"
+        />
+      </div>
+
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          placeholder="Enter your password"
+          formControlName="password"
+          class="form-input"
+        />
+      </div>
+
+      <button type="submit" class="login-btn" [disabled]="loginForm.invalid">
+        <span>Log in</span>
+      </button>
+
+      <a routerLink="/reset-password" class="forgot-link">Forgot password?</a>
+    </form>
+  </div>
+</div>
