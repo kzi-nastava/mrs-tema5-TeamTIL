@@ -14,18 +14,19 @@ export class ResetPassword {
 
   constructor(private fb: FormBuilder) {
     this.resetForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]]
-    });
+      newPassword: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', [Validators.required]]
+    }, { validators: this.passwordMatchValidator });
+  }
+
+  passwordMatchValidator(form: FormGroup) {
+    const newPassword = form.get('newPassword')?.value;
+    const confirmPassword = form.get('confirmPassword')?.value;
+    return newPassword === confirmPassword ? null : { passwordMismatch: true };
   }
 
   onSubmit() {
     if (this.resetForm.invalid) return;
-    console.log('Reset password for:', this.resetForm.value.email);
-    // Here you would typically call an API to send reset email
-  }
-
-  onCancel() {
-    // Navigate back to login
-    window.history.back();
+    console.log('Reset password:', this.resetForm.value);
   }
 }
