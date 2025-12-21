@@ -13,114 +13,98 @@
       <!-- First row: Name and Email -->
       <div class="form-row">
         <div class="input-group half-width">
-          <label for="name">Name</label>
-          <input
-            id="name"
-            type="text"
-            placeholder="Enter your name"
-            formControlName="name"
-            class="form-input"
-          />
+          <label class="input-label">Name</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput type="text" formControlName="name" />
+            <mat-error *ngIf="f['name'].errors?.['required']">Name is required</mat-error>
+          </mat-form-field>
         </div>
         <div class="input-group half-width">
-          <label for="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            placeholder="Enter your email"
-            formControlName="email"
-            class="form-input"
-          />
+          <label class="input-label">Email</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput type="email" formControlName="email" />
+            <mat-error *ngIf="f['email'].errors?.['required']">Email is required</mat-error>
+            <mat-error *ngIf="f['email'].errors?.['email']">Invalid email format</mat-error>
+          </mat-form-field>
         </div>
       </div>
 
       <!-- Second row: Surname and Password -->
       <div class="form-row">
         <div class="input-group half-width">
-          <label for="surname">Surname</label>
-          <input
-            id="surname"
-            type="text"
-            placeholder="Enter your surname"
-            formControlName="surname"
-            class="form-input"
-          />
+          <label class="input-label">Surname</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput type="text" formControlName="surname" />
+            <mat-error *ngIf="f['surname'].errors?.['required']">Surname is required</mat-error>
+          </mat-form-field>
         </div>
         <div class="input-group half-width">
-          <label for="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            placeholder="Enter your password"
-            formControlName="password"
-            class="form-input"
-          />
+          <label class="input-label">Password</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput type="password" formControlName="password" />
+            <mat-error *ngIf="f['password'].errors?.['required']">Password is required</mat-error>
+            <mat-error *ngIf="f['password'].errors?.['minlength']">Password must be at least 6 characters</mat-error>
+          </mat-form-field>
         </div>
       </div>
 
       <!-- Third row: Address and Repeat password -->
       <div class="form-row">
         <div class="input-group half-width">
-          <label for="address">Address</label>
-          <input
-            id="address"
-            type="text"
-            placeholder="Enter your address"
-            formControlName="address"
-            class="form-input"
-          />
+          <label class="input-label">Address</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput type="text" formControlName="address" />
+            <mat-error *ngIf="f['address'].errors?.['required']">Address is required</mat-error>
+          </mat-form-field>
         </div>
         <div class="input-group half-width">
-          <label for="repeatPassword">Repeat password</label>
-          <input
-            id="repeatPassword"
-            type="password"
-            placeholder="Repeat your password"
-            formControlName="repeatPassword"
-            class="form-input"
-          />
+          <label class="input-label">Repeat password</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput type="password" formControlName="repeatPassword" />
+            <mat-error *ngIf="f['repeatPassword'].errors?.['required']">Repeat password is required</mat-error>
+            <mat-error *ngIf="registerForm.errors?.['passwordMismatch']">Passwords do not match</mat-error>
+          </mat-form-field>
         </div>
       </div>
 
       <!-- Fourth row: Phone number and Profile photo -->
       <div class="form-row">
         <div class="input-group half-width">
-          <label for="phoneNumber">Phone number</label>
-          <input
-            id="phoneNumber"
-            type="tel"
-            placeholder="Enter your phone"
-            formControlName="phoneNumber"
-            class="form-input"
-          />
+          <label class="input-label">Phone number</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput type="tel" formControlName="phoneNumber" />
+            <mat-error *ngIf="f['phoneNumber'].errors?.['required']">Phone number is required</mat-error>
+          </mat-form-field>
         </div>
         <div class="input-group half-width">
-          <label>Profile photo</label>
-          <div class="photo-upload-container">
-            <div class="photo-preview">
-              <img *ngIf="photoPreview" [src]="photoPreview" alt="Profile preview" class="preview-image">
-              <div *ngIf="!photoPreview" class="photo-placeholder">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
+          <div class="photo-section">
+            <label class="photo-label">Profile photo</label>
+            <div class="photo-upload-container">
+              <div class="photo-preview">
+                <img *ngIf="photoPreview" [src]="photoPreview" alt="Profile preview" class="preview-image">
+                <div *ngIf="!photoPreview" class="photo-placeholder">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
               </div>
+              <div class="photo-buttons">
+                <button type="button" class="insert-photo-btn" (click)="fileInput.click()">
+                  Insert photo
+                </button>
+                <button type="button" class="remove-photo-btn" (click)="onRemovePhoto()" [disabled]="!selectedPhoto">
+                  Remove photo
+                </button>
+              </div>
+              <input #fileInput type="file" accept="image/*" (change)="onPhotoSelect($event)" style="display: none;">
             </div>
-            <div class="photo-buttons">
-              <button type="button" class="insert-photo-btn" (click)="fileInput.click()">
-                Insert photo
-              </button>
-              <button type="button" class="remove-photo-btn" (click)="onRemovePhoto()" [disabled]="!selectedPhoto">
-                Remove photo
-              </button>
-            </div>
-            <input #fileInput type="file" accept="image/*" (change)="onPhotoSelect($event)" style="display: none;">
           </div>
         </div>
       </div>
 
       <button type="submit" class="register-btn" [disabled]="registerForm.invalid">
-        <span>Submit</span>
+        Submit
       </button>
     </form>
   </div>

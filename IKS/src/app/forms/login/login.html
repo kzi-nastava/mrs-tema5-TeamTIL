@@ -9,29 +9,24 @@
   <div class="auth-card">
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
       <div class="input-group">
-        <label for="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          placeholder="Enter your email"
-          formControlName="email"
-          class="form-input"
-        />
+        <label class="input-label">Email</label>
+        <mat-form-field appearance="outline" class="full-width">
+          <input matInput type="email" formControlName="email" />
+          <mat-error *ngIf="f['email'].errors?.['required']">Email is required</mat-error>
+          <mat-error *ngIf="f['email'].errors?.['email']">Invalid email format</mat-error>
+        </mat-form-field>
       </div>
 
       <div class="input-group">
-        <label for="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          placeholder="Enter your password"
-          formControlName="password"
-          class="form-input"
-        />
+        <label class="input-label">Password</label>
+        <mat-form-field appearance="outline" class="full-width">
+          <input matInput type="password" formControlName="password" />
+          <mat-error *ngIf="f['password'].errors?.['required']">Password is required</mat-error>
+        </mat-form-field>
       </div>
 
       <button type="submit" class="login-btn" [disabled]="loginForm.invalid">
-        <span>Log in</span>
+        Log in
       </button>
 
       <a routerLink="/forgot-password" class="forgot-link">Forgot password?</a>

@@ -2,11 +2,14 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, CommonModule],
+  imports: [ReactiveFormsModule, RouterModule, CommonModule, MatInputModule, MatFormFieldModule, MatButtonModule],
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
@@ -24,7 +27,17 @@ export class Register {
       address: ['', Validators.required],
       repeatPassword: ['', Validators.required],
       phoneNumber: ['', Validators.required]
-    });
+    }, { validators: this.passwordMatchValidator });
+  }
+
+  passwordMatchValidator(form: FormGroup) {
+    const password = form.get('password')?.value;
+    const repeatPassword = form.get('repeatPassword')?.value;
+    return password === repeatPassword ? null : { passwordMismatch: true };
+  }
+
+  get f() {
+    return this.registerForm.controls;
   }
 
   onSubmit() {
@@ -44,6 +57,7 @@ export class Register {
       const reader = new FileReader();
       reader.onload = (e) => {
         this.photoPreview = e.target?.result as string;
+        console.log('Photo preview set:', this.photoPreview);
       };
       reader.readAsDataURL(file);
     }
