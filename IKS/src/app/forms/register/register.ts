@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -18,7 +18,7 @@ export class Register {
   selectedPhoto: File | null = null;
   photoPreview: string | null = null;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private cdr: ChangeDetectorRef) {
     this.registerForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -58,6 +58,7 @@ export class Register {
       reader.onload = (e) => {
         this.photoPreview = e.target?.result as string;
         console.log('Photo preview set:', this.photoPreview);
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
     }
