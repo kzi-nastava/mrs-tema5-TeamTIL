@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">UberProject</string>
+    <string name="app_name">tilTaxi</string>
+    <string name="logo_text">tilTaxi</string>
+    <string name="login_title">Log in</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Log in</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="forgot_password_title">Forgot password?</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="reset_password_button">Reset Password</string>
 </resources>
