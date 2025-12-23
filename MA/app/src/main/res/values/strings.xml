@@ -12,4 +12,26 @@
     <string name="reset_password_title">Reset password</string>
     <string name="new_password_hint">New password</string>
     <string name="confirm_password_hint">Confirm password</string>
+    <!-- Register Fragment -->
+    <string name="register_title">Register</string>
+    <string name="name">Name</string>
+    <string name="surname">Surname</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="address">Address</string>
+    <string name="phone_number">Phone number</string>
+    <string name="profile_photo">Profile photo</string>
+    <string name="repeat_password">Repeat password</string>
+    <string name="insert_photo">Insert photo</string>
+    <string name="remove_photo">Remove photo</string>
+    <string name="submit">Submit</string>
+
+    <!-- Hints -->
+    <string name="enter_name">Enter name</string>
+    <string name="enter_surname">Enter surname</string>
+    <string name="enter_email">Enter email</string>
+    <string name="enter_password">Enter password</string>
+    <string name="enter_address">Enter address</string>
+    <string name="enter_phone">Enter phone number</string>
+    <string name="repeat_password_hint">Repeat password</string>
 </resources>
