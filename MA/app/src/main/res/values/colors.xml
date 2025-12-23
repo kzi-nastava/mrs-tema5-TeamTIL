@@ -10,4 +10,5 @@
     <color name="text_white">#FFFFFF</color>
     <color name="text_dark">#333333</color>
     <color name="input_background">#FFFFFF</color>
+    <color name="purple_tint">#D955185D</color>
 </resources>

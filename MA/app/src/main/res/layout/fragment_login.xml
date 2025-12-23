@@ -78,6 +78,7 @@
             android:textColor="@color/text_dark"
             android:textColorHint="#888888"
             android:inputType="textEmailAddress"
+            android:hint="@string/enter_email"
             android:autofillHints="emailAddress"
             android:layout_marginBottom="24dp" />
 
@@ -100,6 +101,7 @@
             android:textColor="@color/text_dark"
             android:textColorHint="#888888"
             android:inputType="textPassword"
+            android:hint="@string/enter_password"
             android:autofillHints="password"
             android:layout_marginBottom="24dp" />
 
