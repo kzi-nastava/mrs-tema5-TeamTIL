@@ -26,20 +26,24 @@ export class DriverHistory {
       date: '14 March 2025',
       startTime: '15:32',
       endTime: '16:05',
-      from: 'Stražilovska',
-      to: 'Bulevar Kralja Petra I',
+      from: 'Stražilovska 32',
+      to: 'Bulevar Kralja Petra 7',
       price: '1,480 RSD',
-      status: 'Completed'
+      status: 'Completed',
+      duration: '33 min',
+      passenger: { name: 'Marko Marković', phone: '+381 64 1234567', address: 'Stražilovska 32' },
     },
     {
       id: 2,
       date: '14 March 2025',
       startTime: '14:32',
-      endTime: '15:05',
-      from: 'Stražilovska',
-      to: 'Bulevar Kralja Petra I',
-      price: '1,480 RSD',
-      status: 'Canceled'
+      endTime: '14:52',
+      from: 'Gospodska 10',
+      to: 'Jevrejska 2',
+      price: '1,250 RSD',
+      status: 'Canceled',
+      duration: '20 min',
+      passenger: { name: 'Jelena Jovanović', phone: '+381 65 7654321', address: 'Gospodska 10' },
     }
   ]
 
