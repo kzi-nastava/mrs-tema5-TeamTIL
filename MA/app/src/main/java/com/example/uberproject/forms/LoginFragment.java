@@ -1,6 +1,8 @@
 package com.example.uberproject.forms;
 
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +36,7 @@ public class LoginFragment extends Fragment {
 
         // Set click listeners
         btnLogin.setOnClickListener(v -> {
-            // TODO: Implement login logic
+            handleLogin();
         });
 
         tvForgotPassword.setOnClickListener(v -> {
@@ -46,5 +48,39 @@ public class LoginFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private boolean validateLoginInputs(String email, String password) {
+        if (TextUtils.isEmpty(email)) {
+            etEmail.setError("Email is required");
+            return false;
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            etEmail.setError("Please enter a valid email address");
+            return false;
+        }
+
+        if (TextUtils.isEmpty(password)) {
+            etPassword.setError("Password is required");
+            return false;
+        }
+
+        if (password.length() < 6) {
+            etPassword.setError("Password must be at least 6 characters");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void handleLogin() {
+        String email = etEmail.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
+
+        if (validateLoginInputs(email, password)) {
+            // TODO: Implement actual login logic
+            Toast.makeText(getContext(), "Login validation passed", Toast.LENGTH_SHORT).show();
+        }
     }
 }

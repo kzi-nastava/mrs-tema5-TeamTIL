@@ -9,4 +9,7 @@
     <string name="forgot_password_title">Forgot password?</string>
     <string name="cancel_button">Cancel</string>
     <string name="reset_password_button">Reset Password</string>
+    <string name="reset_password_title">Reset password</string>
+    <string name="new_password_hint">New password</string>
+    <string name="confirm_password_hint">Confirm password</string>
 </resources>
