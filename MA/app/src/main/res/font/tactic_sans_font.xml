@@ -4,8 +4,4 @@
         android:fontStyle="normal"
         android:fontWeight="400"
         android:font="@font/tactic_sans_regular" />
-    <font
-        android:fontStyle="normal"
-        android:fontWeight="700"
-        android:font="@font/tactic_sans_bold" />
 </font-family>
