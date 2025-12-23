@@ -12,8 +12,16 @@ export class DriverProfileComponent {
   // pocetno stanje je aktivno
   isActive: boolean = true;
 
+  // pratimo koji je tab aktivan, pocetno je profile
+  activeTab: string = 'profile'; 
+
   // funkcija koja menja status na klik
   toggleStatus() {
     this.isActive = !this.isActive;
+  }
+
+  // menjamo aktivni tab
+  setActiveTab(tabName: string) {
+    this.activeTab = tabName;
   }
 }
