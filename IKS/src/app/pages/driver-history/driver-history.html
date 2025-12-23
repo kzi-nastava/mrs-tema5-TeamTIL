@@ -1,0 +1,23 @@
+<div class="rides-list">
+  <h3 class="date-divider">14 March 2025</h3>
+
+  @for (ride of rides; track ride.id) {
+  <div class="ride-card" [class.selected]="selectedRide?.id === ride.id" (click)="selectRide(ride)">
+    <div class="ride-info">
+      <span class="time">{{ ride.startTime }} - {{ ride.endTime }}</span>
+      <span class="route">{{ ride.from }} → {{ ride.to }}</span>
+    </div>
+
+    <div class="ride-meta">
+      <span class="price">{{ ride.price }}</span>
+      @if (ride.status === 'Completed') {
+      <span class="status status-completed">Completed</span>
+      } @else {
+      <span class="status status-canceled">Canceled</span>
+      }
+    </div>
+  </div>
+  } @empty {
+  <p>No rides found.</p>
+  }
+</div>

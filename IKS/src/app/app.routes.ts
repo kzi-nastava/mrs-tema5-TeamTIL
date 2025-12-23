@@ -1,7 +1,9 @@
 import { Routes } from '@angular/router';
 import { UserProfile } from './user-profile/user-profile';
+import { DriverHistory } from './pages/driver-history/driver-history';
 
 export const routes: Routes = [
+  { path: 'driver-history', component: DriverHistory },
   { path: 'profile', component: UserProfile },
   { path: 'login', loadComponent: () => import('./forms/login/login').then(m => m.Login) },
   { path: 'register', loadComponent: () => import('./forms/register/register').then(m => m.Register) },
