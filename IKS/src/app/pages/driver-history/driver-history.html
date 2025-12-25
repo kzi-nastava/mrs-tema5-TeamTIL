@@ -1,179 +1,207 @@
 <div class="history-container">
-  <main class="history-main">
-    <header class="history-header">
-      <h1>Ride History</h1>
-      <p>Overview of all your completed and canceled rides</p>
-    </header>
+  <header class="navbar">
+    <div class="logo-container">
+      <img src="assets/logo.png" alt="TilTaxi Logo" class="top-logo" />
+      <h1 class="top-brand-name">tilTaxi</h1>
+    </div>
 
-    <section class="filters-section">
-      <div class="filter-inputs">
-        <div class="date-picker-wrapper" (click)="pickerFrom.showPicker()">
-          <span class="icon-left">📅</span>
-          <span class="dark-input">From</span>
-          <input type="date" #pickerFrom class="hidden-date-input" />
-          <span class="icon-right">▼</span>
+    <nav class="nav-links">
+      <a href="#">Book an Uber</a>
+      <a href="#">Ride History</a>
+      <a href="#">Favorite rides</a>
+      <a href="#">Support</a>
+    </nav>
+
+    <div class="profile-nav">
+      <span class="profile-label">Profile</span>
+      <div class="avatar-small-circle">
+        <i class="fas fa-user"></i>
+      </div>
+    </div>
+  </header>
+
+  <div class="content-wrapper">
+    <main class="history-main">
+      <header class="history-header">
+        <h1>Ride History</h1>
+        <p>Overview of all your completed and canceled rides</p>
+      </header>
+
+      <section class="filters-section">
+        <div class="filter-inputs">
+          <div class="date-picker-wrapper" (click)="pickerFrom.showPicker()">
+            <span class="icon-left">📅</span>
+            <span class="dark-input">From</span>
+            <input type="date" #pickerFrom class="hidden-date-input" />
+            <span class="icon-right">▼</span>
+          </div>
+
+          <div class="date-picker-wrapper" (click)="pickerTo.showPicker()">
+            <span class="icon-left">📅</span>
+            <span class="dark-input">To</span>
+            <input type="date" #pickerTo class="hidden-date-input" />
+            <span class="icon-right">▼</span>
+          </div>
+
+          <div class="status-dropdown-wrapper">
+            <select class="dark-input">
+              <option value="" disabled selected>Status</option>
+              <option value="completed">Completed</option>
+              <option value="canceled">Canceled</option>
+            </select>
+            <span class="icon-right">▼</span>
+          </div>
+
+          <button class="btn-apply">Apply Filters</button>
         </div>
 
-        <div class="date-picker-wrapper" (click)="pickerTo.showPicker()">
-          <span class="icon-left">📅</span>
-          <span class="dark-input">To</span>
-          <input type="date" #pickerTo class="hidden-date-input" />
-          <span class="icon-right">▼</span>
+        <div class="quick-filters">
+          @for (option of filterOptions; track option) {
+          <button
+            class="chip"
+            [class.active]="activeFilter === option"
+            (click)="setActiveFilter(option)"
+          >
+            {{ option }}
+          </button>
+          }
+        </div>
+      </section>
+
+      <div class="rides-list">
+        <div class="date-divider">
+          <span>14 March 2025</span>
         </div>
 
-        <div class="status-dropdown-wrapper">
-          <select class="dark-input">
-            <option value="" disabled selected>Status</option>
-            <option value="completed">Completed</option>
-            <option value="canceled">Canceled</option>
-          </select>
-          <span class="icon-right">▼</span>
-        </div>
-
-        <button class="btn-apply">Apply Filters</button>
-      </div>
-
-      <div class="quick-filters">
-        <button class="chip active">Last 7 days</button>
-        <button class="chip">Last month</button>
-        <button class="chip">Completed only</button>
-        <button class="chip">Canceled only</button>
-      </div>
-    </section>
-
-    <div class="rides-list">
-      <div class="date-divider">
-        <span>14 March 2025</span>
-      </div>
-
-      @for (ride of rides; track ride.id) {
-      <div
-        class="ride-card"
-        [class.selected]="selectedRide?.id === ride.id"
-        (click)="selectRide(ride)"
-      >
-        <div class="ride-info">
-          <span class="time">{{ ride.date }}, {{ ride.startTime }} - {{ ride.endTime }}</span>
-          <div class="route-wrapper">
-            <svg
-              class="loc-icon"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            <span class="route">{{ ride.from }} → {{ ride.to }}</span>
+        @for (ride of rides; track ride.id) {
+        <div
+          class="ride-card"
+          [class.selected]="selectedRide?.id === ride.id"
+          (click)="selectRide(ride)"
+        >
+          <div class="ride-info">
+            <span class="time">{{ ride.date }}, {{ ride.startTime }} - {{ ride.endTime }}</span>
+            <div class="route-wrapper">
+              <svg
+                class="loc-icon"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <span class="route">{{ ride.from }} → {{ ride.to }}</span>
+            </div>
+          </div>
+          <div class="ride-meta">
+            <span class="price">{{ ride.price }}</span>
+            <span class="status" [class]="'status-' + ride.status.toLowerCase()">
+              {{ ride.status }}
+            </span>
           </div>
         </div>
-        <div class="ride-meta">
-          <span class="price">{{ ride.price }}</span>
-          <span class="status" [class]="'status-' + ride.status.toLowerCase()">
-            {{ ride.status }}
-          </span>
-        </div>
+        } @empty {
+        <p>No rides found.</p>
+        }
       </div>
-      } @empty {
-      <p>No rides found.</p>
+    </main>
+
+    <aside class="details-sidebar" [class.empty]="!selectedRide">
+      @if (selectedRide) {
+      <div class="sidebar-header">
+        <h2>Ride Details</h2>
+        <button class="close-btn" (click)="selectedRide = null">&times;</button>
+      </div>
+
+      <div class="details-body">
+        <div class="detail-item">
+          <label>Start Time</label>
+          <p>{{ selectedRide.date }}, {{ selectedRide.startTime }}</p>
+        </div>
+
+        <div class="detail-item">
+          <label>End Time</label>
+          <p>{{ selectedRide.endTime }}</p>
+        </div>
+
+        <div class="detail-item">
+          <label>Duration</label>
+          <p>{{ selectedRide.duration }}</p>
+        </div>
+
+        <div class="detail-item">
+          <label>Total Price</label>
+          <p>{{ selectedRide.price }} RSD</p>
+        </div>
+
+        <hr class="separator" />
+
+        <div class="detail-item">
+          <label>Route</label>
+          <div class="route-info-mini">
+            <div class="route-row">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <p>{{ selectedRide.from }}</p>
+            </div>
+            <div class="route-row">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <p>{{ selectedRide.to }}</p>
+            </div>
+          </div>
+        </div>
+
+        <hr class="separator" />
+
+        <div class="passenger-section">
+          <label>Passenger</label>
+          <div class="passenger-card">
+            <div class="avatar">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path
+                  d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                />
+              </svg>
+            </div>
+            <div class="passenger-text">
+              <strong>{{ selectedRide.passenger?.name || 'Unknown' }}</strong>
+              <span>{{ selectedRide.passenger?.phone || 'No phone' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-full-details">View full ride details</button>
+      </div>
+      } @else {
+      <div class="empty-state">
+        <p>Select a ride to see details</p>
+      </div>
       }
-    </div>
-  </main>
-
-  <aside class="details-sidebar" [class.empty]="!selectedRide">
-    @if (selectedRide) {
-    <div class="sidebar-header">
-      <h2>Ride Details</h2>
-      <button class="close-btn" (click)="selectedRide = null">&times;</button>
-    </div>
-
-    <div class="details-body">
-      <div class="detail-item">
-        <label>Start Time</label>
-        <p>{{ selectedRide.date }}, {{ selectedRide.startTime }}</p>
-      </div>
-
-      <div class="detail-item">
-        <label>End Time</label>
-        <p>{{ selectedRide.endTime }}</p>
-      </div>
-
-      <div class="detail-item">
-        <label>Duration</label>
-        <p>{{ selectedRide.duration }}</p>
-      </div>
-
-      <div class="detail-item">
-        <label>Total Price</label>
-        <p>{{ selectedRide.price }} RSD</p>
-      </div>
-
-      <hr class="separator" />
-
-      <div class="detail-item">
-        <label>Route</label>
-        <div class="route-info-mini">
-          <div class="route-row">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            <p>{{ selectedRide.from}}</p>
-          </div>
-          <div class="route-row">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            <p>{{ selectedRide.to }}</p>
-          </div>
-        </div>
-      </div>
-
-      <hr class="separator" />
-
-      <div class="passenger-section">
-        <label>Passenger</label>
-        <div class="passenger-card">
-          <div class="avatar">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-              <path
-                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-              />
-            </svg>
-          </div>
-          <div class="passenger-text">
-            <strong>{{ selectedRide.passenger?.name || 'Unknown' }}</strong>
-            <span>{{ selectedRide.passenger?.phone || 'No phone' }}</span>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn-full-details">View full ride details</button>
-    </div>
-    } @else {
-    <div class="empty-state">
-      <p>Select a ride to see details</p>
-    </div>
-    }
-  </aside>
+    </aside>
+  </div>
 </div>

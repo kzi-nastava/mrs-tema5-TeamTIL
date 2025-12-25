@@ -52,4 +52,12 @@ export class DriverHistory {
   selectRide(ride: Ride) {
     this.selectedRide = ride;
   }
+
+  filterOptions = ['Last 7 days', 'Last month', 'Completed only', 'Canceled only'];
+  
+  activeFilter: string = this.filterOptions[0];
+
+  setActiveFilter(filter: string) {
+    this.activeFilter = filter;
+  }
 }

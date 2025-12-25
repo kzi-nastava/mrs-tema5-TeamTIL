@@ -2,11 +2,11 @@
 
 .history-container {
     display: flex;
-    height: 100vh;
+    flex-direction: column;
+    min-height: 100vh;
     background: linear-gradient(180deg, #000000 0%, #370E3D 100%);
     color: #ffffff;
     font-family: 'Montserrat', sans-serif;
-    overflow: hidden;
     min-height: 100vh;
     overflow-y: auto;
 }
@@ -14,7 +14,12 @@
 .history-main {
     flex: 1;
     padding: 40px 60px;
-    overflow-y: auto;
+}
+
+.content-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
 }
 
 .history-header h1 {
@@ -30,6 +35,70 @@
     font-size: 20px;
     color: #a098ae;
     margin: 8px 0 30px 0;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 60px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.top-logo {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.top-brand-name {
+    font-family: 'RollerScript', cursive;
+    font-size: 24px;
+    font-weight: normal;
+    color: #FFB800;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.nav-links {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #b0b0b0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.profile-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-label {
+    font-family: 'Damion', cursive;
+    font-size: 28px;
+}
+
+.avatar-small-circle {
+    width: 45px;
+    height: 45px;
+    background-color: #5d2a7a;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #8e44ad;
 }
 
 .filters-section {
