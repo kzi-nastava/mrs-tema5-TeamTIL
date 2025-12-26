@@ -1,4 +1,4 @@
-package com.example.uberproject.forms;
+package com.example.uberproject.fragments.forms;
 
 import android.app.Activity;
 import android.content.Intent;

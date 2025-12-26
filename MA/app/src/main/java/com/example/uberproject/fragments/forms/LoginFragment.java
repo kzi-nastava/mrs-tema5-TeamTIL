@@ -1,4 +1,4 @@
-package com.example.uberproject.forms;
+package com.example.uberproject.fragments.forms;
 
 import android.os.Bundle;
 import android.text.TextUtils;

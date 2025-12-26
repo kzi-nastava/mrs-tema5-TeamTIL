@@ -34,4 +34,17 @@
     <string name="enter_address">Enter address</string>
     <string name="enter_phone">Enter phone number</string>
     <string name="repeat_password_hint">Repeat password</string>
+
+    <!-- Navigation Menu -->
+    <string name="book_an_uber">Book an Uber</string>
+    <string name="ride_history">Ride History</string>
+    <string name="favorite_rides">Favorite Rides</string>
+    <string name="support">Support</string>
+
+    <!-- Navigation Menu Driver -->
+    <string name="my_vehicle">My Vehicle</string>
+    <string name="my_rides">My Rides</string>
+
+    <!-- Navigation Menu Admin -->
+    <string name="driver_registration">Driver Registration</string>
 </resources>

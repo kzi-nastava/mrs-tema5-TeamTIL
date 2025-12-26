@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/book_an_uber"
+            android:title="@string/book_an_uber"
+            android:icon="@drawable/ic_vehicle_placeholder"
+            android:orderInCategory="100"
+            android:color="@color/yellow_button"/>
+
+        <item android:id="@+id/ride_history"
+            android:title="@string/ride_history"
+            android:icon="@drawable/ic_calendar_placeholder"
+            android:orderInCategory="200" />
+
+        <item android:id="@+id/favorite_rides"
+            android:title="@string/favorite_rides"
+            android:icon="@drawable/favorite_rides"
+            android:orderInCategory="300" />
+
+        <item android:id="@+id/support"
+            android:title="@string/support"
+            android:icon="@drawable/support"
+            android:orderInCategory="300" />
+    </group>
+</menu>
