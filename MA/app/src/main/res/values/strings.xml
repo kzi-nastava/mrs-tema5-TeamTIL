@@ -47,4 +47,21 @@
 
     <!-- Navigation Menu Admin -->
     <string name="driver_registration">Driver Registration</string>
+
+    <!-- Profile page -->
+    <string name="my_profile_title">My Profile</string>
+    <string name="edit_profile_title">Edit profile</string>
+    <string name="save_changes_title">Save changes</string>
+
+    <string name="profile_info_title">Profile info</string>
+    <string name="favorite_rides_title">Favorite rides</string>
+    <string name="ride_history_title">Ride history</string>
+
+    <string name="name_title">Name</string>
+    <string name="surname_title">Surname</string>
+    <string name="email_title">Email</string>
+    <string name="address_title">Address</string>
+    <string name="phone_title">Phone</string>
+
+
 </resources>

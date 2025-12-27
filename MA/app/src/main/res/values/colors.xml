@@ -12,4 +12,12 @@
     <color name="input_background">#FFFFFF</color>
     <color name="purple_tint">#D955185D</color>
     <color name="purple_dark_tint">#D9370E3D</color>
+
+    <color name="card_background">#534f53</color>
+    <color name="accent_yellow">#FFC107</color>
+    <color name="purple_profile">#673AB7</color>
+    <color name="text_light">#FFFFFF</color>
+    <color name="text_darkK">#000000</color>
+    <color name="input_backgroundD">#E0E0E0</color>
+    <color name="button_green">#145f24</color>
 </resources>
