@@ -14,6 +14,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.uberproject.R;
+import com.example.uberproject.fragments.forms.ProfileFragment;
 import com.example.uberproject.fragments.forms.LoginFragment;
 import com.example.uberproject.fragments.forms.RegisterFragment;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.book_an_uber) {
+                loadFragment(new ProfileFragment());
                 // Load Book an Uber fragment
             } else if (itemId == R.id.ride_history) {
                 // Load Ride History fragment
