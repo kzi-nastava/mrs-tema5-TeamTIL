@@ -57,6 +57,10 @@
     <string name="favorite_rides_title">Favorite rides</string>
     <string name="ride_history_title">Ride history</string>
 
+    <string name="driver_updates_title">Driver Upd.</string>
+    <string name="blocking_title">Blocking</string>
+    <string name="panic_notifications_title">Panic notif.</string>
+
     <string name="name_title">Name</string>
     <string name="surname_title">Surname</string>
     <string name="email_title">Email</string>

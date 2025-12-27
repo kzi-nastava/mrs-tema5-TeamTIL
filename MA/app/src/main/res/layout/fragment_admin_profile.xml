@@ -102,7 +102,7 @@
                 android:background="@drawable/bg_tabs_outline"
                 android:orientation="horizontal"
                 android:padding="4dp"
-                android:weightSum="3"
+                android:weightSum="4"
                 app:layout_constraintTop_toBottomOf="@id/imgProfile">
 
                 <TextView
@@ -114,24 +114,37 @@
                     android:paddingVertical="6dp"
                     android:text="@string/profile_info_title"
                     android:textColor="@color/black"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/tabSecondary"
+                    android:id="@+id/tabDriverUpdates"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="@string/favorite_rides_title"
+                    android:text="@string/driver_updates_title"
+                    android:textSize="11sp"
                     android:textColor="@color/black" />
 
                 <TextView
-                    android:id="@+id/tabHistory"
+                    android:id="@+id/tabBlocking"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="@string/ride_history_title"
+                    android:text="@string/blocking_title"
+                    android:textSize="11sp"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:id="@+id/tabPanic"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/panic_notifications_title"
+                    android:textSize="11sp"
                     android:textColor="@color/black" />
             </LinearLayout>
 

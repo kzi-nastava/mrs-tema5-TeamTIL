@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.example.uberproject.R;
 
-public class ProfileFragment extends Fragment {
+public class AdminProfileFragment extends Fragment {
 
     private ProfileInfoFragment infoFragment;
     private Button btnEdit;
@@ -20,14 +20,16 @@ public class ProfileFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        // load the ADMIN layout
+        View view = inflater.inflate(R.layout.fragment_admin_profile, container, false);
 
         btnEdit = view.findViewById(R.id.btnEditProfile);
 
+        // tabs
         TextView tabInfo = view.findViewById(R.id.tabInfo);
-        TextView tabSecondary = view.findViewById(R.id.tabSecondary);
-        TextView tabHistory = view.findViewById(R.id.tabHistory);
+        TextView tabUpdates = view.findViewById(R.id.tabDriverUpdates);
+        TextView tabBlocking = view.findViewById(R.id.tabBlocking);
+        TextView tabPanic = view.findViewById(R.id.tabPanic);
 
         // load the profile info
         loadInfoFragment();
@@ -46,12 +48,16 @@ public class ProfileFragment extends Fragment {
             Toast.makeText(getContext(), "Profile info", Toast.LENGTH_SHORT).show();
         });
 
-        tabSecondary.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Favorite rides clicked!", Toast.LENGTH_SHORT).show();
+        tabUpdates.setOnClickListener(v -> {
+            Toast.makeText(getContext(), "Driver Updates clicked!", Toast.LENGTH_SHORT).show();
         });
 
-        tabHistory.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Ride history clicked!", Toast.LENGTH_SHORT).show();
+        tabBlocking.setOnClickListener(v -> {
+            Toast.makeText(getContext(), "Blocking clicked!", Toast.LENGTH_SHORT).show();
+        });
+
+        tabPanic.setOnClickListener(v -> {
+            Toast.makeText(getContext(), "Panic notifications clicked!", Toast.LENGTH_SHORT).show();
         });
 
         return view;
