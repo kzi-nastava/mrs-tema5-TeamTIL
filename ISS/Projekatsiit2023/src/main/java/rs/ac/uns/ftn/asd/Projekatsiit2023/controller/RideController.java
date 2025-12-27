@@ -2,6 +2,7 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideCancelResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideEstimationResponseDTO;
 
 @RestController
@@ -32,6 +33,25 @@ public class RideController {
                 Math.round(distance * 100.0) / 100.0,
                 Math.round(finalPrice * 100.0) / 100.0,
                 vehicleType
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{rideId}/cancel")
+    public ResponseEntity<RideCancelResponseDTO> cancelRide(
+            @PathVariable Long rideId,
+            @RequestParam(required = false) String reason) {
+
+        if (rideId <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        RideCancelResponseDTO response = new RideCancelResponseDTO(
+                rideId,
+                "CANCELLED",
+                reason != null ? reason : "User cancelled",
+                "Ride cancelled successfully"
         );
 
         return ResponseEntity.ok(response);
