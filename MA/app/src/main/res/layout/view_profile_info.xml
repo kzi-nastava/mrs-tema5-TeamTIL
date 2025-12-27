@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/labelBarrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="end"
+        app:constraint_referenced_ids="labelName,labelSurname,labelEmail,labelAddress,labelPhone" />
+
+    <TextView
+        android:id="@+id/labelName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/name_title"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/valueName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:background="@drawable/bg_input_pill"
+        android:gravity="center"
+        android:paddingVertical="6dp"
+        android:text="Petar"
+        android:inputType="textPersonName"
+        android:enabled="false"
+        android:textColor="@color/text_dark"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@id/labelName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/labelBarrier"
+        app:layout_constraintTop_toTopOf="@id/labelName" />
+
+    <TextView
+        android:id="@+id/labelSurname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/surname_title"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelName" />
+
+    <EditText
+        android:id="@+id/valueSurname"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_input_pill"
+        android:gravity="center"
+        android:paddingVertical="6dp"
+        android:text="Petrovic"
+        android:inputType="textPersonName"
+        android:enabled="false"
+        android:textColor="@color/text_dark"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@id/labelSurname"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/valueName"
+        app:layout_constraintTop_toTopOf="@id/labelSurname" />
+
+    <TextView
+        android:id="@+id/labelEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/email_title"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelSurname" />
+
+    <EditText
+        android:id="@+id/valueEmail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_input_pill"
+        android:gravity="center"
+        android:paddingVertical="6dp"
+        android:text="petarpetrovic@gmail.com"
+        android:inputType="textEmailAddress"
+        android:enabled="false"
+        android:textColor="@color/text_dark"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="@id/labelEmail"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/valueName"
+        app:layout_constraintTop_toTopOf="@id/labelEmail" />
+
+    <TextView
+        android:id="@+id/labelAddress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/address_title"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelEmail" />
+
+    <EditText
+        android:id="@+id/valueAddress"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_input_pill"
+        android:gravity="center"
+        android:paddingVertical="6dp"
+        android:text="Bulevar despota Stefana 7a"
+        android:inputType="textPostalAddress"
+        android:enabled="false"
+        android:textColor="@color/text_dark"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="@id/labelAddress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/valueName"
+        app:layout_constraintTop_toTopOf="@id/labelAddress" />
+
+    <TextView
+        android:id="@+id/labelPhone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/phone_title"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelAddress" />
+
+    <EditText
+        android:id="@+id/valuePhone"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_input_pill"
+        android:gravity="center"
+        android:paddingVertical="6dp"
+        android:text="+381 64 123 123"
+        android:inputType="phone"
+        android:enabled="false"
+        android:textColor="@color/text_dark"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@id/labelPhone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/valueName"
+        app:layout_constraintTop_toTopOf="@id/labelPhone" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSaveChanges"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/bg_button_green"
+        android:text="@string/save_changes_title"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/valuePhone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
