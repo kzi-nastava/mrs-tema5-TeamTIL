@@ -43,11 +43,6 @@ public class AdminProfileFragment extends Fragment {
         });
 
         // TABS
-        tabInfo.setOnClickListener(v -> {
-            loadInfoFragment();
-            Toast.makeText(getContext(), "Profile info", Toast.LENGTH_SHORT).show();
-        });
-
         tabUpdates.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Driver Updates clicked!", Toast.LENGTH_SHORT).show();
         });

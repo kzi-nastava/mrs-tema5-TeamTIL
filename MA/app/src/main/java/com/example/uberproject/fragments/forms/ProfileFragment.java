@@ -41,11 +41,6 @@ public class ProfileFragment extends Fragment {
         });
 
         // TABS
-        tabInfo.setOnClickListener(v -> {
-            loadInfoFragment();
-            Toast.makeText(getContext(), "Profile info", Toast.LENGTH_SHORT).show();
-        });
-
         tabSecondary.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Favorite rides clicked!", Toast.LENGTH_SHORT).show();
         });
