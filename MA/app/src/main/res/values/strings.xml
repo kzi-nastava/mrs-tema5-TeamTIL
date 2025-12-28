@@ -73,5 +73,14 @@
     <string name="address_title">Address</string>
     <string name="phone_title">Phone</string>
 
+    <string name="vehicle_model_title">Vehicle model:</string>
+    <string name="vehicle_type_title">Vehicle type:</string>
+    <string name="license_plate_title">License plate:</string>
+    <string name="number_of_seats_title">Number of seats:</string>
+    <string name="additional_options_title">Additional options:</string>
+    <string name="baby_transport_title">Baby transport:</string>
+    <string name="pet_friendly_title">Pet friendly:</string>
+    <string name="yes_title">Yes</string>
+    <string name="no_title">No</string>
 
 </resources>

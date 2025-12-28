@@ -1,5 +1,6 @@
 package com.example.uberproject.fragments.forms;
 
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,8 @@ public class DriverProfileFragment extends Fragment {
     private Button btnStatus;
     private boolean isActive = true;
 
+    private TextView tabInfo, tabVehicle, tabMyRides, tabHistory;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -28,16 +31,18 @@ public class DriverProfileFragment extends Fragment {
         btnEdit = view.findViewById(R.id.btnEditProfile);
         btnStatus = view.findViewById(R.id.btnStatusActive);
 
-        TextView tabInfo = view.findViewById(R.id.tabInfo);
-        TextView tabVehicle = view.findViewById(R.id.tabVehicle);
-        TextView tabMyRides = view.findViewById(R.id.tabMyRides);
-        TextView tabHistory = view.findViewById(R.id.tabHistory);
+        tabInfo = view.findViewById(R.id.tabInfo);
+        tabVehicle = view.findViewById(R.id.tabVehicle);
+        tabMyRides = view.findViewById(R.id.tabMyRides);
+        tabHistory = view.findViewById(R.id.tabHistory);
 
         loadInfoFragment();
+        updateTabStyles(tabInfo, tabVehicle, tabMyRides, tabHistory);
 
         btnEdit.setOnClickListener(v -> {
             if (!(infoFragment != null && infoFragment.isVisible())) {
                 loadInfoFragment();
+                updateTabStyles(tabInfo, tabVehicle, tabMyRides, tabHistory);
             }
             if (infoFragment != null) {
                 infoFragment.toggleEditing(true);
@@ -51,35 +56,43 @@ public class DriverProfileFragment extends Fragment {
                 btnStatus.setText(getString(R.string.inactive_title));
                 btnStatus.setBackgroundResource(R.drawable.bg_button_red);
                 isActive = false;
-                Toast.makeText(getContext(), "Status changed!", Toast.LENGTH_SHORT).show();
             } else {
                 btnStatus.setText(getString(R.string.active_title));
                 btnStatus.setBackgroundResource(R.drawable.bg_button_green);
                 isActive = true;
-                Toast.makeText(getContext(), "Status changed!", Toast.LENGTH_SHORT).show();
             }
         });
 
-        tabInfo.setOnClickListener(v -> loadInfoFragment());
-
         tabInfo.setOnClickListener(v -> {
             loadInfoFragment();
-            Toast.makeText(getContext(), "Profile info", Toast.LENGTH_SHORT).show();
+            updateTabStyles(tabInfo, tabVehicle, tabMyRides, tabHistory);
         });
 
         tabVehicle.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Vehicle detalis clicked!", Toast.LENGTH_SHORT).show();
-            if (btnEdit != null) btnEdit.setVisibility(View.VISIBLE);
+            VehicleDetailsFragment vehicleFragment = new VehicleDetailsFragment();
+            getChildFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.profileContentContainer, vehicleFragment)
+                    .commit();
+
+            btnEdit.setVisibility(View.GONE);
+            updateTabStyles(tabVehicle, tabInfo, tabMyRides, tabHistory);
         });
 
         tabMyRides.setOnClickListener(v -> {
             Toast.makeText(getContext(), "My rides clicked!", Toast.LENGTH_SHORT).show();
-            if (btnEdit != null) btnEdit.setVisibility(View.VISIBLE);
+
+            btnEdit.setVisibility(View.GONE);
+
+            updateTabStyles(tabMyRides, tabInfo, tabVehicle, tabHistory);
         });
 
         tabHistory.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Ride history clicked!", Toast.LENGTH_SHORT).show();
-            if (btnEdit != null) btnEdit.setVisibility(View.VISIBLE);
+
+            btnEdit.setVisibility(View.GONE);
+
+            updateTabStyles(tabHistory, tabInfo, tabVehicle, tabMyRides);
         });
 
         return view;
@@ -91,7 +104,14 @@ public class DriverProfileFragment extends Fragment {
                 .beginTransaction()
                 .replace(R.id.profileContentContainer, infoFragment)
                 .commit();
-        if (btnEdit != null) btnEdit.setVisibility(View.VISIBLE);
+        btnEdit.setVisibility(View.VISIBLE);
+    }
+
+    private void updateTabStyles(TextView selectedTab, TextView... otherTabs) {
+        selectedTab.setTypeface(null, Typeface.BOLD);
+        for (TextView tab : otherTabs) {
+            tab.setTypeface(null, Typeface.NORMAL);
+        }
     }
 
     public void showEditButton() {
