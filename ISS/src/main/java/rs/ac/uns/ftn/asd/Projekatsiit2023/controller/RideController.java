@@ -3,6 +3,7 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideRequestDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideCancelResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideEstimationResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStopResponseDTO;
@@ -147,5 +148,36 @@ public class RideController {
         }
 
         return ResponseEntity.ok(ridesHistory);
+    }
+
+    // 2.4.1 Ordering a ride
+    @PostMapping
+    public ResponseEntity<RideHistoryDTO> createRide(@RequestBody RideRequestDTO request) {
+
+        Double price = 150.0 + (Math.random() * 10 * 120);
+
+        RideHistoryDTO response = new RideHistoryDTO(
+                101, "me@example.com", "driver@example.com",
+                request.getLocations().get(0), request.getLocations().get(request.getLocations().size()-1),
+                "ACCEPTED", Math.round(price * 100.0) / 100.0, "2025-12-28T15:00:00"
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    // 2.4.3 Ordering from your favorite routes
+    @PostMapping("/favorites/{routeId}")
+    public ResponseEntity<RideHistoryDTO> createRideFromFavorite(@PathVariable Long routeId) {
+        RideHistoryDTO response = new RideHistoryDTO(
+                102, "me@example.com", "driver@example.com",
+                "Favorite Start", "Favorite End",
+                "ACCEPTED", 500.0, "2025-12-28T15:30:00"
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    // 2.6.1 The start of the ride
+    @PutMapping("/{rideId}/start")
+    public ResponseEntity<String> startRide(@PathVariable Long rideId) {
+        return ResponseEntity.ok("Ride " + rideId + " has started.");
     }
 }
