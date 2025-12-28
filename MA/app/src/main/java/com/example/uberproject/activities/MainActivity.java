@@ -16,6 +16,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.example.uberproject.R;
 import com.example.uberproject.fragments.forms.ProfileFragment;
 import com.example.uberproject.fragments.forms.AdminProfileFragment;
+import com.example.uberproject.fragments.forms.DriverProfileFragment;
 import com.example.uberproject.fragments.forms.LoginFragment;
 import com.example.uberproject.fragments.forms.RegisterFragment;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -55,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
                 loadFragment(new AdminProfileFragment());
                 // Load Ride History fragment
             } else if (itemId == R.id.favorite_rides) {
+                // Testing - driver profile
+                loadFragment(new DriverProfileFragment());
                 // Load Favorite Rides fragment
             } else if (itemId == R.id.support) {
                 // Load Support fragment

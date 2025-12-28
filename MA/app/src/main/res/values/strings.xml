@@ -53,6 +53,9 @@
     <string name="edit_profile_title">Edit profile</string>
     <string name="save_changes_title">Save changes</string>
 
+    <string name="active_title">Active</string>
+    <string name="inactive_title">Inactive</string>
+
     <string name="profile_info_title">Profile info</string>
     <string name="favorite_rides_title">Favorite rides</string>
     <string name="ride_history_title">Ride history</string>
@@ -60,6 +63,9 @@
     <string name="driver_updates_title">Driver Upd.</string>
     <string name="blocking_title">Blocking</string>
     <string name="panic_notifications_title">Panic notif.</string>
+
+    <string name="vehicle_detalis_title">Vehicle detalis</string>
+    <string name="my_rides_title">My rides</string>
 
     <string name="name_title">Name</string>
     <string name="surname_title">Surname</string>

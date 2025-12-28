@@ -20,4 +20,5 @@
     <color name="text_darkK">#000000</color>
     <color name="input_backgroundD">#E0E0E0</color>
     <color name="button_green">#145f24</color>
+    <color name="button_red">#b41010</color>
 </resources>

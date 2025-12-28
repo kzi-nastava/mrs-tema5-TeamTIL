@@ -41,6 +41,10 @@ public class ProfileInfoFragment extends Fragment {
             else if (getParentFragment() instanceof AdminProfileFragment) {
                 ((AdminProfileFragment) getParentFragment()).showEditButton();
             }
+
+            else if (getParentFragment() instanceof DriverProfileFragment) {
+                ((DriverProfileFragment) getParentFragment()).showEditButton();
+            }
         });
 
         return view;
