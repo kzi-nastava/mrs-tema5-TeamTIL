@@ -3,11 +3,18 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.InconsistencyReportRequestDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideRatingRequestDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideRequestDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.InconsistencyReportResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideCancelResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideEstimationResponseDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideRatingResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStopResponseDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideTrackingDTO;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,14 +40,13 @@ public class RideController {
         };
 
         double finalPrice = basePrice * multiplier;
-        String estimatedTime = String.format("%d min", (int)(distance * 2 + 5));
+        String estimatedTime = String.format("%d min", (int) (distance * 2 + 5));
 
         RideEstimationResponseDTO response = new RideEstimationResponseDTO(
                 estimatedTime,
                 Math.round(distance * 100.0) / 100.0,
                 Math.round(finalPrice * 100.0) / 100.0,
-                vehicleType
-        );
+                vehicleType);
 
         return ResponseEntity.ok(response);
     }
@@ -58,8 +64,7 @@ public class RideController {
                 rideId,
                 "CANCELLED",
                 reason != null ? reason : "User cancelled",
-                "Ride cancelled successfully"
-        );
+                "Ride cancelled successfully");
 
         return ResponseEntity.ok(response);
     }
@@ -74,7 +79,7 @@ public class RideController {
         }
 
         double finalPrice = Math.random() * 2000 + 500; // 500-2500 din
-        String duration = String.format("%d min", (int)(Math.random() * 30 + 10)); // 10-40 min
+        String duration = String.format("%d min", (int) (Math.random() * 30 + 10)); // 10-40 min
 
         RideStopResponseDTO response = new RideStopResponseDTO(
                 rideId,
@@ -82,8 +87,7 @@ public class RideController {
                 location != null ? location : "Destination reached",
                 Math.round(finalPrice * 100.0) / 100.0,
                 duration,
-                "Ride completed successfully"
-        );
+                "Ride completed successfully");
 
         return ResponseEntity.ok(response);
     }
@@ -118,8 +122,7 @@ public class RideController {
 
             RideHistoryDTO ride = new RideHistoryDTO(
                     rideId, passengerEmailValue, driverEmailValue,
-                    startLoc, endLoc, rideStatus, price, createdAt
-            );
+                    startLoc, endLoc, rideStatus, price, createdAt);
 
             boolean passesFilter = true;
 
@@ -158,9 +161,8 @@ public class RideController {
 
         RideHistoryDTO response = new RideHistoryDTO(
                 101, "me@example.com", "driver@example.com",
-                request.getLocations().get(0), request.getLocations().get(request.getLocations().size()-1),
-                "ACCEPTED", Math.round(price * 100.0) / 100.0, "2025-12-28T15:00:00"
-        );
+                request.getLocations().get(0), request.getLocations().get(request.getLocations().size() - 1),
+                "ACCEPTED", Math.round(price * 100.0) / 100.0, "2025-12-28T15:00:00");
         return ResponseEntity.ok(response);
     }
 
@@ -170,8 +172,7 @@ public class RideController {
         RideHistoryDTO response = new RideHistoryDTO(
                 102, "me@example.com", "driver@example.com",
                 "Favorite Start", "Favorite End",
-                "ACCEPTED", 500.0, "2025-12-28T15:30:00"
-        );
+                "ACCEPTED", 500.0, "2025-12-28T15:30:00");
         return ResponseEntity.ok(response);
     }
 
@@ -179,5 +180,124 @@ public class RideController {
     @PutMapping("/{rideId}/start")
     public ResponseEntity<String> startRide(@PathVariable Long rideId) {
         return ResponseEntity.ok("Ride " + rideId + " has started.");
+    }
+
+    // 2.6.2 Track ride location
+    @GetMapping("/{rideId}/tracking")
+    public ResponseEntity<RideTrackingDTO> trackRide(@PathVariable Long rideId) {
+
+        if (rideId <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String[] locations = { "Main Street 1", "Bulevar Oslobođenja 5", "Trg Slobode 3" };
+        String vehicleLocation = locations[(int) (Math.random() * locations.length)];
+
+        // Procena vremena dolaska: 5-15 minuta
+        int minutes = 5 + (int) (Math.random() * 11);
+        String estimatedArrivalTime = minutes + " min";
+
+        RideTrackingDTO response = new RideTrackingDTO(
+                rideId,
+                vehicleLocation,
+                estimatedArrivalTime,
+                "IN_PROGRESS");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // 2.6.2 Report inconsistency
+    @PostMapping("/{rideId}/report")
+    public ResponseEntity<InconsistencyReportResponseDTO> reportInconsistency(
+            @PathVariable Long rideId,
+            @RequestBody InconsistencyReportRequestDTO report) {
+
+        InconsistencyReportResponseDTO response = new InconsistencyReportResponseDTO(
+                rideId,
+                report.getPassengerEmail(),
+                report.getLocation() != null ? report.getLocation() : "Unknown location",
+                report.getMessage(),
+                "Report submitted successfully");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // 2.7 Complete the ride
+    @PutMapping("/{rideId}/complete")
+    public ResponseEntity<RideStopResponseDTO> completeRide(
+            @PathVariable Long rideId,
+            @RequestParam(required = false) String finalLocation) {
+
+        if (rideId <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        double finalPrice = Math.random() * 2000 + 500; // 500-2500 din
+        String duration = String.format("%d min", (int) (Math.random() * 30 + 10)); // 10-40 min
+
+        RideStopResponseDTO response = new RideStopResponseDTO(
+                rideId,
+                "COMPLETED",
+                finalLocation != null ? finalLocation : "Destination reached",
+                Math.round(finalPrice * 100.0) / 100.0,
+                duration,
+                "Ride completed and paid successfully");
+        return ResponseEntity.ok(response);
+    }
+
+    // 2.8 Rate ride, driver and vehicle
+    @PostMapping("/{rideId}/rate")
+    public ResponseEntity<RideRatingResponseDTO> rateRide(
+            @PathVariable Long rideId,
+            @RequestBody RideRatingRequestDTO request) {
+
+        // provera roka od 3 dana
+        LocalDate rideDate = LocalDate.now().minusDays(2); // primer završene vožnje pre 2 dana
+        boolean withinDeadline = ChronoUnit.DAYS.between(rideDate, LocalDate.now()) <= 3;
+
+        if (!withinDeadline) {
+            return ResponseEntity.badRequest().body(
+                    new RideRatingResponseDTO(rideId, "UNRATED", "Deadline exceeded, rating not accepted"));
+        }
+
+        // uspešna ocena
+        RideRatingResponseDTO response = new RideRatingResponseDTO(
+                rideId,
+                "RATED",
+                "Rating submitted successfully: Driver=" + request.getDriverRating() +
+                        ", Vehicle=" + request.getVehicleRating() +
+                        ", Comment='" + request.getComment() + "'");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // 2.9.2 Driver's ride history
+    @GetMapping("/driver/history")
+    public ResponseEntity<List<RideHistoryDTO>> getDriverRideHistory(
+            @RequestParam String driverEmail,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo) {
+
+        List<RideHistoryDTO> ridesHistory = new ArrayList<>();
+
+        // podaci za vozača
+        for (int i = 1; i <= 5; i++) {
+            RideHistoryDTO ride = new RideHistoryDTO(
+                    100 + i,
+                    "passenger" + i + "@example.com", // demo putnik
+                    driverEmail,
+                    "Start Location " + i,
+                    "End Location " + i,
+                    i % 2 == 0 ? "CANCELLED" : "COMPLETED",
+                    1000.0 + i * 50,
+                    "2025-12-" + String.format("%02d", i) + "T12:00:00");
+
+            ridesHistory.add(ride);
+        }
+
+        // sortiranje po datumu od najskorije do najstarije
+        ridesHistory.sort((r1, r2) -> r2.getCreatedAt().compareTo(r1.getCreatedAt()));
+
+        return ResponseEntity.ok(ridesHistory);
     }
 }
