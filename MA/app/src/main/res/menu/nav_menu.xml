@@ -8,7 +8,7 @@
             android:title="@string/book_an_uber"
             android:icon="@drawable/ic_vehicle_placeholder"
             android:orderInCategory="100"
-            android:color="@color/yellow_button"/>
+            android:color="@color/yellow"/>
 
         <item android:id="@+id/ride_history"
             android:title="@string/ride_history"

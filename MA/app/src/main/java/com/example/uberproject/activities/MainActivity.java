@@ -14,6 +14,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.uberproject.R;
+import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
 import com.example.uberproject.fragments.forms.ProfileFragment;
 import com.example.uberproject.fragments.forms.AdminProfileFragment;
 import com.example.uberproject.fragments.forms.DriverProfileFragment;
@@ -26,7 +27,6 @@ import com.google.android.material.navigation.NavigationView;
 public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
-    private NavigationView navigationView;
     private MaterialToolbar toolbar;
     private BottomNavigationView bottomNavigation;
 
@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         drawerLayout = findViewById(R.id.drawer_layout);
-        navigationView = findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
 
         findViewById(R.id.ivToolbarLogo).setOnClickListener(v -> {
             drawerLayout.openDrawer(GravityCompat.START);
@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 // Load Book an Uber fragment
             } else if (itemId == R.id.ride_history) {
                 // Testing - admin profile
-                loadFragment(new AdminProfileFragment());
+                loadFragment(new DriverRideHistoryFragment());
                 // Load Ride History fragment
             } else if (itemId == R.id.favorite_rides) {
                 // Testing - driver profile
@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
                 // Load Favorite Rides fragment
             } else if (itemId == R.id.support) {
                 // Load Support fragment
+                loadFragment(new AdminProfileFragment());
             }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;

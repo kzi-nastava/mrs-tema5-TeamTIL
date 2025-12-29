@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_gradient">
+
+    <!-- CONTENT -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- TOP TEXT -->
+        <TextView
+            android:id="@+id/ride_history_heading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/montserrat_semibold_font"
+            android:text="@string/ride_history_heading"
+            android:textColor="@color/text_white"
+            android:textSize="32sp" />
+
+        <TextView
+            android:id="@+id/ride_history_text_overview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:fontFamily="@font/montserrat_regular_font"
+            android:text="@string/ride_history_text_overview"
+            android:textColor="@color/text_gray"
+            android:textSize="13sp" />
+
+        <!-- FILTERS + CHIP GROUP CONTAINER -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/bg_purple_dark_tint"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <!-- FILTERS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="4">
+
+                <!-- Polje 1 - Dropdown sa kalendar ikonom -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_purple_tint"
+                    android:clipToPadding="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="4dp">
+
+                    <!-- Kalendar ikona -->
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginEnd="3dp"
+                        android:src="@drawable/ic_calendar"
+                        app:tint="@color/text_gray" />
+
+                    <!-- Dropdown polje -->
+                    <AutoCompleteTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:drawableEnd="@drawable/ic_dropdown_arrow"
+                        android:drawableTint="@color/text_gray"
+                        android:dropDownHorizontalOffset="0dp"
+                        android:dropDownVerticalOffset="0dp"
+                        android:fontFamily="@font/montserrat_regular_font"
+                        android:hint="From"
+                        android:textColorHint="@color/text_gray"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+
+                <!-- Polje 2 - Dropdown sa kalendar ikonom -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_purple_tint"
+                    android:clipToPadding="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="4dp">
+
+                    <!-- Kalendar ikona -->
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginEnd="3dp"
+                        android:src="@drawable/ic_calendar"
+                        app:tint="@color/text_gray" />
+
+                    <!-- Dropdown polje -->
+                    <AutoCompleteTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:drawableEnd="@drawable/ic_dropdown_arrow"
+                        android:drawableTint="@color/text_gray"
+                        android:dropDownHorizontalOffset="0dp"
+                        android:dropDownVerticalOffset="0dp"
+                        android:fontFamily="@font/montserrat_regular_font"
+                        android:hint="To"
+                        android:textColorHint="@color/text_gray"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <!-- Polje 3 - Dropdown bez ikone -->
+                <AutoCompleteTextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:drawableEnd="@drawable/ic_dropdown_arrow"
+                    android:drawableTint="@color/text_gray"
+                    android:background="@drawable/bg_purple_tint"
+                    android:dropDownHorizontalOffset="0dp"
+                    android:dropDownVerticalOffset="0dp"
+                    android:fontFamily="@font/montserrat_regular_font"
+                    android:hint="Status"
+                    android:minHeight="26dp"
+                    android:padding="4dp"
+                    android:paddingStart="10dp"
+                    android:textColorHint="@color/text_gray"
+                    android:textSize="13sp" />
+                <!-- Polje 4 - Button -->
+                <androidx.appcompat.widget.AppCompatButton
+                    android:layout_width="0dp"
+                    android:layout_height="22dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/confirm_button_background"
+                    android:fontFamily="@font/montserrat_semibold_font"
+                    android:padding="4dp"
+                    android:text="Apply Filters"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_dark"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+
+            <!-- QUICK FILTER CHIPS -->
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="-12dp"
+                app:chipSpacingVertical="-20dp"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_semibold_font"
+                    android:text="Last 7 days"
+                    android:textColor="@color/yellow"
+                    android:textSize="13sp"
+                    app:chipBackgroundColor="@color/dark_yellow"
+                    app:chipCornerRadius="10sp"
+                    app:chipMinHeight="21dp"
+                    app:chipStrokeColor="@color/yellow" />
+
+                <com.google.android.material.chip.Chip
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_light_font"
+                    android:text="Last month"
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp"
+                    app:chipBackgroundColor="@color/purple_dark_tint"
+                    app:chipCornerRadius="10sp"
+                    app:chipMinHeight="21dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_light_font"
+                    android:text="Completed only"
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp"
+                    app:chipBackgroundColor="@color/purple_dark_tint"
+                    app:chipCornerRadius="10sp"
+                    app:chipMinHeight="21dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_light_font"
+                    android:text="Canceled only"
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp"
+                    app:chipBackgroundColor="@color/purple_dark_tint"
+                    app:chipCornerRadius="10sp"
+                    app:chipMinHeight="21dp" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+        </LinearLayout>
+
+        <!-- RIDES LIST -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/ridesRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingTop="16dp" />
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
