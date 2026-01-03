@@ -6,8 +6,12 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.VehicleStatusDTO;
 
+@RestController
+@RequestMapping("/api/public")
 public class PublicController {
     
     // 2.1.1 Display info for unregistered users
