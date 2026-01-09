@@ -1,5 +1,16 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatNativeDateModule } from '@angular/material/core';
+import { FormsModule } from '@angular/forms';
 
 interface Ride {
   id: number;
@@ -18,13 +29,29 @@ interface Ride {
 @Component({
   selector: 'app-user-ride-history',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatCardModule,
+    MatChipsModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatToolbarModule,
+    MatIconModule,
+    MatNativeDateModule,
+    FormsModule
+  ],
   templateUrl: './user-ride-history.html',
   styleUrl: './user-ride-history.css',
 })
 export class UserRideHistory {
   filterOptions = ['Last 7 days', 'Last month', 'Completed only', 'Cancelled only'];
   activeFilter = 'Last 7 days';
+  dateFrom: Date | null = null;
+  dateTo: Date | null = null;
+  selectedStatus = '';
 
   rides: Ride[] = [
     {
