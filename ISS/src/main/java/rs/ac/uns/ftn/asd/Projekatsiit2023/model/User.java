@@ -1,20 +1,46 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.model;
 
-import lombok.Data;
+import jakarta.persistence.*;
 
-import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@Getter
+@Setter
+@NoArgsConstructor
+@Table(name = "app_user")
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
+
+    @Column(name = "password", nullable = false)
     private String password;
+
+    @Column(name = "first_name", nullable = false)
     private String firstName;
+
+    @Column(name = "last_name", nullable = false)
     private String lastName;
+
+    @Column(name = "phone_number")
     private String phoneNumber;
+
+    @Column(name = "address")
     private String address;
+
+    @Column(name = "is_blocked", nullable = false)
     private Boolean isBlocked;
+
+    @Column(name = "block_reason")
     private String blockReason;
-    private UserType userType;
+
+    @Column(name = "profile_picture_url")
     private String profilePictureUrl;
 }
