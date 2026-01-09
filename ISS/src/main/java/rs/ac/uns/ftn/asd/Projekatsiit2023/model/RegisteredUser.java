@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class RegisteredUser extends User {
+public class RegisteredUser extends Account {
     @ManyToMany
     @JoinTable(
             name = "user_favorite_routes",

@@ -1,12 +1,10 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +12,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Entity
-public class Driver extends User {
+public class Driver extends Account {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = false;
 
