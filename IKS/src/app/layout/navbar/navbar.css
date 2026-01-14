@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+@font-face {
+  font-family: 'RollerScript';
+  src: url('/fonts/fonnts.com-rollerscript-rough.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 60px;
+  background: transparent;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.logo-container:hover {
+  opacity: 0.8;
+}
+
+.top-logo {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.top-brand-name {
+  font-family: 'RollerScript', cursive;
+  font-size: 24px;
+  font-weight: normal;
+  color: #FFB800;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.nav-links {
+  display: flex;
+  gap: 30px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #b0b0b0;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.3s;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: #ffffff;
+}
+
+.profile-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-label {
+  font-family: 'RollerScript', cursive;
+  font-size: 28px;
+  color: #FFB800;
+}
+
+.avatar-small-circle {
+  width: 45px;
+  height: 45px;
+  background-color: #5d2a7a;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  font-size: 20px;
+  border: 2px solid #8e44ad;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.avatar-small-circle:hover {
+  transform: scale(1.05);
+  background-color: #6d3a8a;
+}
