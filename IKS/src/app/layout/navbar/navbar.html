@@ -1,0 +1,20 @@
+<header class="navbar">
+  <div class="logo-container" routerLink="/">
+    <img src="assets/logo.png" alt="TilTaxi Logo" class="top-logo" />
+    <h1 class="top-brand-name">tilTaxi</h1>
+  </div>
+
+  <nav class="nav-links">
+    <a routerLink="/book" routerLinkActive="active">Book an Uber</a>
+    <a routerLink="/user-ride-history" routerLinkActive="active">Ride History</a>
+    <a routerLink="/favorites" routerLinkActive="active">Favorite rides</a>
+    <a routerLink="/support" routerLinkActive="active">Support</a>
+  </nav>
+
+  <div class="profile-nav">
+    <span class="profile-label">Profile</span>
+    <div class="avatar-small-circle" routerLink="/user-profile">
+      <i class="fas fa-user"></i>
+    </div>
+  </div>
+</header>

@@ -1,103 +1,81 @@
-<div class="history-container">
-  <header class="navbar">
-    <div class="logo-container">
-      <img src="assets/logo.png" alt="TilTaxi Logo" class="top-logo" />
-      <h1 class="top-brand-name">tilTaxi</h1>
-    </div>
+<div class="content-wrapper">
+  <main class="history-main">
+    <header class="history-header">
+      <h1>Ride History</h1>
+      <p>Overview of all your completed and canceled rides</p>
+    </header>
 
-    <nav class="nav-links">
-      <a href="#">Book an Uber</a>
-      <a href="#">Ride History</a>
-      <a href="#">Favorite rides</a>
-      <a href="#">Support</a>
-    </nav>
+    <section class="filters-section">
+      <div class="filter-inputs">
+        <div class="date-picker-wrapper" (click)="pickerFrom.showPicker()">
+          <span class="icon-left">📅</span>
+          <span class="dark-input">From</span>
+          <input type="date" #pickerFrom class="hidden-date-input" />
+          <span class="icon-right">▼</span>
+        </div>
 
-    <div class="profile-nav">
-      <span class="profile-label">Profile</span>
-      <div class="avatar-small-circle">
-        <i class="fas fa-user"></i>
+        <div class="date-picker-wrapper" (click)="pickerTo.showPicker()">
+          <span class="icon-left">📅</span>
+          <span class="dark-input">To</span>
+          <input type="date" #pickerTo class="hidden-date-input" />
+          <span class="icon-right">▼</span>
+        </div>
+
+        <div class="status-dropdown-wrapper">
+          <select class="dark-input">
+            <option value="" disabled selected>Status</option>
+            <option value="completed">Completed</option>
+            <option value="canceled">Canceled</option>
+          </select>
+          <span class="icon-right">▼</span>
+        </div>
+
+        <button class="btn-apply">Apply Filters</button>
       </div>
-    </div>
-  </header>
 
-  <div class="content-wrapper">
-    <main class="history-main">
-      <header class="history-header">
-        <h1>Ride History</h1>
-        <p>Overview of all your completed and canceled rides</p>
-      </header>
-
-      <section class="filters-section">
-        <div class="filter-inputs">
-          <div class="date-picker-wrapper" (click)="pickerFrom.showPicker()">
-            <span class="icon-left">📅</span>
-            <span class="dark-input">From</span>
-            <input type="date" #pickerFrom class="hidden-date-input" />
-            <span class="icon-right">▼</span>
-          </div>
-
-          <div class="date-picker-wrapper" (click)="pickerTo.showPicker()">
-            <span class="icon-left">📅</span>
-            <span class="dark-input">To</span>
-            <input type="date" #pickerTo class="hidden-date-input" />
-            <span class="icon-right">▼</span>
-          </div>
-
-          <div class="status-dropdown-wrapper">
-            <select class="dark-input">
-              <option value="" disabled selected>Status</option>
-              <option value="completed">Completed</option>
-              <option value="canceled">Canceled</option>
-            </select>
-            <span class="icon-right">▼</span>
-          </div>
-
-          <button class="btn-apply">Apply Filters</button>
-        </div>
-
-        <div class="quick-filters">
-          @for (option of filterOptions; track option) {
-          <button
-            class="chip"
-            [class.active]="activeFilter === option"
-            (click)="setActiveFilter(option)"
-          >
-            {{ option }}
-          </button>
-          }
-        </div>
-      </section>
-
-      <div class="rides-list">
-        <div class="date-divider">
-          <span>14 March 2025</span>
-        </div>
-
-        @for (ride of rides; track ride.id) {
-        <div
-          class="ride-card"
-          [class.selected]="selectedRide?.id === ride.id"
-          (click)="selectRide(ride)"
+      <div class="quick-filters">
+        @for (option of filterOptions; track option) {
+        <button
+          class="chip"
+          [class.active]="activeFilter === option"
+          (click)="setActiveFilter(option)"
         >
-          <div class="ride-info">
-            <span class="time">{{ ride.date }}, {{ ride.startTime }} - {{ ride.endTime }}</span>
-            <div class="route-wrapper">
-              <svg
-                class="loc-icon"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-              <span class="route">{{ ride.from }} → {{ ride.to }}</span>
-            </div>
+          {{ option }}
+        </button>
+        }
+      </div>
+    </section>
+
+    <div class="rides-list">
+      <div class="date-divider">
+        <span>14 March 2025</span>
+      </div>
+
+      @for (ride of rides; track ride.id) {
+      <div
+        class="ride-card"
+        [class.selected]="selectedRide?.id === ride.id"
+        (click)="selectRide(ride)"
+      >
+        <div class="ride-info">
+          <span class="time">{{ ride.date }}, {{ ride.startTime }} - {{ ride.endTime }}</span>
+          <div class="route-wrapper">
+            <svg
+              class="loc-icon"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span class="route">{{ ride.from }} → {{ ride.to }}</span>
+          </div>
           </div>
           <div class="ride-meta">
             <span class="price">{{ ride.price }}</span>
@@ -204,4 +182,3 @@
       }
     </aside>
   </div>
-</div>
