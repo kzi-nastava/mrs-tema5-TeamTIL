@@ -52,7 +52,7 @@
             </mat-select>
           </mat-form-field>
 
-          <button mat-raised-button color="primary" class="btn-apply">Apply Filters</button>
+          <button mat-raised-button color="primary" class="btn-apply" (click)="applyFilters()">Apply Filters</button>
         </div>
 
         <mat-chip-set aria-label="Quick filters">
@@ -67,41 +67,12 @@
       </section>
 
       <div class="rides-list">
+        @for (date of getUniqueDates(); track date) {
         <div class="date-divider">
-          <span>14 March 2025</span>
+          <span>{{ date }}</span>
         </div>
 
-        @for (ride of rides; track ride.id) {
-        @if (ride.date === '14 March 2025') {
-        <mat-card 
-          class="ride-card"
-          [class.selected]="selectedRide?.id === ride.id"
-          (click)="selectRide(ride)">
-          <mat-card-content>
-            <div class="ride-info">
-              <span class="time">{{ ride.date.split(' ')[0] }} {{ ride.date.split(' ')[1] }} {{ ride.date.split(' ')[2] }}, {{ ride.startTime }} - {{ ride.endTime }}</span>
-              <div class="route-wrapper">
-                <mat-icon>location_on</mat-icon>
-                <span class="route">{{ ride.from }} → {{ ride.to }}</span>
-              </div>
-            </div>
-            <div class="ride-meta">
-              <span class="price">{{ ride.price }} RSD</span>
-              <span class="status" [class]="'status-' + ride.status.toLowerCase()">
-                {{ ride.status }}
-              </span>
-            </div>
-          </mat-card-content>
-        </mat-card>
-        }
-        }
-
-        <div class="date-divider">
-          <span>12 March 2025</span>
-        </div>
-
-        @for (ride of rides; track ride.id) {
-        @if (ride.date === '12 March 2025') {
+        @for (ride of getRidesByDate(date); track ride.id) {
         <mat-card 
           class="ride-card"
           [class.selected]="selectedRide?.id === ride.id"
