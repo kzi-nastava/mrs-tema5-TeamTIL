@@ -26,7 +26,7 @@ export class UserProfile {
 
   saveChanges() {
     this.isEditMode = false;
-    // Podaci su već ažurirani u 'this.user' objektu zahvaljujući [(ngModel)]
+    // podaci su vec azurirani u this.user objektu zahvaljujuci [(ngModel)]
     console.log('Novi podaci:', this.user);
   }
 }
