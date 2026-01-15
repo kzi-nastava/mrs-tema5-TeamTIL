@@ -138,6 +138,47 @@
 
 .multi-line {
     line-height: 1.2;
+    resize: none;
+    font-family: inherit;
+}
+
+/* input polja */
+.data-field {
+    width: 70%;
+    background-color: #dcdcdc;
+    color: #000;
+    padding: 15px;
+    border-radius: 15px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 500;
+    
+    border: none;
+    outline: none;
+    font-family: inherit;
+}
+
+/* Save dugme */
+.save-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.save-btn {
+    background-color: #28a745; 
+    color: #ffffff;           
+    border: 2px solid #ffffff; 
+    padding: 12px 40px;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+.save-btn:hover {
+    background-color: #218838; 
 }
 
 /* za ostale tabove admina */
