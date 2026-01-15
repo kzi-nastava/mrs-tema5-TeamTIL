@@ -86,29 +86,23 @@
     background-color: #88888d;
     border-radius: 50px;
     display: flex;
+    justify-content: center;
     padding: 8px;
     margin-bottom: 40px;
-    border: 1px solid #999;
     border: 2px solid #ffffff; 
 }
 
 .tab-item {
-    flex: 1;
     background: none;
     border: none;
-    color: #222;
+    color: #000;
     font-size: 20px;
-    font-weight: 500;
-    padding: 10px;
+    font-weight: 800;
+    padding: 10px 30px;
     cursor: pointer;
 }
 
-.tab-item.active {
-    font-weight: 800;
-    color: #000;
-}
-
-/* FORMA */
+/* FORMA - SVE OSTAJE IDENTIČNO TVOM ORIGINALU */
 .profile-data-form {
     display: flex;
     flex-direction: column;
@@ -125,6 +119,7 @@
     font-size: 24px;
 }
 
+/* Dodali smo samo par linija da input ne pokvari tvoj dizajn */
 .data-field {
     width: 70%;
     background-color: #dcdcdc;
@@ -134,8 +129,36 @@
     text-align: center;
     font-size: 20px;
     font-weight: 500;
+    /* Linije koje čuvaju tvoj dizajn kada postane input: */
+    border: none;
+    outline: none;
+    font-family: inherit;
+    resize: none; /* Za adresu/textarea */
 }
 
 .multi-line {
     line-height: 1.2;
+}
+
+/* SAVE DUGME - Prilagođeno tvom stilu Edit dugmeta */
+.save-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.save-btn {
+    background-color: #28a745; /* Zelena pozadina */
+    color: #ffffff;           /* Bela slova */
+    border: 2px solid #ffffff; /* Beli okvir */
+    padding: 12px 40px;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+.save-btn:hover {
+    background-color: #218838; /* Malo tamnija zelena kad se pređe mišem */
 }
