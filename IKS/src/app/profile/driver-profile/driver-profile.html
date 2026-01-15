@@ -16,22 +16,21 @@
       </div>
 
       <div class="card-actions">
-        
-        <button class="edit-btn" 
-          *ngIf="activeTab === 'profile' && !isEditMode" 
-          (click)="toggleEdit()">
-          Edit profile
-        </button>
-        
-        <button 
-          class="status-btn" 
-          *ngIf="activeTab === 'vehicle'"
-          [ngClass]="{'active-state': isActive, 'inactive-state': !isActive}"
-          (click)="toggleStatus()">
-          {{ isActive ? 'Active' : 'Inactive' }}
-        </button>
+  
+  <button class="edit-btn" 
+    *ngIf="activeTab === 'profile' && !isEditMode" 
+    (click)="toggleEdit()">
+    Edit profile
+  </button>
+  
+  <button 
+    class="status-btn" 
+    [ngClass]="{'active-state': isActive, 'inactive-state': !isActive}"
+    (click)="toggleStatus()">
+    {{ isActive ? 'Active' : 'Inactive' }}
+  </button>
 
-      </div>
+</div>
     </div>
 
     <div class="profile-tabs-bar">
