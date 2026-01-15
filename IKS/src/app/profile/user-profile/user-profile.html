@@ -2,53 +2,52 @@
   <h1 class="page-header-title">My Profile</h1>
 
   <section class="main-profile-card">
-    
     <div class="card-top-section">
       <div class="user-meta">
         <div class="avatar-main-circle">
           <i class="far fa-user"></i>
         </div>
         <div class="user-name-email">
-          <h2>Petar Petrovic</h2>
-          <p>petarpetrovic@gmail.com</p>
+          <h2>{{ user.name }} {{ user.surname }}</h2>
+          <p>{{ user.email }}</p>
         </div>
       </div>
-      <button class="edit-btn">Edit profile</button>
+      <button class="edit-btn" *ngIf="!isEditMode" (click)="toggleEdit()">Edit profile</button>
     </div>
 
     <div class="profile-tabs-bar">
-      <button class="tab-item active">Profile info</button>
-      <button class="tab-item">Favorite rides</button>
-      <button class="tab-item">Ride history</button>
+      <button class="tab-item">Profile info</button>
     </div>
 
     <div class="profile-data-form">
       
       <div class="data-row">
         <label>Name</label>
-        <div class="data-field">Petar</div>
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="user.name">
       </div>
 
       <div class="data-row">
         <label>Surname</label>
-        <div class="data-field">Petrovic</div>
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="user.surname">
       </div>
 
       <div class="data-row">
         <label>Email</label>
-        <div class="data-field">petarpetrovic@gmail.com</div>
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="user.email">
       </div>
 
       <div class="data-row">
-        <label>Adress</label>
-        <div class="data-field multi-line">
-          Bulevar despota Stefana 7a<br>21000 Novi Sad
-        </div>
+        <label>Address</label>
+        <textarea class="data-field multi-line" [readonly]="!isEditMode" [(ngModel)]="user.address"></textarea>
       </div>
 
       <div class="data-row">
         <label>Phone number</label>
-        <div class="data-field">+381 64 123 123</div>
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="user.phone">
+      </div>
+
+      <div class="save-container" *ngIf="isEditMode">
+        <button class="save-btn" (click)="saveChanges()">Save changes</button>
       </div>
 
     </div>
