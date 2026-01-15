@@ -1,0 +1,24 @@
+<LinearLayout android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="6dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/bg_purple_dark_tint"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:padding="12dp">
+
+    <ImageView
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_warning"/>
+
+    <TextView
+        android:id="@+id/tvIssueText"
+        android:layout_marginStart="6dp"
+        android:text="Passenger was late at pickup"
+        android:textColor="@color/text_white"
+        android:textSize="12sp"
+        android:fontFamily="@font/montserrat_regular_font"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"/>
+</LinearLayout>

@@ -1,0 +1,38 @@
+<LinearLayout android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginBottom="8dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/bg_purple_dark_tint"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:padding="12dp">
+
+    <ImageView
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_person_placeholder"
+        app:tint="@color/text_white"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvPassengerName"
+            android:text="Petar Petrović"
+            android:textColor="@color/text_white"
+            android:textSize="13sp"
+            android:fontFamily="@font/montserrat_semibold_font" android:layout_height="wrap_content" android:layout_width="wrap_content"/>
+
+        <TextView
+            android:id="@+id/tvPassengerPhone"
+            android:text="+381 64 123 456"
+            android:textColor="@color/text_gray"
+            android:textSize="11sp"
+            android:fontFamily="@font/montserrat_regular_font" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+</LinearLayout>

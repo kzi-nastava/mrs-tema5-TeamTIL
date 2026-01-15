@@ -86,4 +86,5 @@
     <!-- Driver Ride History -->
     <string name="ride_history_heading">Ride History</string>
     <string name="ride_history_text_overview">Overview of all your completed and canceled rides</string>
+    <string name="ride_details_heading">Ride Details</string>
 </resources>

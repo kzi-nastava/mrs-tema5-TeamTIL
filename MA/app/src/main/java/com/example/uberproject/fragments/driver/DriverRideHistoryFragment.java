@@ -81,7 +81,20 @@ public class DriverRideHistoryFragment extends Fragment {
         allRides.add(new Ride(2, "Novi Sad", "Beograd", "1,250 RSD", "Completed", "14 Mar 2025, 14:32 - 15:05"));
         allRides.add(new Ride(3, "Zemun", "Novi Beograd", "1,670 RSD", "Completed", "14 Mar 2025, 12:32 - 13:05"));
 
-        rideAdapter = new RideAdapter(allRides);
+        rideAdapter = new RideAdapter(allRides, ride -> {
+
+            DriverRideDetailsFragment fragment =
+                    DriverRideDetailsFragment.newInstance(ride);
+
+            requireActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+
         ridesRecyclerView.setAdapter(rideAdapter);
 
         return view;

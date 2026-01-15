@@ -17,11 +17,15 @@ import java.util.List;
 
 public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder> {
 
-    private List<Ride> rides;
+    private OnRideClickListener listener;
 
-    public RideAdapter(List<Ride> rides) {
+    public RideAdapter(List<Ride> rides, OnRideClickListener listener) {
         this.rides = new ArrayList<>(rides);
+        this.listener = listener;
     }
+
+
+    private List<Ride> rides;
 
     @NonNull
     @Override
@@ -34,11 +38,19 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
     @Override
     public void onBindViewHolder(@NonNull RideViewHolder holder, int position) {
         Ride ride = rides.get(position);
+
         holder.tvRoute.setText(ride.getFrom() + " → " + ride.getTo());
         holder.tvPrice.setText(ride.getPrice());
         holder.tvStatus.setText(ride.getStatus());
         holder.tvDateTime.setText(ride.getDateTime());
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onRideClick(ride);
+            }
+        });
     }
+
 
     @Override
     public int getItemCount() {
@@ -73,6 +85,10 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         diffResult.dispatchUpdatesTo(this);
     }
 
+
+    public interface OnRideClickListener {
+        void onRideClick(Ride ride);
+    }
 
     public static class RideViewHolder extends RecyclerView.ViewHolder {
         TextView tvRoute, tvPrice, tvStatus, tvDateTime;
