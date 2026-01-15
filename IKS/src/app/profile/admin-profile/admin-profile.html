@@ -9,11 +9,18 @@
           <i class="far fa-user"></i>
         </div>
         <div class="user-name-email">
-          <h2>Petar Petrovic</h2>
-          <p>petarpetrovic@gmail.com</p>
+          <h2>{{ admin.name }} {{ admin.surname }}</h2>
+          <p>{{ admin.email }}</p>
         </div>
       </div>
-      <button class="edit-btn">Edit profile</button>
+      
+      <button 
+        class="edit-btn" 
+        *ngIf="!isEditMode && activeTab === 'profile'" 
+        (click)="toggleEdit()">
+        Edit profile
+      </button>
+      
     </div>
 
     <div class="profile-tabs-bar">
@@ -44,28 +51,36 @@
     </div>
 
     <div class="profile-data-form" *ngIf="activeTab === 'profile'">
+      
       <div class="data-row">
         <label>Name</label>
-        <div class="data-field">Petar</div>
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="admin.name">
       </div>
+
       <div class="data-row">
         <label>Surname</label>
-        <div class="data-field">Petrovic</div>
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="admin.surname">
       </div>
+
       <div class="data-row">
         <label>Email</label>
-        <div class="data-field">petarpetrovic@gmail.com</div>
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="admin.email">
       </div>
+
       <div class="data-row">
-        <label>Adress</label>
-        <div class="data-field multi-line">
-          Bulevar despota Stefana 7a<br>21000 Novi Sad
-        </div>
+        <label>Address</label>
+        <textarea class="data-field multi-line" [readonly]="!isEditMode" [(ngModel)]="admin.address"></textarea>
       </div>
+
       <div class="data-row">
         <label>Phone number</label>
-        <div class="data-field">+381 64 123 123</div>
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="admin.phone">
       </div>
+
+      <div class="save-container" *ngIf="isEditMode">
+        <button class="save-btn" (click)="saveChanges()">Save changes</button>
+      </div>
+
     </div>
 
     <div class="placeholder-content" *ngIf="activeTab !== 'profile'">
