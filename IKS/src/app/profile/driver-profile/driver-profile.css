@@ -35,8 +35,9 @@
 .card-top-section {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; /* promenjeno da bi se dugmici lepo poravnali gore */
+    align-items: flex-start;
     margin-bottom: 40px;
+    min-height: 100px; 
 }
 
 .user-meta {
@@ -62,7 +63,7 @@
 .user-name-email h2 {
     font-size: 32px;
     font-weight: 500;
-    margin-bottom: 10px; /* smanjeno zbog dodatnog teksta ispod */
+    margin-bottom: 10px;
 }
 
 .user-name-email p {
@@ -80,7 +81,8 @@
     font-weight: 700;
     cursor: pointer;
     border: 2px solid #000000;
-    min-width: 140px; 
+    min-width: 160px;
+    text-align: center;
 }
 
 /* TABS */
@@ -88,21 +90,21 @@
     background-color: #88888d;
     border-radius: 50px;
     display: flex;
+    justify-content: center; 
     padding: 8px;
     margin-bottom: 40px;
-    border: 1px solid #999;
     border: 2px solid #ffffff; 
 }
 
 .tab-item {
-    flex: 1;
     background: none;
     border: none;
     color: #222;
     font-size: 20px;
     font-weight: 500;
-    padding: 10px;
+    padding: 10px 30px;
     cursor: pointer;
+    outline: none;
 }
 
 .tab-item.active {
@@ -127,6 +129,7 @@
     font-size: 24px;
 }
 
+/* DATA FIELD */
 .data-field {
     width: 70%;
     background-color: #dcdcdc;
@@ -136,22 +139,46 @@
     text-align: center;
     font-size: 20px;
     font-weight: 500;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    resize: none; 
 }
 
 .multi-line {
     line-height: 1.2;
 }
 
-/* ZA DRIVER PROFILE (NOVO) */
+/* SAVE DUGME */
+.save-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.save-btn {
+    background-color: #28a745; 
+    color: #ffffff;           
+    border: 2px solid #ffffff; 
+    padding: 12px 40px;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+.save-btn:hover {
+    background-color: #218838;
+}
+
+/* ZA DRIVER PROFILE STATUS */
 .hours-active {
     font-size: 18px;
     font-weight: 600;
     color: #3da96a !important;
-
     display: block;
-    margin-top: 25px !important;
-    position: relative;
-    
+    margin-top: 15px !important;
 }
 
 .card-actions {
@@ -161,26 +188,23 @@
     gap: 15px;
 }
 
-/* stil za status dugme */
 .status-btn {
     border: none;
-    padding: 10px 30px;
+    padding: 12px 30px;
     border-radius: 50px;
     font-weight: 700;
     cursor: pointer;
     font-size: 16px;
     color: #fff;
     border: 2px solid #000;
-    min-width: 140px; /* da bude iste sirine kao Edit */
+    min-width: 160px;
     text-align: center;
 }
 
-/* stanje Active */
 .status-btn.active-state {
     background-color: #2e7d32; 
 }
 
-/* stanje Inactive */
 .status-btn.inactive-state {
     background-color: #c62828; 
 }
@@ -203,7 +227,6 @@
     box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
 }
 
-/* leva kolona - slika auta */
 .vehicle-image-col {
     flex: 1;
     display: flex;
@@ -213,11 +236,11 @@
 
 .car-icon-big {
     width: 100%;
+    max-width: 300px; 
     height: auto; 
     object-fit: contain;
 }
 
-/* desna kolona - podaci */
 .vehicle-info-col {
     flex: 1;
     display: flex;
@@ -225,7 +248,6 @@
     gap: 30px;
 }
 
-/* tabela sa podacima */
 .info-table {
     display: flex;
     flex-direction: column;
@@ -235,7 +257,7 @@
 .info-row {
     display: flex;
     justify-content: space-between;
-    border-bottom: 1px solid #666; /* linija ispod svakog reda */
+    border-bottom: 1px solid #666; 
     padding-bottom: 10px;
     font-size: 20px;
 }
@@ -247,10 +269,9 @@
 
 .info-row .value {
     color: #fff;
-    font-weight: 700; /* boldovano */
+    font-weight: 700; 
 }
 
-/* additional options sekcija */
 .additional-options-section h4 {
     font-size: 20px;
     margin-bottom: 15px;
@@ -271,7 +292,6 @@
     gap: 10px;
 }
 
-/* ikonice za check i x */
 .check-icon {
     color: #2ecc71;
     font-weight: bold;
