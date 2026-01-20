@@ -6,6 +6,7 @@ import { DriverHistory } from './ride-history/driver-history/driver-history';
 import { UserRideHistory } from './ride-history/user-ride-history/user-ride-history';
 import { AdminRideHistory } from './ride-history/admin-ride-history/admin-ride-history';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
+import { Home } from './layout/home/home';
 
 export const routes: Routes = [
   // Routes with layout (navbar + footer)
@@ -13,6 +14,7 @@ export const routes: Routes = [
     path: '',
     component: MainLayoutComponent,
     children: [
+      { path: '', component: Home },
       { path: 'driver-history', component: DriverHistory },
       { path: 'user-ride-history', component: UserRideHistory },
       { path: 'admin-ride-history', component: AdminRideHistory },
