@@ -9,21 +9,23 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.LoginRequestDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RegisterRequestDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.LoginResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RegisterResponseDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.service.AuthService;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO request) {
-        LoginResponseDTO response = new LoginResponseDTO(
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", // mock JWT token
-                "DRIVER", // or "REGISTERED_USER", "ADMINISTRATOR"
-                request.getEmail(),
-                "Login successful"
-        );
+    private final AuthService authService;
 
-        return ResponseEntity.ok(response);
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> login(
+            @RequestBody LoginRequestDTO request) {
+
+        return ResponseEntity.ok(authService.login(request));
     }
 
     @PostMapping("/register")
