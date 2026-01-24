@@ -73,12 +73,13 @@ export class NavbarComponent implements OnInit {
           this.navLinks = [
             { label: 'My Vehicle', route: '/my-vehicle' },
             { label: 'Ride History', route: '/driver-history' },
-            { label: 'My rides', route: '/my-rides' },
+            { label: 'My rides', route: '/assigned-rides' },
             { label: 'Support', route: '/support' }
           ];
           this.profileRoute = '/driver-profile';
           this.menuItems = [
             { label: 'View Profile', route: '/driver-profile', icon: 'fas fa-user' },
+            { label: 'My Rides', route: '/assigned-rides', icon: 'fas fa-route' },
             { label: 'Ride History', route: '/driver-history', icon: 'fas fa-calendar-alt' },
             { label: 'My Vehicle', route: '/my-vehicle', icon: 'fas fa-car' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },

@@ -1,0 +1,174 @@
+<div class="content-wrapper">
+  <main class="rides-main">
+    <header class="rides-header">
+      <h1>Assigned Rides</h1>
+      <p>All rides assigned to you</p>
+    </header>
+
+    <section class="tabs-section">
+      @for (tab of tabs; track tab) {
+      <button
+        class="tab-button"
+        [class.active]="activeTab === tab"
+        (click)="setActiveTab(tab)"
+      >
+        {{ tab }}
+      </button>
+      }
+    </section>
+
+    <div class="section-divider">
+      <h2 class="section-title">Today - Active & Upcoming</h2>
+    </div>
+
+    <div class="rides-list">
+      @for (ride of rides; track ride.id) {
+      <div
+        class="ride-card"
+        [class.selected]="selectedRide?.id === ride.id"
+        [class.in-progress]="ride.status === 'In progress'"
+        (click)="selectRide(ride)"
+      >
+        <div class="ride-info">
+          <div class="ride-header-row">
+            <span class="time">{{ ride.date }}, {{ ride.startTime }} - {{ ride.status === 'In progress' ? 'ongoing' : ride.approximatedEndTime }}</span>
+            @if (ride.status === 'Upcoming' && ride.nextRideIn) {
+            <span class="next-ride-badge">Next ride in {{ ride.nextRideIn }}</span>
+            }
+          </div>
+          <div class="route-wrapper">
+            <svg
+              class="loc-icon"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span class="route">{{ ride.from }} → {{ ride.to }}</span>
+          </div>
+        </div>
+        <div class="ride-meta">
+          <span class="status" [class]="'status-' + ride.status.toLowerCase().replace(' ', '-')">
+            {{ ride.status }}
+          </span>
+          @if (ride.status === 'In progress') {
+          <button class="btn-action btn-open" (click)="openRide(ride); $event.stopPropagation()">
+            Open ride
+          </button>
+          } @else {
+          <button class="btn-action btn-start" (click)="startRide(ride); $event.stopPropagation()">
+            Start ride
+          </button>
+          }
+        </div>
+      </div>
+      } @empty {
+      <p class="no-rides">No rides found.</p>
+      }
+    </div>
+
+    <div class="section-divider">
+      <h2 class="section-title">23 December 2025</h2>
+      <button class="collapse-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <div class="completed-section">
+      <p class="completed-text">Completed (today)</p>
+      <button class="expand-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+    </div>
+  </main>
+
+  <aside class="details-sidebar" [class.empty]="!selectedRide">
+    @if (selectedRide) {
+    <div class="sidebar-header">
+      <h2>Ride Details</h2>
+      <button class="close-btn" (click)="selectedRide = null">&times;</button>
+    </div>
+
+    <div class="details-body">
+      <div class="detail-item">
+        <label>Start Time</label>
+        <p>{{ selectedRide.date }}, {{ selectedRide.startTime }}</p>
+      </div>
+
+      <div class="detail-item">
+        <label>Approximated end time</label>
+        <p>{{ selectedRide.approximatedEndTime }}</p>
+      </div>
+
+      <div class="detail-item">
+        <label>Duration so far</label>
+        <p>{{ selectedRide.duration }}</p>
+      </div>
+
+      <div class="detail-item">
+        <label>Price so far</label>
+        <p>{{ selectedRide.price }} RSD</p>
+      </div>
+
+      <div class="detail-item">
+        <label>Distance so far</label>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+        <p>{{ selectedRide.distance }} km</p>
+      </div>
+
+      <hr class="separator" />
+
+      <div class="passenger-section">
+        <label>Passenger</label>
+        <div class="passenger-card">
+          <div class="avatar">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+              <path
+                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+              />
+            </svg>
+          </div>
+          <div class="passenger-text">
+            <strong>{{ selectedRide.passenger.name }}</strong>
+            <span>{{ selectedRide.passenger.phone }}</span>
+          </div>
+        </div>
+      </div>
+
+      @if (selectedRide.status === 'In progress') {
+      <button class="btn-primary btn-open-ride" (click)="openRide(selectedRide)">
+        Open ride
+      </button>
+      <button class="btn-secondary btn-end-ride" (click)="endRide(selectedRide)">
+        End ride
+      </button>
+      } @else {
+      <button class="btn-primary btn-start-ride" (click)="startRide(selectedRide)">
+        Start ride
+      </button>
+      <button class="btn-secondary btn-cancel-ride" (click)="cancelRide(selectedRide)">
+        Cancel ride
+      </button>
+      }
+    </div>
+    } @else {
+    <div class="empty-state">
+      <p>Select a ride to see details</p>
+    </div>
+    }
+  </aside>
+</div>
