@@ -1,0 +1,72 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { environment } from '../../environments/environment';
+import {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
+  CurrentUser
+} from '../models/auth.models';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private apiUrl = environment.apiUrl;
+  private currentUserSubject = new BehaviorSubject<CurrentUser | null>(this.getCurrentUserFromStorage());
+  public currentUser$ = this.currentUserSubject.asObservable();
+
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {}
+
+  private getCurrentUserFromStorage(): CurrentUser | null {
+    const userJson = localStorage.getItem('currentUser');
+    return userJson ? JSON.parse(userJson) : null;
+  }
+
+  login(credentials: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials)
+      .pipe(
+        tap(response => {
+          const user: CurrentUser = {
+            token: response.token,
+            userType: response.userType,
+            email: response.email
+          };
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          this.currentUserSubject.next(user);
+        })
+      );
+  }
+
+  register(data: RegisterRequest): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/auth/register`, data);
+  }
+
+  logout(): void {
+    localStorage.removeItem('currentUser');
+    this.currentUserSubject.next(null);
+    this.router.navigate(['/login']);
+  }
+
+  isLoggedIn(): boolean {
+    return this.currentUserSubject.value !== null;
+  }
+
+  getToken(): string | null {
+    return this.currentUserSubject.value?.token || null;
+  }
+
+  getUserType(): string | null {
+    return this.currentUserSubject.value?.userType || null;
+  }
+
+  getEmail(): string | null {
+    return this.currentUserSubject.value?.email || null;
+  }
+}

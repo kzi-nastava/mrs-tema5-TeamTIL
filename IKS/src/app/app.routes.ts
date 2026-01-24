@@ -6,6 +6,7 @@ import { DriverHistory } from './ride-history/driver-history/driver-history';
 import { UserRideHistory } from './ride-history/user-ride-history/user-ride-history';
 import { AdminRideHistory } from './ride-history/admin-ride-history/admin-ride-history';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   // Routes with layout (navbar + footer)
@@ -13,12 +14,14 @@ export const routes: Routes = [
     path: '',
     component: MainLayoutComponent,
     children: [
-      { path: 'driver-history', component: DriverHistory },
-      { path: 'user-ride-history', component: UserRideHistory },
-      { path: 'admin-ride-history', component: AdminRideHistory },
-      { path: 'user-profile', component: UserProfile },
-      { path: 'driver-profile', component: DriverProfileComponent },
-      { path: 'admin-profile', component: AdminProfileComponent },
+      // Protected routes
+      { path: 'driver-history', component: DriverHistory, canActivate: [authGuard] },
+      { path: 'user-ride-history', component: UserRideHistory, canActivate: [authGuard] },
+      { path: 'admin-ride-history', component: AdminRideHistory, canActivate: [authGuard] },
+      { path: 'user-profile', component: UserProfile, canActivate: [authGuard] },
+      { path: 'driver-profile', component: DriverProfileComponent, canActivate: [authGuard] },
+      { path: 'admin-profile', component: AdminProfileComponent, canActivate: [authGuard] },
+      // Public routes can be added here (book, favorites, support, etc.)
     ]
   },
   // Routes without layout (forms only)
@@ -26,6 +29,5 @@ export const routes: Routes = [
   { path: 'register', loadComponent: () => import('./forms/register/register').then(m => m.Register) },
   { path: 'forgot-password', loadComponent: () => import('./forms/forgot-password/forgot-password').then(m => m.ForgotPassword) },
   { path: 'reset-password', loadComponent: () => import('./forms/reset-password/reset-password').then(m => m.ResetPassword) },
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: '' }
 ];
