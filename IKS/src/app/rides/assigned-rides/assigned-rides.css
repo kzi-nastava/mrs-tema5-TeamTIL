@@ -451,7 +451,8 @@
 }
 
 .btn-primary,
-.btn-secondary {
+.btn-secondary,
+.btn-warning {
   width: 100%;
   padding: 14px 24px;
   border: none;
@@ -471,6 +472,18 @@
 .btn-primary:hover {
   background: #ffca33;
   transform: translateY(-2px);
+}
+
+.btn-warning {
+  background: transparent;
+  color: #ffc107;
+  border: 1px solid #ffc107;
+}
+
+.btn-warning:hover {
+  background: rgba(255, 193, 7, 0.1);
+  color: #ffca33;
+  border-color: #ffca33;
 }
 
 .btn-secondary {

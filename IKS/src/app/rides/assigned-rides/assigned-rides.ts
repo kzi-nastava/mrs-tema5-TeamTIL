@@ -96,6 +96,11 @@ export class AssignedRides {
     // TODO: Cancel ride logic
   }
 
+  pauseRide(ride: Ride) {
+    console.log('Pausing ride:', ride);
+    // TODO: Pause ride logic
+  }
+
   endRide(ride: Ride) {
     console.log('Ending ride:', ride);
     // TODO: End ride logic
