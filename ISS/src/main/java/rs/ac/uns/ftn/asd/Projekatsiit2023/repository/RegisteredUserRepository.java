@@ -7,9 +7,7 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.model.RegisteredUser;
 import java.util.Optional;
 
 @Repository
-public interface RegisteredUserRepository
-        extends JpaRepository<RegisteredUser, Long> {
-
-    Optional<RegisteredUser> findByEmail(String email);
+public interface RegisteredUserRepository extends JpaRepository<RegisteredUser, Integer> {
+    Optional<RegisteredUser> findById(Long id);
 }
 
