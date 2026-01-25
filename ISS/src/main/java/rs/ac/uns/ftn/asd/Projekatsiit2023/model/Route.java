@@ -31,4 +31,7 @@ public class Route {
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn(name = "location_order")
     private List<Location> locations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "route")
+    private List<Ride> rides = new ArrayList<>();
 }

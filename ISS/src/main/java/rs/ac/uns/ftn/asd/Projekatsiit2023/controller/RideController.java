@@ -1,9 +1,12 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.InconsistencyReportRequestDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideCancelRequestDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideRatingRequestDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideRequestDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.InconsistencyReportResponseDTO;
@@ -12,6 +15,9 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideEstimationResponseDTO
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideRatingResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStopResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideTrackingDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RideStatus;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Ride;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RideRepository;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -22,6 +28,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/rides")
 public class RideController {
+
+    @Autowired
+    private RideRepository rideRepository;
 
     @GetMapping("/estimate")
     public ResponseEntity<RideEstimationResponseDTO> getRideEstimation(
@@ -52,18 +61,35 @@ public class RideController {
     }
 
     @PutMapping("/{rideId}/cancel")
+    @Transactional
     public ResponseEntity<RideCancelResponseDTO> cancelRide(
-            @PathVariable Long rideId,
-            @RequestParam(required = false) String reason) {
+            @PathVariable Integer rideId,
+            @RequestBody(required = false) RideCancelRequestDTO request) {
 
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
 
+        // Pronađi vožnju iz baze
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+
+        // Postavi razlog otkazivanja
+        String reason = (request != null && request.getCancellationReason() != null)
+                ? request.getCancellationReason()
+                : "User cancelled";
+
+        // Ažuriraj status i razlog
+        ride.setRideStatus(RideStatus.CANCELED);
+        ride.setCancellationReason(reason);
+
+        // Sačuvaj promene u bazi
+        rideRepository.save(ride);
+
         RideCancelResponseDTO response = new RideCancelResponseDTO(
                 rideId,
                 "CANCELLED",
-                reason != null ? reason : "User cancelled",
+                reason,
                 "Ride cancelled successfully");
 
         return ResponseEntity.ok(response);

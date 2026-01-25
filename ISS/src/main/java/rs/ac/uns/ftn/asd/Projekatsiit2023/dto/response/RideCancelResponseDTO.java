@@ -7,14 +7,14 @@ import lombok.Setter;
 @Getter
 public class RideCancelResponseDTO {
     // Getters and setters
-    private Long rideId;
+    private Integer rideId;
     private String status;
     private String cancellationReason;
     private String message;
 
     public RideCancelResponseDTO() {}
 
-    public RideCancelResponseDTO(Long rideId, String status, String cancellationReason, String message) {
+    public RideCancelResponseDTO(Integer rideId, String status, String cancellationReason, String message) {
         this.rideId = rideId;
         this.status = status;
         this.cancellationReason = cancellationReason;
