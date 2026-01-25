@@ -78,16 +78,32 @@ export class Register {
       password: this.registerForm.value.password,
       phoneNumber: this.registerForm.value.phoneNumber,
       city: this.registerForm.value.address,
-      userType: 'REGISTERED_USER'
+      userType: 'REGISTERED_USER',
+      profilePhoto: this.photoPreview || undefined // Base64 string or undefined if no photo
     };
 
     this.authService.register(registerData).subscribe({
       next: (response) => {
-        this.isLoading = false;
-        this.snackBar.open(response.message + ' You can now log in.', 'Close', { duration: 4000 });
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 1500);
+        this.snackBar.open(response.message + ' Logging you in...', 'Close', { duration: 2000 });
+        
+        // Automatically log in the user after successful registration
+        const loginCredentials = {
+          email: this.registerForm.value.email,
+          password: this.registerForm.value.password
+        };
+
+        this.authService.login(loginCredentials).subscribe({
+          next: (loginResponse) => {
+            this.isLoading = false;
+            this.snackBar.open('Welcome! Registration successful.', 'Close', { duration: 3000 });
+            this.router.navigate(['/user-profile']);
+          },
+          error: (loginError) => {
+            this.isLoading = false;
+            this.snackBar.open('Registration successful! Please log in.', 'Close', { duration: 3000 });
+            this.router.navigate(['/login']);
+          }
+        });
       },
       error: (error) => {
         this.isLoading = false;
