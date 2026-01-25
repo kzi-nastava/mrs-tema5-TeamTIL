@@ -39,7 +39,7 @@ public class UserController {
                 account.getEmail(),
                 account.getPhoneNumber(),
                 account.getAddress(),
-                null // Profile picture - za sada null
+                account.getProfilePictureUrl()
         );
 
         return ResponseEntity.ok(userDTO);
@@ -58,6 +58,7 @@ public class UserController {
         account.setLastName(updatedData.getLastName());
         account.setAddress(updatedData.getAddress());
         account.setPhoneNumber(updatedData.getPhoneNumber());
+        account.setProfilePictureUrl(updatedData.getProfilePictureUrl());
 
         // Cuvamo nazad u bazu
         accountService.save(account);

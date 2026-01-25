@@ -159,3 +159,20 @@
 .save-btn:hover {
     background-color: #218838; 
 }
+
+.avatar-main-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #5d2a7a; 
+}
+
+.profile-img-fluid {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+}

@@ -5,7 +5,8 @@
     <div class="card-top-section">
       <div class="user-meta">
         <div class="avatar-main-circle">
-          <i class="far fa-user"></i>
+          <img *ngIf="user.profilePictureUrl" [src]="user.profilePictureUrl" alt="Profile Picture" class="profile-img-fluid">
+          <i *ngIf="!user.profilePictureUrl" class="far fa-user"></i>
         </div>
         <div class="user-name-email">
           <h2>{{ user.firstName }} {{ user.lastName }}</h2>
