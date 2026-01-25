@@ -79,8 +79,17 @@ export class Register {
       phoneNumber: this.registerForm.value.phoneNumber,
       city: this.registerForm.value.address,
       userType: 'REGISTERED_USER',
-      profilePhoto: this.photoPreview || undefined // Base64 string or undefined if no photo
+      profilePictureUrl: this.photoPreview ? this.photoPreview.replace(/^data:image\/[a-z]+;base64,/, '') : undefined
     };
+
+    console.log('Sending registration data:', {
+      ...registerData,
+      profilePictureUrl: registerData.profilePictureUrl ? `Base64 string (${registerData.profilePictureUrl.length} chars)` : 'none'
+    });
+
+    if (registerData.profilePictureUrl) {
+      console.log('First 100 chars of profilePictureUrl (without prefix):', registerData.profilePictureUrl.substring(0, 100));
+    }
 
     this.authService.register(registerData).subscribe({
       next: (response) => {

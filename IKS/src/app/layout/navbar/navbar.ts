@@ -30,6 +30,7 @@ export class NavbarComponent implements OnInit {
   menuItems: MenuItem[] = [];
   isDropdownOpen: boolean = false;
   userName: string = 'Username';
+  profilePhoto: string | null = null;
 
   constructor(private authService: AuthService) {}
 
@@ -37,7 +38,9 @@ export class NavbarComponent implements OnInit {
     this.authService.currentUser$.subscribe(user => {
       this.isLoggedIn = user !== null;
       this.userType = user?.userType || null;
-      this.userName = user?.email?.split('@')[0] || 'Username';
+      this.userName = user?.name || user?.email?.split('@')[0] || 'Username';
+      this.profilePhoto = user?.profilePictureUrl || null;
+      console.log('Navbar - User profile photo URL:', this.profilePhoto);
       this.updateNavigation();
     });
   }
@@ -124,5 +127,10 @@ export class NavbarComponent implements OnInit {
   logout() {
     this.authService.logout();
     this.closeDropdown();
+  }
+
+  onImageError(event: any) {
+    console.error('Failed to load profile image:', this.profilePhoto);
+    this.profilePhoto = null; // Fallback to default icon
   }
 }

@@ -12,7 +12,7 @@ export interface RegisterRequest {
   phoneNumber: string;
   city: string;
   userType: string; // "REGISTERED_USER"
-  profilePhoto?: string; // Base64 string, optional
+  profilePictureUrl?: string; // Base64 string, optional
 }
 
 // Response DTOs
@@ -20,6 +20,8 @@ export interface LoginResponse {
   token: string;
   userType: string; // "DRIVER" | "REGISTERED_USER" | "ADMINISTRATOR"
   email: string;
+  name: string;
+  profilePictureUrl?: string; // Base64 string
   message: string;
 }
 
@@ -34,4 +36,6 @@ export interface CurrentUser {
   token: string;
   userType: string;
   email: string;
+  name: string;
+  profilePictureUrl?: string; // Base64 string
 }

@@ -47,7 +47,7 @@ public class Account implements UserDetails {
     @Column(name = "block_reason")
     private String blockReason;
 
-    @Column(name = "profile_picture_url")
+    @Column(name = "profile_picture_url", length = 500)
     private String profilePictureUrl;
 
     @Column(name = "user_type")
