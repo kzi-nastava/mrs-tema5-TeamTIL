@@ -8,7 +8,7 @@
           <i class="far fa-user"></i>
         </div>
         <div class="user-name-email">
-          <h2>{{ user.name }} {{ user.surname }}</h2>
+          <h2>{{ user.firstName }} {{ user.lastName }}</h2>
           <p>{{ user.email }}</p>
         </div>
       </div>
@@ -23,17 +23,17 @@
       
       <div class="data-row">
         <label>Name</label>
-        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="user.name">
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="user.firstName">
       </div>
 
       <div class="data-row">
         <label>Surname</label>
-        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="user.surname">
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="user.lastName">
       </div>
 
       <div class="data-row">
         <label>Email</label>
-        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="user.email">
+        <input class="data-field" readonly [(ngModel)]="user.email">
       </div>
 
       <div class="data-row">
@@ -43,7 +43,7 @@
 
       <div class="data-row">
         <label>Phone number</label>
-        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="user.phone">
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="user.phoneNumber">
       </div>
 
       <div class="save-container" *ngIf="isEditMode">
