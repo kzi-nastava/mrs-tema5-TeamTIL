@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { UserService } from '../../services/user.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -24,6 +25,7 @@ export class UserProfile implements OnInit {
 
   constructor(
     private userService: UserService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -54,6 +56,9 @@ export class UserProfile implements OnInit {
       next: (response) => {
         this.user = response;
         this.isEditMode = false;
+
+        this.authService.updateUser(response); 
+
         this.cdr.detectChanges();
         alert('Changes saved successfully!');
       },
@@ -62,5 +67,20 @@ export class UserProfile implements OnInit {
       }
     });
   }
+
+  onPhotoSelect(event: any) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const base64Content = e.target.result.replace(/^data:image\/[a-z]+;base64,/, '');
+      
+      this.user.profilePictureUrl = base64Content;
+      
+      this.cdr.detectChanges(); 
+    };
+    reader.readAsDataURL(file);
+  }
+}
 }
   

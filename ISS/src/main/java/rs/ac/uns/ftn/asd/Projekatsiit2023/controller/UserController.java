@@ -53,16 +53,20 @@ public class UserController {
 
         Account account = accountService.findByEmail(email);
 
-        // Menjamo podatke u objektu koji je dosao iz baze
+        String newImageData = updatedData.getProfilePictureUrl();
+        if (newImageData != null && !newImageData.startsWith("http")) {
+            accountService.updateProfilePicture(account.getId().intValue(), newImageData);
+            account = accountService.findByEmail(email);
+        }
+
         account.setFirstName(updatedData.getFirstName());
         account.setLastName(updatedData.getLastName());
         account.setAddress(updatedData.getAddress());
         account.setPhoneNumber(updatedData.getPhoneNumber());
-        account.setProfilePictureUrl(updatedData.getProfilePictureUrl());
 
-        // Cuvamo nazad u bazu
         accountService.save(account);
 
+        updatedData.setProfilePictureUrl(account.getProfilePictureUrl());
         return ResponseEntity.ok(updatedData);
     }
 }

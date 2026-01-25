@@ -18,6 +18,8 @@ export class AuthService {
   private apiUrl = environment.apiUrl;
   private currentUserSubject = new BehaviorSubject<CurrentUser | null>(this.getCurrentUserFromStorage());
   public currentUser$ = this.currentUserSubject.asObservable();
+  private userProfileSource = new BehaviorSubject<any>(null);
+userProfile$ = this.userProfileSource.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -81,4 +83,25 @@ export class AuthService {
   getProfilePictureUrl(): string | null {
     return this.currentUserSubject.value?.profilePictureUrl || null;
   }
+
+  updateUserProfile(user: any) {
+  this.userProfileSource.next(user);
+}
+
+updateUser(user: any) {
+  const currentData = this.currentUserSubject.value;
+  
+  if (currentData) {
+    // pravimo novi objekat gde je sve isto, samo azuriramo sliku
+    const updatedUser: CurrentUser = {
+      ...currentData,
+      profilePictureUrl: user.profilePictureUrl
+    };
+
+    // javljamo Navbaru
+    this.currentUserSubject.next(updatedUser);
+
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+  }
+}
 }
