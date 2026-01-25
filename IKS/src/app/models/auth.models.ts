@@ -12,6 +12,7 @@ export interface RegisterRequest {
   phoneNumber: string;
   city: string;
   userType: string; // "REGISTERED_USER"
+  profilePhoto?: string; // Base64 string, optional
 }
 
 // Response DTOs
