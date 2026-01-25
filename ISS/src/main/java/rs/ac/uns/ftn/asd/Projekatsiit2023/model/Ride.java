@@ -57,7 +57,7 @@ public class Ride {
     @JoinColumn(name = "driver_id")
     private Driver driver;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "route_id")
     private Route route;
 
