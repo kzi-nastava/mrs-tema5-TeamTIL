@@ -33,11 +33,15 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials)
       .pipe(
         tap(response => {
+          console.log('Backend login response:', response);
           const user: CurrentUser = {
             token: response.token,
             userType: response.userType,
-            email: response.email
+            email: response.email,
+            name: response.name || response.email?.split('@')[0] || 'User',
+            profilePictureUrl: response.profilePictureUrl
           };
+          console.log('Saving user to localStorage:', user);
           localStorage.setItem('currentUser', JSON.stringify(user));
           this.currentUserSubject.next(user);
         })
@@ -68,5 +72,13 @@ export class AuthService {
 
   getEmail(): string | null {
     return this.currentUserSubject.value?.email || null;
+  }
+
+  getName(): string | null {
+    return this.currentUserSubject.value?.name || null;
+  }
+
+  getProfilePictureUrl(): string | null {
+    return this.currentUserSubject.value?.profilePictureUrl || null;
   }
 }

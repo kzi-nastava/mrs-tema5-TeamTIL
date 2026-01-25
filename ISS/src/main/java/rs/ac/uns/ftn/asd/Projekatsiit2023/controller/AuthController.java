@@ -45,6 +45,7 @@ public class AuthController {
             );
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            Account account = (Account) userDetails; // DODAJ OVU LINIJU!
 
             String role = userDetails.getAuthorities().iterator().next()
                     .getAuthority().replace("ROLE_", "");
@@ -58,7 +59,8 @@ public class AuthController {
                     token,
                     role,
                     userDetails.getUsername(),
-                    "Login successful"
+                    "Login successful",
+                    account.getProfilePictureUrl()
             );
 
             return ResponseEntity.ok(response);
@@ -67,7 +69,8 @@ public class AuthController {
                     null,
                     null,
                     null,
-                    "Invalid email or password"
+                    "Invalid email or password",
+                    null
             );
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }

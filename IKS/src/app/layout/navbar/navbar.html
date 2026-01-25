@@ -20,16 +20,18 @@
 
   <!-- Prikaz za ulogovane korisnike -->
   <div class="profile-nav" *ngIf="isLoggedIn">
-    <span class="profile-label">Profile</span>
+    <span class="profile-label">{{ userName }}</span>
     <div class="avatar-small-circle" (click)="toggleDropdown()">
-      <i class="fas fa-user"></i>
+      <img *ngIf="profilePhoto" [src]="profilePhoto" alt="Profile" class="profile-image" (error)="onImageError($event)">
+      <i *ngIf="!profilePhoto" class="fas fa-user"></i>
     </div>
 
     <!-- Dropdown Menu -->
     <div class="dropdown-menu" *ngIf="isDropdownOpen" (click)="$event.stopPropagation()">
       <div class="dropdown-header">
         <div class="dropdown-avatar">
-          <i class="fas fa-user"></i>
+          <img *ngIf="profilePhoto" [src]="profilePhoto" alt="Profile" class="profile-image" (error)="onImageError($event)">
+          <i *ngIf="!profilePhoto" class="fas fa-user"></i>
         </div>
         <span class="dropdown-username">{{ userName }}</span>
       </div>
