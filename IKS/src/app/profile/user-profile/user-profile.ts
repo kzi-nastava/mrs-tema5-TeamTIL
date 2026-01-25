@@ -1,32 +1,66 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; 
+import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './user-profile.html',
   styleUrls: ['./user-profile.css'],
 })
-export class UserProfile {
+export class UserProfile implements OnInit {
   isEditMode: boolean = false;
-
-  user = {
-    name: 'Petar',
-    surname: 'Petrovic',
-    email: 'petarpetrovic@gmail.com',
-    address: 'Bulevar despota Stefana 7a, 21000 Novi Sad',
-    phone: '+381 64 123 123'
+  
+  user: any = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    address: '',
+    phoneNumber: ''
   };
 
-  toggleEdit() {
+  constructor(
+    private userService: UserService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+ ngOnInit(): void {
+  // provera da li uopste imamo token pre nego sto zovemo server
+  if (this.userService.hasToken()) { 
+     this.loadUserData();
+  }
+}
+
+  loadUserData(): void {
+    this.userService.getMyProfile().subscribe({
+      next: (data) => {
+        this.user = data;
+        this.cdr.detectChanges(); // osvezavanje prikaza
+      },
+      error: (err) => console.error('Greška pri ucitavanju:', err)
+    });
+  }
+
+  toggleEdit(): void {
     this.isEditMode = true;
   }
 
-  saveChanges() {
-    this.isEditMode = false;
-    // podaci su vec azurirani u this.user objektu zahvaljujuci [(ngModel)]
-    console.log('Novi podaci:', this.user);
+  saveChanges(): void {
+    // provera pre slanja
+    this.userService.updateMyProfile(this.user).subscribe({
+      next: (response) => {
+        this.user = response;
+        this.isEditMode = false;
+        this.cdr.detectChanges();
+        alert('Changes saved successfully!');
+      },
+      error: (err) => {
+        alert(`Failed to save: ${err.status} ${err.statusText}`);
+      }
+    });
   }
 }
+  

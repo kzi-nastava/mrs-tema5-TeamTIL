@@ -65,5 +65,14 @@ public class AccountService implements UserDetailsService {
 
         return accountRepository.save(account);
     }
+
+    public Account findByEmail(String email) {
+        return accountRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+    }
+
+    public Account save(Account account) {
+        return accountRepository.save(account);
+    }
 }
 
