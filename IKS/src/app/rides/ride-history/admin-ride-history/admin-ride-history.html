@@ -37,6 +37,7 @@
           @for (option of filterOptions; track option) {
             <mat-chip-option 
               [selected]="activeFilter === option"
+              [class.panic-chip]="option === 'PANIC'"
               (click)="setActiveFilter(option)">
               {{ option }}
             </mat-chip-option>
@@ -57,7 +58,15 @@
           (click)="selectRide(ride)">
           <mat-card-content>
             <div class="ride-info">
-              <span class="time">{{ ride.date.split(' ')[0] }} {{ ride.date.split(' ')[1] }} {{ ride.date.split(' ')[2] }}, {{ ride.startTime }} - {{ ride.endTime }}</span>
+              <div class="time-row">
+                <span class="time">{{ ride.date.split(' ')[0] }} {{ ride.date.split(' ')[1] }} {{ ride.date.split(' ')[2] }}, {{ ride.startTime }} - {{ ride.endTime }}</span>
+                @if (ride.hasPanic) {
+                <span class="panic-badge">
+                  <mat-icon>warning</mat-icon>
+                  PANIC
+                </span>
+                }
+              </div>
               <div class="route-wrapper">
                 <mat-icon>location_on</mat-icon>
                 <span class="route">{{ ride.from }} → {{ ride.to }}</span>
@@ -86,6 +95,16 @@
       </div>
 
       <div class="details-body">
+        @if (selectedRide.hasPanic) {
+        <div class="panic-alert">
+          <mat-icon>warning</mat-icon>
+          <div class="panic-text">
+            <strong>PANIC ACTIVATED</strong>
+            <span>Emergency alert was triggered during this ride</span>
+          </div>
+        </div>
+        }
+
         <div class="detail-item">
           <label>Start Time</label>
           <p>{{ selectedRide.date }}, {{ selectedRide.startTime }}</p>
