@@ -5,81 +5,71 @@
     
     <div class="card-top-section">
       <div class="user-meta">
-        <div class="avatar-main-circle">
-          <i class="far fa-user"></i>
-        </div>
+        <div class="avatar-main-circle" [class.editable]="isEditMode" (click)="isEditMode && fileInput.click()">
+  <img *ngIf="driver.profilePictureUrl" 
+       [src]="driver.profilePictureUrl.startsWith('http') ? driver.profilePictureUrl : 'data:image/png;base64,' + driver.profilePictureUrl" 
+       class="profile-img-avatar">
+  <i *ngIf="!driver.profilePictureUrl" class="far fa-user"></i>
+
+  <div *ngIf="isEditMode" class="edit-overlay">
+    <i class="fas fa-camera"></i>
+    <span>Change</span>
+  </div>
+
+  <input #fileInput type="file" accept="image/*" (change)="onPhotoSelect($event)" style="display: none;">
+</div>
         <div class="user-name-email">
-          <h2>{{ driver.name }} {{ driver.surname }}</h2>
+          <h2>{{ driver.firstName }} {{ driver.lastName }}</h2>
           <p>{{ driver.email }}</p>
           <p class="hours-active">Hours Active (last 24h): 6 h 30 min</p>
         </div>
       </div>
 
       <div class="card-actions">
-  
-  <button class="edit-btn" 
-    *ngIf="activeTab === 'profile' && !isEditMode" 
-    (click)="toggleEdit()">
-    Edit profile
-  </button>
-  
-  <button 
-    class="status-btn" 
-    [ngClass]="{'active-state': isActive, 'inactive-state': !isActive}"
-    (click)="toggleStatus()">
-    {{ isActive ? 'Active' : 'Inactive' }}
-  </button>
-
-</div>
+        <button class="edit-btn" 
+          *ngIf="activeTab === 'profile' && !isEditMode" 
+          (click)="toggleEdit()">
+          Edit profile
+        </button>
+        
+        <button 
+          class="status-btn" 
+          [ngClass]="{'active-state': isActive, 'inactive-state': !isActive}"
+          (click)="toggleStatus()">
+          {{ isActive ? 'Active' : 'Inactive' }}
+        </button>
+      </div>
     </div>
 
     <div class="profile-tabs-bar">
-      <button 
-        class="tab-item" 
-        [class.active]="activeTab === 'profile'" 
-        (click)="setActiveTab('profile')">
-        Profile info
-      </button>
-      
-      <button 
-        class="tab-item" 
-        [class.active]="activeTab === 'vehicle'" 
-        (click)="setActiveTab('vehicle')">
-        Vehicle Details
-      </button>
+      <button class="tab-item" [class.active]="activeTab === 'profile'" (click)="setActiveTab('profile')">Profile info</button>
+      <button class="tab-item" [class.active]="activeTab === 'vehicle'" (click)="setActiveTab('vehicle')">Vehicle Details</button>
     </div>
 
     <div class="profile-data-form" *ngIf="activeTab === 'profile'">
-      
       <div class="data-row">
         <label>Name</label>
-        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="driver.name">
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="driver.firstName">
       </div>
-
       <div class="data-row">
         <label>Surname</label>
-        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="driver.surname">
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="driver.lastName">
       </div>
-
       <div class="data-row">
         <label>Email</label>
-        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="driver.email">
+        <input class="data-field" readonly [(ngModel)]="driver.email">
       </div>
-
       <div class="data-row">
         <label>Address</label>
         <textarea class="data-field multi-line" [readonly]="!isEditMode" [(ngModel)]="driver.address"></textarea>
       </div>
-
       <div class="data-row">
         <label>Phone number</label>
-        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="driver.phone">
+        <input class="data-field" [readonly]="!isEditMode" [(ngModel)]="driver.phoneNumber">
       </div>
-
       <div class="save-container" *ngIf="isEditMode">
         <button class="save-btn" (click)="saveChanges()">Save changes</button>
       </div>
-
     </div>
 
     <div class="vehicle-details-container" *ngIf="activeTab === 'vehicle'">
@@ -94,36 +84,45 @@
           <div class="info-table">
             <div class="info-row">
               <span class="label">Vehicle model:</span>
-              <span class="value">Kia Sportage</span>
+              <span class="value">{{ driver.vehicleModel }}</span>
             </div>
             <div class="info-row">
               <span class="label">Vehicle type:</span>
-              <span class="value">Standard</span>
+              <span class="value">{{ driver.vehicleType }}</span>
             </div>
             <div class="info-row">
               <span class="label">License plate:</span>
-              <span class="value">NS-123-AB</span>
+              <span class="value">{{ driver.licensePlate }}</span>
             </div>
             <div class="info-row">
               <span class="label">Number of seats:</span>
-              <span class="value">4</span>
+              <span class="value">{{ driver.passengerCapacity }}</span>
             </div>
           </div>
 
           <div class="additional-options-section">
             <h4>Additional options:</h4>
+            
             <div class="option-row">
-              <span class="option-label"><i class="fas fa-check check-icon"></i> Baby transport:</span>
-              <span class="option-value">Yes</span>
+              <span class="option-label">
+                <i *ngIf="driver.babyFriendly" class="fas fa-check check-icon"></i>
+                <i *ngIf="!driver.babyFriendly" class="fas fa-times cross-icon"></i>
+                Baby transport:
+              </span>
+              <span class="option-value">{{ driver.babyFriendly ? 'Yes' : 'No' }}</span>
             </div>
+
             <div class="option-row">
-              <span class="option-label"><i class="fas fa-times cross-icon"></i> Pet friendly:</span>
-              <span class="option-value">No</span>
+              <span class="option-label">
+                <i *ngIf="driver.petFriendly" class="fas fa-check check-icon"></i>
+                <i *ngIf="!driver.petFriendly" class="fas fa-times cross-icon"></i>
+                Pet friendly:
+              </span>
+              <span class="option-value">{{ driver.petFriendly ? 'Yes' : 'No' }}</span>
             </div>
           </div>
         </div>
       </div>
     </div>
-
   </section>
 </main>
