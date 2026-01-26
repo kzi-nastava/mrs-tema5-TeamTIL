@@ -71,7 +71,8 @@ public class WebSecurityConfig {
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/routes/estimate").permitAll() // Dodaj ovu liniju
+                .requestMatchers("/api/routes/estimate").permitAll()
+                .requestMatchers("/auth/forgot-password", "/auth/reset-password/**").permitAll()
                 .anyRequest().authenticated()
         );
 
