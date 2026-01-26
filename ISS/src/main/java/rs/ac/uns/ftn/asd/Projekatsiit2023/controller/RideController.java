@@ -22,6 +22,7 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Route;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.PriceConfigRepository;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RideRepository;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.LocationService;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RideService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
 
 import java.time.LocalDate;
@@ -43,6 +44,8 @@ public class RideController {
     private RouteService routeService;
     @Autowired
     private LocationService locationService;
+    @Autowired
+    private RideService rideService;
 
     @PutMapping("/{rideId}/cancel")
     @Transactional
@@ -94,11 +97,11 @@ public class RideController {
         Route route = ride.getRoute();
 
         VehicleType vehicleType = ride.getDriver().getVehicle().getType();
-        PriceConfig priceConfig = priceConfigRepository.findByVehicleType(vehicleType)
-                .orElseThrow(() -> new RuntimeException("Price config not found"));
-
-        double distanceKm = calculateDistanceKm(ride.getStartLocation(), request.getActualEndLocation());
-        double finalPrice = priceConfig.getBasePrice() + distanceKm * priceConfig.getPricePerKm();
+        double finalPrice = rideService.calculateFinalPrice(
+                vehicleType,
+                ride.getStartLocation(),
+                request.getActualEndLocation()
+        );
 
         Location endLocation = request.getActualEndLocation();
         endLocation.setRoute(route);
@@ -345,22 +348,10 @@ public class RideController {
         List<Ride> rides = rideRepository.findByDriver_EmailAndRideStatusIn(driverEmail, statuses);
 
         List<AssignedRideDTO> result = rides.stream()
-                .map(ride -> new AssignedRideDTO(
-                        ride.getId(),
-                        ride.getPassenger().getEmail(),
-                        ride.getStartLocation().getAddress(),
-                        ride.getEndLocation() != null ? ride.getEndLocation().getAddress() : "",
-                        ride.getRideStatus().name()))
+                .map(rideService::mapRideToDTO)
                 .toList();
 
         return ResponseEntity.ok(result);
     }
 
-    public double calculateDistanceKm(Location start, Location end) {
-        RouteService.RouteEstimation estimation = routeService.estimateRoute(
-                start.getLatitude(), start.getLongitude(),
-                end.getLatitude(), end.getLongitude()
-        );
-        return estimation != null ? estimation.distanceKm : 0.0;
-    }
 }

@@ -55,17 +55,22 @@
           </div>
         </div>
         <div class="ride-meta">
-          <span class="status" [class]="'status-' + ride.status.toLowerCase().replace(' ', '-')">
-            {{ ride.status }}
-          </span>
           @if (ride.status === 'In progress') {
-          <button class="btn-action btn-open" (click)="openRide(ride); $event.stopPropagation()">
-            Open ride
-          </button>
+            <span class="status" [class]="'status-' + ride.status.toLowerCase().replace(' ', '-')">
+              {{ ride.status }}
+            </span>
+            <div class="ride-meta-buttons">
+              <button class="btn-action btn-open" (click)="openRide(ride); $event.stopPropagation()">
+                Open ride
+              </button>
+              <button class="btn-action btn-end" (click)="endRide(ride); $event.stopPropagation()">
+                End ride
+              </button>
+            </div>
           } @else {
-          <button class="btn-action btn-start" (click)="startRide(ride); $event.stopPropagation()">
-            Start ride
-          </button>
+            <button class="btn-action btn-start" (click)="startRide(ride); $event.stopPropagation()">
+              Start ride
+            </button>
           }
         </div>
       </div>
@@ -112,22 +117,22 @@
       </div>
 
       <div class="detail-item">
-        <label>Duration so far</label>
-        <p>{{ selectedRide.duration }}</p>
+        <label>Estimated duration</label>
+        <p>{{ selectedRide.duration }} min</p>
       </div>
 
       <div class="detail-item">
-        <label>Price so far</label>
-        <p>{{ selectedRide.price }} RSD</p>
+        <label>Estimated price</label>
+        <p>{{ selectedRide.price }}</p>
       </div>
 
       <div class="detail-item">
-        <label>Distance so far</label>
+        <label>Estimated distance</label>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
           <circle cx="12" cy="10" r="3"></circle>
         </svg>
-        <p>{{ selectedRide.distance }} km</p>
+        <p>{{ selectedRide.distance }}</p>
       </div>
 
       <hr class="separator" />
@@ -163,9 +168,27 @@
       <button class="btn-primary btn-start-ride" (click)="startRide(selectedRide)">
         Start ride
       </button>
-      <button class="btn-secondary btn-cancel-ride" (click)="cancelRide(selectedRide)">
+      <button class="btn-secondary btn-cancel-ride" (click)="openCancelModal(selectedRide)">
         Cancel ride
       </button>
+
+      <!-- Cancel Ride Modal -->
+      <div class="modal-backdrop" *ngIf="showCancelModal">
+        <div class="modal cancel-modal">
+          <div class="modal-header">
+            <h3>Cancel Ride</h3>
+            <button class="modal-close-btn" (click)="closeCancelModal()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <label for="cancel-reason">Reason for cancellation:</label>
+            <textarea id="cancel-reason" [(ngModel)]="cancelReason" rows="3" placeholder="Enter reason..." autofocus></textarea>
+          </div>
+          <div class="modal-actions">
+            <button class="btn-primary" (click)="confirmCancelRide()" [disabled]="!cancelReason.trim()">Confirm</button>
+            <button class="btn-secondary" (click)="closeCancelModal()">Close</button>
+          </div>
+        </div>
+      </div>
       }
     </div>
     } @else {

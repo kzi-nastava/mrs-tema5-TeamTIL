@@ -1,4 +1,189 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+/* Modal Styles */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30, 18, 34, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal.cancel-modal {
+  background: #2a1a2e;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  padding: 32px 32px 24px 32px;
+  min-width: 340px;
+  max-width: 95vw;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.modal-header h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  color: #ffc107;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: #a098ae;
+  font-size: 28px;
+  cursor: pointer;
+  transition: color 0.2s;
+  margin-left: 12px;
+}
+.modal-close-btn:hover {
+  color: #fff;
+}
+
+.modal-body label {
+  font-size: 15px;
+  color: #a098ae;
+  margin-bottom: 6px;
+  display: block;
+}
+.modal-body textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #ffc107;
+  background: #1e1222;
+  color: #fff;
+  font-size: 15px;
+  padding: 10px;
+  resize: none;
+  font-family: 'Montserrat', sans-serif;
+  margin-top: 4px;
+  margin-bottom: 0;
+  outline: none;
+  transition: border 0.2s;
+}
+.modal-body textarea:focus {
+  border-color: #ffca33;
+}
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.modal-actions .btn-primary {
+  min-width: 110px;
+}
+.modal-actions .btn-secondary {
+  min-width: 90px;
+}
+
+/* Modal Styles */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30, 18, 34, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal.cancel-modal {
+  background: #2a1a2e;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  padding: 32px 32px 24px 32px;
+  min-width: 340px;
+  max-width: 95vw;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.modal-header h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  color: #ffc107;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: #a098ae;
+  font-size: 28px;
+  cursor: pointer;
+  transition: color 0.2s;
+  margin-left: 12px;
+}
+.modal-close-btn:hover {
+  color: #fff;
+}
+
+.modal-body label {
+  font-size: 15px;
+  color: #a098ae;
+  margin-bottom: 6px;
+  display: block;
+}
+.modal-body textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #ffc107;
+  background: #1e1222;
+  color: #fff;
+  font-size: 15px;
+  padding: 10px;
+  resize: none;
+  font-family: 'Montserrat', sans-serif;
+  margin-top: 4px;
+  margin-bottom: 0;
+  outline: none;
+  transition: border 0.2s;
+}
+.modal-body textarea:focus {
+  border-color: #ffca33;
+}
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.modal-actions .btn-primary {
+  min-width: 110px;
+}
+.modal-actions .btn-secondary {
+  min-width: 90px;
+}
 
 .content-wrapper {
   display: flex;
@@ -251,8 +436,15 @@
 
 .ride-meta {
   display: flex;
-  align-items: center;
+  flex-direction: row;
+  align-items: flex-start;
   gap: 16px;
+}
+
+.ride-meta-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .status {
@@ -282,6 +474,9 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   font-weight: 700;
+  padding: 8px 0;
+  min-width: 150px;
+  width: 180px;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
@@ -302,6 +497,15 @@
   color: #3e0046;
 }
 
+.btn-end {
+  background: rgba(55, 29, 68, 0.35);
+  color: #bebebe;
+  border: 1px solid #d1d1d6;
+}
+.btn-end:hover {
+  background: rgba(209, 209, 214, 0.22);
+  color: #111;
+}
 .btn-start:hover {
   background: #ffca33;
   transform: translateY(-2px);

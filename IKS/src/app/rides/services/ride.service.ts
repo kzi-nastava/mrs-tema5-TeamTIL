@@ -11,4 +11,7 @@ export class RideService {
   getAssignedRides(driverEmail: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/assigned?driverEmail=${driverEmail}`);
   }
+  cancelRide(rideId: number, cancellationReason: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${rideId}/cancel`, { cancellationReason });
+  }
 }
