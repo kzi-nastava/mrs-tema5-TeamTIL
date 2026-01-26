@@ -14,7 +14,7 @@ describe('ChangePassword', () => {
 
     fixture = TestBed.createComponent(ChangePassword);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    await fixture.whenStable(); 
   });
 
   it('should create', () => {

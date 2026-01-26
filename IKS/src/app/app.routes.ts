@@ -10,6 +10,8 @@ import { MainLayoutComponent } from './layout/main-layout/main-layout';
 import { authGuard } from './guards/auth.guard';
 import { ChangePasswordComponent } from './change-password/change-password';
 import { NewPasswordComponent } from './new-password/new-password';
+import { DriverRegistrationComponent } from './driver-registration/driver-registration';
+import { VehicleRegistrationComponent } from './vehicle-registration/vehicle-registration';
 
 export const routes: Routes = [
   // Routes with layout (navbar + footer)
@@ -27,6 +29,8 @@ export const routes: Routes = [
       { path: 'admin-profile', component: AdminProfileComponent, canActivate: [authGuard] },
       { path: 'change-password', component: ChangePasswordComponent },
       { path: 'new-password', component: NewPasswordComponent },
+      { path: 'driver-registration', component: DriverRegistrationComponent },
+      { path: 'vehicle-registration', component: VehicleRegistrationComponent },
       // Public routes can be added here (book, favorites, support, etc.)
     ]
   },
