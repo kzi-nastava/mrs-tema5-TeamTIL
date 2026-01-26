@@ -140,7 +140,7 @@ app-map {
     transform: translateX(-50%);
     width: 450px;
     padding: 35px;
-    background-color: #141414;
+    background-color: rgba(0, 0, 0, 0.8);
     border-radius: 40px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     display: flex;
@@ -153,7 +153,8 @@ app-map {
     width: 100%;
     padding: 12px 16px;
     border: 1px solid #FFFFFF88;
-    background-color: #141414;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #FFFFFF;
     font-size: clamp(0.9rem, 1.2vw, 1rem);
     outline: none;
     font-family: Montserrat, sans-serif;
