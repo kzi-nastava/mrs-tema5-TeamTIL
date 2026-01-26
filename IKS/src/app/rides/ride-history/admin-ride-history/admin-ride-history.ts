@@ -19,12 +19,13 @@ interface Ride {
   from: string;
   to: string;
   price: string;
-  status: 'Completed' | 'Canceled';
+  status: 'Completed' | 'Canceled' | 'Panic';
   date: string;
   duration?: string;
   distance?: string;
   driver?: { name: string; phone: string };
   passenger?: { name: string; phone: string };
+  hasPanic?: boolean;
 }
 
 @Component({
@@ -48,7 +49,7 @@ interface Ride {
   styleUrl: './admin-ride-history.css',
 })
 export class AdminRideHistory {
-  filterOptions = ['All', 'Last 7 days', 'Last month', 'Completed only', 'Cancelled only'];
+  filterOptions = ['All', 'Last 7 days', 'Last month', 'Completed only', 'Cancelled only', 'PANIC'];
   activeFilter = 'All';
   dateFrom: Date | null = null;
   dateTo: Date | null = null;
@@ -125,6 +126,36 @@ export class AdminRideHistory {
       driver: { name: 'Mike Johnson', phone: '+381 125 456 781' },
       passenger: { name: 'Sarah Wilson', phone: '+381 123 456 781' },
     },
+    {
+      id: 6,
+      date: '15 March 2025',
+      startTime: '22:15',
+      endTime: '22:30',
+      from: 'Bulevar Cara Lazara',
+      to: 'Liman',
+      price: '850',
+      status: 'Completed',
+      duration: '15 min',
+      distance: '3.2 km',
+      driver: { name: 'Alex Turner', phone: '+381 125 456 782' },
+      passenger: { name: 'Emma Watson', phone: '+381 123 456 782' },
+      hasPanic: true,
+    },
+    {
+      id: 7,
+      date: '13 March 2025',
+      startTime: '19:45',
+      endTime: '20:10',
+      from: 'Novi Sad',
+      to: 'Sremska Kamenica',
+      price: '1,100',
+      status: 'Completed',
+      duration: '25 min',
+      distance: '6.5 km',
+      driver: { name: 'Chris Evans', phone: '+381 125 456 783' },
+      passenger: { name: 'Tom Hardy', phone: '+381 123 456 783' },
+      hasPanic: true,
+    },
   ];
 
   rides: Ride[] = [...this.allRides];
@@ -167,6 +198,16 @@ export class AdminRideHistory {
       case 'Cancelled only':
         this.selectedStatus = 'canceled';
         this.applyFilters();
+        break;
+        
+      case 'PANIC':
+        this.dateFrom = null;
+        this.dateTo = null;
+        this.selectedStatus = '';
+        this.rides = this.allRides.filter(ride => ride.hasPanic === true);
+        if (this.selectedRide && !this.rides.find(r => r.id === this.selectedRide?.id)) {
+          this.selectedRide = this.rides.length > 0 ? this.rides[0] : null;
+        }
         break;
     }
   }

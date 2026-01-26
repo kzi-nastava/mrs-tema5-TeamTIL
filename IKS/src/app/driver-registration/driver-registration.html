@@ -1,0 +1,84 @@
+<div class="admin-form-container">
+  <h2 class="register-title">Driver Registration</h2>
+
+  <div class="auth-card">
+    <form [formGroup]="registerForm" class="register-form">
+      <div class="form-row">
+        <div class="input-group half-width">
+          <label class="input-label">Name</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput type="text" formControlName="name" />
+            <mat-error *ngIf="f['name'].errors?.['required']">Name is required</mat-error>
+          </mat-form-field>
+        </div>
+        <div class="input-group half-width">
+          <label class="input-label">Email</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput type="email" formControlName="email" />
+            <mat-error *ngIf="f['email'].errors?.['required']">Email is required</mat-error>
+            <mat-error *ngIf="f['email'].errors?.['email']">Invalid email format</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group half-width">
+          <label class="input-label">Surname</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput type="text" formControlName="surname" />
+            <mat-error *ngIf="f['surname'].errors?.['required']">Surname is required</mat-error>
+          </mat-form-field>
+        </div>
+        <div class="input-group half-width">
+          <label class="input-label">Phone number</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput type="tel" formControlName="phoneNumber" />
+            <mat-error *ngIf="f['phoneNumber'].errors?.['required']">Phone number is required</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group full-width">
+          <label class="input-label">Address</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput type="text" formControlName="address" />
+            <mat-error *ngIf="f['address'].errors?.['required']">Address is required</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group full-width">
+          <div class="photo-section">
+            <label class="photo-label">Profile photo</label>
+            <div class="photo-upload-container">
+              <div class="photo-preview">
+                <img *ngIf="photoPreview" [src]="photoPreview" alt="Profile preview" class="preview-image">
+                <div *ngIf="!photoPreview" class="photo-placeholder">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+              </div>
+              <div class="photo-buttons">
+                <button type="button" class="insert-photo-btn" (click)="fileInput.click()">
+                  Insert photo
+                </button>
+                <button type="button" class="remove-photo-btn" (click)="onRemovePhoto()" [disabled]="!selectedPhoto">
+                  Remove photo
+                </button>
+              </div>
+              <input #fileInput type="file" accept="image/*" (change)="onPhotoSelect($event)" style="display: none;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="register-btn" [disabled]="registerForm.invalid" (click)="onNext()">
+        Next
+      </button>
+    </form>
+  </div>
+</div>

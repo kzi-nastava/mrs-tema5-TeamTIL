@@ -1,17 +1,28 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.InconsistencyReportRequestDTO;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideRatingRequestDTO;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideRequestDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.InconsistencyReportResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideCancelResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideEstimationResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideRatingResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStopResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideTrackingDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RideStatus;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.VehicleType;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Location;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.PriceConfig;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Ride;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Route;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.PriceConfigRepository;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RideRepository;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.service.LocationService;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -23,71 +34,98 @@ import java.util.List;
 @RequestMapping("/api/rides")
 public class RideController {
 
-    @GetMapping("/estimate")
-    public ResponseEntity<RideEstimationResponseDTO> getRideEstimation(
-            @RequestParam String pickupAddress,
-            @RequestParam String destinationAddress,
-            @RequestParam(defaultValue = "STANDARD") String vehicleType) {
+    @Autowired
+    private RideRepository rideRepository;
+    @Autowired
+    private PriceConfigRepository priceConfigRepository;
 
-        double distance = Math.random() * 20 + 5; // 5-25 km
-        double basePrice = distance * 120; // 120 din per km
-
-        double multiplier = switch (vehicleType.toUpperCase()) {
-            case "STANDARD" -> 1.0;
-            case "LUXURY" -> 1.5;
-            case "VAN" -> 1.3;
-            default -> 1.0;
-        };
-
-        double finalPrice = basePrice * multiplier;
-        String estimatedTime = String.format("%d min", (int) (distance * 2 + 5));
-
-        RideEstimationResponseDTO response = new RideEstimationResponseDTO(
-                estimatedTime,
-                Math.round(distance * 100.0) / 100.0,
-                Math.round(finalPrice * 100.0) / 100.0,
-                vehicleType);
-
-        return ResponseEntity.ok(response);
-    }
+    @Autowired
+    private RouteService routeService;
+    @Autowired
+    private LocationService locationService;
 
     @PutMapping("/{rideId}/cancel")
+    @Transactional
     public ResponseEntity<RideCancelResponseDTO> cancelRide(
-            @PathVariable Long rideId,
-            @RequestParam(required = false) String reason) {
+            @PathVariable Integer rideId,
+            @RequestBody(required = false) RideCancelRequestDTO request) {
 
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
 
+        // Pronađi vožnju iz baze
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+
+        // Postavi razlog otkazivanja
+        String reason = (request != null && request.getCancellationReason() != null)
+                ? request.getCancellationReason()
+                : "User cancelled";
+
+        // Ažuriraj status i razlog
+        ride.setRideStatus(RideStatus.CANCELED);
+        ride.setCancellationReason(reason);
+
+        // Sačuvaj promene u bazi
+        rideRepository.save(ride);
+
         RideCancelResponseDTO response = new RideCancelResponseDTO(
                 rideId,
                 "CANCELLED",
-                reason != null ? reason : "User cancelled",
+                reason,
                 "Ride cancelled successfully");
 
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{rideId}/stop")
+    @Transactional
     public ResponseEntity<RideStopResponseDTO> stopRide(
-            @PathVariable Long rideId,
-            @RequestParam(required = false) String location) {
+            @PathVariable Integer rideId,
+            @RequestBody RideStopRequestDTO request) {
 
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
 
-        double finalPrice = Math.random() * 2000 + 500; // 500-2500 din
-        String duration = String.format("%d min", (int) (Math.random() * 30 + 10)); // 10-40 min
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+        Route route = ride.getRoute();
+
+        VehicleType vehicleType = ride.getDriver().getVehicle().getType();
+        PriceConfig priceConfig = priceConfigRepository.findByVehicleType(vehicleType)
+                .orElseThrow(() -> new RuntimeException("Price config not found"));
+
+        double distanceKm = calculateDistanceKm(ride.getStartLocation(), request.getActualEndLocation());
+        double finalPrice = priceConfig.getBasePrice() + distanceKm * priceConfig.getPricePerKm();
+
+        Location endLocation = request.getActualEndLocation();
+        endLocation.setRoute(route);
+
+        endLocation = locationService.findOrSaveLocation(endLocation, route);
+
+        if (endLocation != null) {
+            route.getLocations().add(endLocation);
+        }
+        routeService.save(route);
+
+        ride.setRideStatus(RideStatus.FINISHED);
+        ride.setEndLocation(endLocation);
+        ride.setEndTime(request.getActualEndTime());
+        ride.setTotalPrice(finalPrice);
+        ride.setRoute(route);
+
+        rideRepository.save(ride);
 
         RideStopResponseDTO response = new RideStopResponseDTO(
                 rideId,
                 "COMPLETED",
-                location != null ? location : "Destination reached",
+                endLocation.getAddress(),
                 Math.round(finalPrice * 100.0) / 100.0,
-                duration,
-                "Ride completed successfully");
+                "duration",
+                "Ride completed successfully"
+        );
 
         return ResponseEntity.ok(response);
     }
@@ -223,27 +261,27 @@ public class RideController {
     }
 
     // 2.7 Complete the ride
-    @PutMapping("/{rideId}/complete")
-    public ResponseEntity<RideStopResponseDTO> completeRide(
-            @PathVariable Long rideId,
-            @RequestParam(required = false) String finalLocation) {
-
-        if (rideId <= 0) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        double finalPrice = Math.random() * 2000 + 500; // 500-2500 din
-        String duration = String.format("%d min", (int) (Math.random() * 30 + 10)); // 10-40 min
-
-        RideStopResponseDTO response = new RideStopResponseDTO(
-                rideId,
-                "COMPLETED",
-                finalLocation != null ? finalLocation : "Destination reached",
-                Math.round(finalPrice * 100.0) / 100.0,
-                duration,
-                "Ride completed and paid successfully");
-        return ResponseEntity.ok(response);
-    }
+//    @PutMapping("/{rideId}/complete")
+//    public ResponseEntity<RideStopResponseDTO> completeRide(
+//            @PathVariable Long rideId,
+//            @RequestParam(required = false) String finalLocation) {
+//
+//        if (rideId <= 0) {
+//            return ResponseEntity.badRequest().build();
+//        }
+//
+//        double finalPrice = Math.random() * 2000 + 500; // 500-2500 din
+//        String duration = String.format("%d min", (int) (Math.random() * 30 + 10)); // 10-40 min
+//
+//        RideStopResponseDTO response = new RideStopResponseDTO(
+//                rideId,
+//                "COMPLETED",
+//                finalLocation != null ? finalLocation : "Destination reached",
+//                Math.round(finalPrice * 100.0) / 100.0,
+//                duration,
+//                "Ride completed and paid successfully");
+//        return ResponseEntity.ok(response);
+//    }
 
     // 2.8 Rate ride, driver and vehicle
     @PostMapping("/{rideId}/rate")
@@ -299,5 +337,30 @@ public class RideController {
         ridesHistory.sort((r1, r2) -> r2.getCreatedAt().compareTo(r1.getCreatedAt()));
 
         return ResponseEntity.ok(ridesHistory);
+    }
+
+    @GetMapping("/assigned")
+    public ResponseEntity<List<AssignedRideDTO>> getAssignedRides(@RequestParam String driverEmail) {
+        List<RideStatus> statuses = List.of(RideStatus.IN_PROGRESS, RideStatus.REQUESTED);
+        List<Ride> rides = rideRepository.findByDriver_EmailAndRideStatusIn(driverEmail, statuses);
+
+        List<AssignedRideDTO> result = rides.stream()
+                .map(ride -> new AssignedRideDTO(
+                        ride.getId(),
+                        ride.getPassenger().getEmail(),
+                        ride.getStartLocation().getAddress(),
+                        ride.getEndLocation() != null ? ride.getEndLocation().getAddress() : "",
+                        ride.getRideStatus().name()))
+                .toList();
+
+        return ResponseEntity.ok(result);
+    }
+
+    public double calculateDistanceKm(Location start, Location end) {
+        RouteService.RouteEstimation estimation = routeService.estimateRoute(
+                start.getLatitude(), start.getLongitude(),
+                end.getLatitude(), end.getLongitude()
+        );
+        return estimation != null ? estimation.distanceKm : 0.0;
     }
 }

@@ -5,16 +5,50 @@
   </div>
 
   <nav class="nav-links">
-    <a routerLink="/book" routerLinkActive="active">Book an Uber</a>
-    <a routerLink="/user-ride-history" routerLinkActive="active">Ride History</a>
-    <a routerLink="/favorites" routerLinkActive="active">Favorite rides</a>
-    <a routerLink="/support" routerLinkActive="active">Support</a>
+    <a *ngFor="let link of navLinks" 
+       [routerLink]="link.route" 
+       routerLinkActive="active">
+      {{ link.label }}
+    </a>
   </nav>
 
-  <div class="profile-nav">
-    <span class="profile-label">Profile</span>
-    <div class="avatar-small-circle" routerLink="/user-profile">
-      <i class="fas fa-user"></i>
+  <!-- Prikaz za neregistrovane korisnike -->
+  <div class="auth-buttons" *ngIf="!isLoggedIn">
+    <button class="btn-login" routerLink="/login">Log in</button>
+    <button class="btn-register" routerLink="/register">Register</button>
+  </div>
+
+  <!-- Prikaz za ulogovane korisnike -->
+  <div class="profile-nav" *ngIf="isLoggedIn">
+    <span class="profile-label">{{ userName }}</span>
+    <div class="avatar-small-circle" (click)="toggleDropdown()">
+      <img *ngIf="profilePhoto" [src]="profilePhoto" alt="Profile" class="profile-image" (error)="onImageError($event)">
+      <i *ngIf="!profilePhoto" class="fas fa-user"></i>
+    </div>
+
+    <!-- Dropdown Menu -->
+    <div class="dropdown-menu" *ngIf="isDropdownOpen" (click)="$event.stopPropagation()">
+      <div class="dropdown-header">
+        <div class="dropdown-avatar">
+          <img *ngIf="profilePhoto" [src]="profilePhoto" alt="Profile" class="profile-image" (error)="onImageError($event)">
+          <i *ngIf="!profilePhoto" class="fas fa-user"></i>
+        </div>
+        <span class="dropdown-username">{{ userName }}</span>
+      </div>
+      <div class="dropdown-divider"></div>
+      <div class="dropdown-items">
+        <a *ngFor="let item of menuItems" 
+           class="dropdown-item"
+           [routerLink]="item.route"
+           (click)="onMenuItemClick(item)"
+           [class.logout-item]="item.label === 'Log out'">
+          <i [class]="item.icon"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      </div>
     </div>
   </div>
 </header>
+
+<!-- Overlay za zatvaranje dropdown-a -->
+<div class="dropdown-overlay" *ngIf="isDropdownOpen" (click)="closeDropdown()"></div>

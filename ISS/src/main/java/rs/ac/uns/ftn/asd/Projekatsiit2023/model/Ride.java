@@ -57,7 +57,7 @@ public class Ride {
     @JoinColumn(name = "driver_id")
     private Driver driver;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "route_id")
     private Route route;
 
@@ -72,8 +72,8 @@ public class Ride {
     @OneToOne(mappedBy = "ride")
     private Rating rating;
 
-    @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL)
-    private List<PanicNotification> panicNotifications = new ArrayList<>();
+//    @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL)
+//    private List<PanicNotification> panicNotifications = new ArrayList<>();
 
     @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL)
     private List<InconsistencyReport> inconsistencyReports = new ArrayList<>();

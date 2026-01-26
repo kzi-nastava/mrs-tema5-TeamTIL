@@ -67,6 +67,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  position: relative;
 }
 
 .profile-label {
@@ -93,4 +94,173 @@
 .avatar-small-circle:hover {
   transform: scale(1.05);
   background-color: #6d3a8a;
+}
+
+.avatar-small-circle .profile-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute;
+  top: 70px;
+  right: 0;
+  width: 320px;
+  background: linear-gradient(to bottom, #45104c 0%, #000 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px 20px;
+}
+
+.dropdown-avatar {
+  width: 50px;
+  height: 50px;
+  background-color: #FFB800;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #3e0046;
+  font-size: 24px;
+  overflow: hidden;
+}
+
+.dropdown-avatar .profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dropdown-username {
+  font-family: 'RollerScript', cursive;
+  font-size: 28px;
+  color: #ffffff;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #FFB800;
+  margin: 0 20px;
+}
+
+.dropdown-items {
+  padding: 15px 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 20px;
+  color: #ffffff;
+  text-decoration: none;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 193, 7, 0.1);
+}
+
+.dropdown-item i {
+  font-size: 22px;
+  color: #ffc107;
+  width: 28px;
+  text-align: center;
+}
+
+.dropdown-item.logout-item {
+  margin: 10px 20px 15px 20px;
+  padding: 12px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  background: #ffc107;
+  color: #3e0046;
+  border-radius: 8px;
+  font-weight: 700;
+  gap: 10px;
+}
+
+.dropdown-item.logout-item i {
+  color: #3e0046;
+}
+
+.dropdown-item.logout-item:hover {
+  background: #ffca33;
+  transform: translateY(-1px);
+}
+
+.dropdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  z-index: 999;
+}
+
+/* Auth buttons za neregistrovane korisnike */
+.auth-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-login,
+.btn-register {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+}
+
+.btn-login {
+  background-color: transparent;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+
+.btn-login:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-register {
+  background-color: #FFB800;
+  color: #000000;
+}
+
+.btn-register:hover {
+  background-color: #ffc933;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 184, 0, 0.4);
 }
