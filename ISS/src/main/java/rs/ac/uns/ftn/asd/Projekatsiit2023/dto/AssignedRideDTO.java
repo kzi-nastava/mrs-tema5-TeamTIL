@@ -15,4 +15,9 @@ public class AssignedRideDTO {
     private String startLocation;
     private String endLocation;
     private String status;
+    private String startTime;
+    private String estimatedEndTime;
+    private Double price;
+    private Double distance;
+    private Double duration;
 }
