@@ -26,6 +26,11 @@ userProfile$ = this.userProfileSource.asObservable();
     private router: Router
   ) {}
 
+
+  sendPasswordResetEmail(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/forgot-password`, { email: email });
+  }
+
   private oldPasswordTemp: string = '';
 
   setOldPassword(password: string) {

@@ -8,7 +8,7 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.service.PasswordResetService;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class PasswordResetController {
 
     private final PasswordResetService passwordResetService;
