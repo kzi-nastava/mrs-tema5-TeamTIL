@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -25,6 +25,32 @@ userProfile$ = this.userProfileSource.asObservable();
     private http: HttpClient,
     private router: Router
   ) {}
+
+  private oldPasswordTemp: string = '';
+
+  setOldPassword(password: string) {
+    this.oldPasswordTemp = password;
+  }
+
+  getOldPassword() {
+    return this.oldPasswordTemp;
+  }
+
+  changePassword(oldPassword: string, newPassword: string): Observable<any> {
+  const token = this.getToken();
+  
+  const headers = new HttpHeaders({
+    'Authorization': `Bearer ${token}`
+  });
+
+  return this.http.put(`${this.apiUrl}/users/change-password`, {
+    oldPassword: oldPassword,
+    newPassword: newPassword
+  }, { 
+    headers: headers, 
+    responseType: 'text' as 'json' 
+  });
+}
 
   private getCurrentUserFromStorage(): CurrentUser | null {
     const userJson = localStorage.getItem('currentUser');

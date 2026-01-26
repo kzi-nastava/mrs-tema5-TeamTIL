@@ -69,6 +69,7 @@ export class NavbarComponent implements OnInit {
             { label: 'View Profile', route: '/admin-profile', icon: 'fas fa-user' },
             { label: 'Ride History', route: '/admin-ride-history', icon: 'fas fa-calendar-alt' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },
+            { label: 'Change Password', route: '/change-password', icon: 'fas fa-key' },
             { label: 'Log out', icon: 'fas fa-sign-out-alt', action: () => this.logout() }
           ];
           break;
@@ -86,6 +87,7 @@ export class NavbarComponent implements OnInit {
             { label: 'Ride History', route: '/driver-history', icon: 'fas fa-calendar-alt' },
             { label: 'My Vehicle', route: '/my-vehicle', icon: 'fas fa-car' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },
+            { label: 'Change Password', route: '/change-password', icon: 'fas fa-key' },
             { label: 'Log out', icon: 'fas fa-sign-out-alt', action: () => this.logout() }
           ];
           break;
@@ -103,6 +105,7 @@ export class NavbarComponent implements OnInit {
             { label: 'Ride History', route: '/user-ride-history', icon: 'fas fa-calendar-alt' },
             { label: 'Favorite Rides', route: '/favorites', icon: 'fas fa-star' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },
+            { label: 'Change Password', route: '/change-password', icon: 'fas fa-key' },
             { label: 'Log out', icon: 'fas fa-sign-out-alt', action: () => this.logout() }
           ];
       }

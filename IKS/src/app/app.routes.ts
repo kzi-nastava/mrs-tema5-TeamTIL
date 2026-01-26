@@ -8,6 +8,8 @@ import { AdminRideHistory } from './rides/ride-history/admin-ride-history/admin-
 import { AssignedRides } from './rides/assigned-rides/assigned-rides';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
 import { authGuard } from './guards/auth.guard';
+import { ChangePasswordComponent } from './change-password/change-password';
+import { NewPasswordComponent } from './new-password/new-password';
 
 export const routes: Routes = [
   // Routes with layout (navbar + footer)
@@ -23,6 +25,8 @@ export const routes: Routes = [
       { path: 'user-profile', component: UserProfile, canActivate: [authGuard] },
       { path: 'driver-profile', component: DriverProfileComponent, canActivate: [authGuard] },
       { path: 'admin-profile', component: AdminProfileComponent, canActivate: [authGuard] },
+      { path: 'change-password', component: ChangePasswordComponent },
+      { path: 'new-password', component: NewPasswordComponent },
       // Public routes can be added here (book, favorites, support, etc.)
     ]
   },
