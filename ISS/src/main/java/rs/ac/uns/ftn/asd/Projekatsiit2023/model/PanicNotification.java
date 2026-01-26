@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
 
 @Setter
 @Getter
@@ -25,8 +26,11 @@ public class PanicNotification extends Notification {
     @ManyToOne
     @JoinColumn(name = "driver_id")
     private Driver driver;
+//
+//    @ManyToOne
+//    @JoinColumn(name = "ride_id")
+//    private Ride ride;
 
-    @ManyToOne
-    @JoinColumn(name = "ride_id")
-    private Ride ride;
+    @Enumerated(EnumType.STRING)
+    private UserType reportedBy;
 }
