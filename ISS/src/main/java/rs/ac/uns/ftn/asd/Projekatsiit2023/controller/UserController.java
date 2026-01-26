@@ -69,4 +69,18 @@ public class UserController {
         updatedData.setProfilePictureUrl(account.getProfilePictureUrl());
         return ResponseEntity.ok(updatedData);
     }
+
+    @PutMapping("/change-password")
+    @PreAuthorize("hasAnyRole('REGISTERED_USER', 'ADMINISTRATOR', 'DRIVER')")
+    public ResponseEntity<String> changePassword(@RequestBody rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.ChangePasswordRequestDTO request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName(); // uzimamo email iz tokena ulogovanog korisnika
+
+        try {
+            accountService.changePassword(email, request.getOldPassword(), request.getNewPassword());
+            return ResponseEntity.ok("Password successfully changed");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
