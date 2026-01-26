@@ -1,5 +1,6 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -8,9 +9,18 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Route;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RouteRepository;
 
 @Service
 public class RouteService {
+
+    private final RouteRepository routeRepository;
+
+    @Autowired
+    public RouteService(RouteRepository routeRepository) {
+        this.routeRepository = routeRepository;
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(RouteService.class);
 
@@ -54,5 +64,9 @@ public class RouteService {
             this.distanceKm = distanceKm;
             this.durationMin = durationMin;
         }
+    }
+
+    public Route save(Route route) {
+        return routeRepository.save(route);
     }
 }
