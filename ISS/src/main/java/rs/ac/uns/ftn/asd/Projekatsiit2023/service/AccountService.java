@@ -92,4 +92,28 @@ public class AccountService implements UserDetailsService {
         String fileName = parts[parts.length - 1];
         return "tiltaxi/profiles/" + fileName.substring(0, fileName.lastIndexOf('.'));
     }
+
+    public Account findByEmail(String email) {
+        return accountRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+    }
+
+    public Account save(Account account) {
+        return accountRepository.save(account);
+    }
+
+    @Transactional
+    public void changePassword(String email, String oldPassword, String newPassword) {
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // provera da li se stara lozinka poklapa sa onom u bazi
+        if (!passwordEncoder.matches(oldPassword, account.getPassword())) {
+            throw new RuntimeException("Old password is incorrect");
+        }
+
+        // hashovanje nove lozinke i cuvanje
+        account.setPassword(passwordEncoder.encode(newPassword));
+        accountRepository.save(account);
+    }
 }

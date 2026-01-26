@@ -13,4 +13,7 @@ public class UserResponseDTO {
     private String phoneNumber;
     private String address;
     private String profilePictureUrl;
+
+    public UserResponseDTO() {
+    }
 }

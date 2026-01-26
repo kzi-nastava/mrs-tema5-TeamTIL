@@ -6,7 +6,6 @@ import lombok.Setter;
 @Setter
 @Getter
 public class RideCancelResponseDTO {
-    // Getters and setters
     private Integer rideId;
     private String status;
     private String cancellationReason;

@@ -71,6 +71,7 @@ public class WebSecurityConfig {
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/routes/estimate").permitAll() // Dodaj ovu liniju
                 .anyRequest().authenticated()
         );
 
