@@ -39,16 +39,20 @@ public class RideController {
             return ResponseEntity.badRequest().build();
         }
 
+        // Pronađi vožnju iz baze
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
 
+        // Postavi razlog otkazivanja
         String reason = (request != null && request.getCancellationReason() != null)
                 ? request.getCancellationReason()
                 : "User cancelled";
 
+        // Ažuriraj status i razlog
         ride.setRideStatus(RideStatus.CANCELED);
         ride.setCancellationReason(reason);
 
+        // Sačuvaj promene u bazi
         rideRepository.save(ride);
 
         RideCancelResponseDTO response = new RideCancelResponseDTO(
