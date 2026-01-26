@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { RideService } from '../services/ride.service';
+import { AuthService } from '../../services/auth.service';
 
 interface Ride {
   id: number;
@@ -23,52 +25,38 @@ type TabFilter = 'Today' | 'Next 7 days' | 'All upcoming';
   templateUrl: './assigned-rides.html',
   styleUrl: './assigned-rides.css',
 })
-export class AssignedRides {
+export class AssignedRides implements OnInit {
   tabs: TabFilter[] = ['Today', 'Next 7 days', 'All upcoming'];
   activeTab: TabFilter = 'Today';
   
-  rides: Ride[] = [
-    {
-      id: 1,
-      date: '23 Dec 2025',
-      startTime: '15:32',
-      approximatedEndTime: '16:05',
-      from: 'Stražilovska',
-      to: 'Bulevar Kralja Petra I',
-      price: '1,230',
-      distance: '7.5',
-      duration: '28 min',
-      status: 'In progress',
-      passenger: { name: 'John Doe', phone: '+381 123 456 789' },
-    },
-    {
-      id: 2,
-      date: '23 Dec 2025',
-      startTime: '16:15',
-      approximatedEndTime: '16:45',
-      from: 'Stražilovska',
-      to: 'Bulevar Kralja Petra I',
-      price: '1,230',
-      distance: '7.5',
-      duration: '28 min',
-      status: 'Upcoming',
-      nextRideIn: '15 minutes',
-      passenger: { name: 'John Doe', phone: '+381 123 456 789' },
-    },
-    {
-      id: 3,
-      date: '23 Dec 2025',
-      startTime: '17:32',
-      approximatedEndTime: '18:05',
-      from: 'Stražilovska',
-      to: 'Bulevar Kralja Petra I',
-      price: '1,230',
-      distance: '7.5',
-      duration: '28 min',
-      status: 'Upcoming',
-      passenger: { name: 'John Doe', phone: '+381 123 456 789' },
-    },
-  ];
+  rides: Ride[] = [];
+  constructor(private rideService: RideService, private authService: AuthService) {}
+
+  ngOnInit(): void {
+    this.authService.currentUser$.subscribe(user => {
+      if (user && user.userType === 'DRIVER') {
+        this.rideService.getAssignedRides(user.email).subscribe({
+          next: (ridesFromBackend) => {
+            this.rides = ridesFromBackend.map((ride: any) => ({
+              id: ride.id,
+              from: ride.startLocation || '-',
+              to: ride.endLocation || '-',
+              price: ride.price || '-',
+              status: ride.status === 'IN_PROGRESS' ? 'In progress' : 'Upcoming',
+              date: ride.date || '',
+              startTime: ride.startTime || '',
+              approximatedEndTime: ride.approximatedEndTime || '',
+              distance: ride.distance || '-',
+              duration: ride.duration || '-',
+              nextRideIn: ride.nextRideIn || '',
+              passenger: { name: ride.passengerEmail || '-', phone: ride.passengerPhone || '' }
+            }));
+          },
+          error: (err) => console.error('Greška pri dohvatanju vožnji:', err)
+        });
+      }
+    });
+  }
 
   selectedRide: Ride | null = null;
 

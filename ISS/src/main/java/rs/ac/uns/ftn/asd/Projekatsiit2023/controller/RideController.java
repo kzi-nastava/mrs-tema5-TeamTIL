@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.InconsistencyReportResponseDTO;
@@ -336,6 +337,23 @@ public class RideController {
         ridesHistory.sort((r1, r2) -> r2.getCreatedAt().compareTo(r1.getCreatedAt()));
 
         return ResponseEntity.ok(ridesHistory);
+    }
+
+    @GetMapping("/assigned")
+    public ResponseEntity<List<AssignedRideDTO>> getAssignedRides(@RequestParam String driverEmail) {
+        List<RideStatus> statuses = List.of(RideStatus.IN_PROGRESS, RideStatus.REQUESTED);
+        List<Ride> rides = rideRepository.findByDriver_EmailAndRideStatusIn(driverEmail, statuses);
+
+        List<AssignedRideDTO> result = rides.stream()
+                .map(ride -> new AssignedRideDTO(
+                        ride.getId(),
+                        ride.getPassenger().getEmail(),
+                        ride.getStartLocation().getAddress(),
+                        ride.getEndLocation() != null ? ride.getEndLocation().getAddress() : "",
+                        ride.getRideStatus().name()))
+                .toList();
+
+        return ResponseEntity.ok(result);
     }
 
     public double calculateDistanceKm(Location start, Location end) {
