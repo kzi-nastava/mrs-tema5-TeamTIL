@@ -1,0 +1,60 @@
+<div class="admin-form-container">
+  <h2 class="register-title">Vehicle Registration</h2>
+
+  <div class="auth-card">
+    <form [formGroup]="vehicleForm" class="register-form">
+      
+      <div class="form-row">
+        <div class="input-group half-width">
+          <label class="input-label">Model</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput placeholder="e.g. Kia Sportage" formControlName="model" />
+          </mat-form-field>
+        </div>
+        <div class="input-group half-width">
+          <label class="input-label">License Plate</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput placeholder="NS-123-AB" formControlName="plate" />
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group half-width">
+          <label class="input-label">Vehicle Type</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-select formControlName="type">
+              <mat-option value="STANDARD">Standard</mat-option>
+              <mat-option value="LUXURY">Luxury</mat-option>
+              <mat-option value="VAN">Van</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="input-group half-width">
+          <label class="input-label">Number of Seats</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input matInput type="number" formControlName="seats" min="1" />
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="input-group half-width">
+          <mat-checkbox formControlName="babyFriendly" class="white-check">Baby Friendly</mat-checkbox>
+        </div>
+        <div class="input-group half-width">
+          <mat-checkbox formControlName="petFriendly" class="white-check">Pet Friendly</mat-checkbox>
+        </div>
+      </div>
+
+      <div class="form-row button-row">
+  <button type="button" class="back-btn" (click)="onBack()">Back</button>
+  
+  <button type="button" class="register-btn" [disabled]="vehicleForm.invalid" (click)="onSubmit()">
+    Finish
+  </button>
+</div>
+
+    </form>
+  </div>
+</div>

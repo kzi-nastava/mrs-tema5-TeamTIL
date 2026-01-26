@@ -12,6 +12,7 @@ public class DriverRegistrationRequestDTO {
     private String email;
     private String phoneNumber;
     private String address;
+    private String profilePictureUrl;
 
     private String vehicleModel;
     private VehicleType vehicleType;

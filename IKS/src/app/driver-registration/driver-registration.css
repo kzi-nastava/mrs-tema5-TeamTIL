@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@font-face {
+  font-family: 'RollerScript';
+  src: url('/fonts/fonnts.com-rollerscript-rough.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TacticSans';
+  src: url('/fonts/fonnts.com-tacticsans-med.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+:host {
+  display: block;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+}
+
+
+.admin-form-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  gap: 20px;
+}
+
+
+.auth-card {
+  width: 600px;
+  background: rgba(217, 217, 217, 0.5);
+  backdrop-filter: blur(10px);
+  padding: 40px;
+  border-radius: 20px;
+  border: 1px solid rgb(255, 255, 255);
+}
+
+.register-title {
+  font-family: 'TacticSans', 'Inter', 'Poppins', sans-serif;
+  font-size: 45px;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-row {
+  display: flex;
+  gap: 18px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group.half-width { flex: 1; }
+.input-group.full-width { width: 100%; }
+
+.input-label {
+  display: block;
+  color: white;
+  font-size: 14px;
+  margin-bottom: 6px;
+  font-weight: 400;
+}
+
+
+::ng-deep .mat-mdc-text-field-wrapper {
+  background-color: white !important;
+  border-radius: 12px !important;
+}
+
+::ng-deep .mat-mdc-form-field-flex {
+  height: 44px !important;
+  align-items: center !important;
+}
+
+::ng-deep .mdc-notched-outline__leading,
+::ng-deep .mdc-notched-outline__notch,
+::ng-deep .mdc-notched-outline__trailing {
+  border-color: transparent !important;
+}
+
+
+.photo-section { display: flex; flex-direction: column; gap: 12px; }
+.photo-label { font-size: 14px; font-weight: 500; color: white; }
+.photo-upload-container { display: flex; align-items: center; gap: 16px; }
+
+.photo-preview {
+  width: 70px;
+  height: 70px;
+  background: rgba(85, 24, 93, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.preview-image { width: 100%; height: 100%; object-fit: cover; }
+.photo-placeholder { color: white; }
+.photo-buttons { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+
+.insert-photo-btn {
+  background: #FFB800;
+  color: #2C2C2C;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.remove-photo-btn {
+  background: rgba(85, 24, 93, 0.6);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.remove-photo-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.register-btn {
+  background: #FFB800;
+  color: #2C2C2C;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 20px;
+  width: 100%;
+}
+
+
+@media (max-width: 768px) {
+    .auth-card.centralize {
+        width: 90%;
+        padding: 20px;
+    }
+    .form-row {
+        flex-direction: column;
+    }
+}
