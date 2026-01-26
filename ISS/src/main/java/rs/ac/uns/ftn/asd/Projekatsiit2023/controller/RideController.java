@@ -1,17 +1,20 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.InconsistencyReportRequestDTO;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideRatingRequestDTO;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideRequestDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.InconsistencyReportResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideCancelResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideEstimationResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideRatingResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStopResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideTrackingDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RideStatus;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Ride;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RideRepository;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -23,47 +26,35 @@ import java.util.List;
 @RequestMapping("/api/rides")
 public class RideController {
 
-    @GetMapping("/estimate")
-    public ResponseEntity<RideEstimationResponseDTO> getRideEstimation(
-            @RequestParam String pickupAddress,
-            @RequestParam String destinationAddress,
-            @RequestParam(defaultValue = "STANDARD") String vehicleType) {
-
-        double distance = Math.random() * 20 + 5; // 5-25 km
-        double basePrice = distance * 120; // 120 din per km
-
-        double multiplier = switch (vehicleType.toUpperCase()) {
-            case "STANDARD" -> 1.0;
-            case "LUXURY" -> 1.5;
-            case "VAN" -> 1.3;
-            default -> 1.0;
-        };
-
-        double finalPrice = basePrice * multiplier;
-        String estimatedTime = String.format("%d min", (int) (distance * 2 + 5));
-
-        RideEstimationResponseDTO response = new RideEstimationResponseDTO(
-                estimatedTime,
-                Math.round(distance * 100.0) / 100.0,
-                Math.round(finalPrice * 100.0) / 100.0,
-                vehicleType);
-
-        return ResponseEntity.ok(response);
-    }
+    @Autowired
+    private RideRepository rideRepository;
 
     @PutMapping("/{rideId}/cancel")
+    @Transactional
     public ResponseEntity<RideCancelResponseDTO> cancelRide(
-            @PathVariable Long rideId,
-            @RequestParam(required = false) String reason) {
+            @PathVariable Integer rideId,
+            @RequestBody(required = false) RideCancelRequestDTO request) {
 
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
 
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+
+        String reason = (request != null && request.getCancellationReason() != null)
+                ? request.getCancellationReason()
+                : "User cancelled";
+
+        ride.setRideStatus(RideStatus.CANCELED);
+        ride.setCancellationReason(reason);
+
+        rideRepository.save(ride);
+
         RideCancelResponseDTO response = new RideCancelResponseDTO(
                 rideId,
                 "CANCELLED",
-                reason != null ? reason : "User cancelled",
+                reason,
                 "Ride cancelled successfully");
 
         return ResponseEntity.ok(response);
