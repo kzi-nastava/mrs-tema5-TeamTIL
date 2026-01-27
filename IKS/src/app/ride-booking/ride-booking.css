@@ -1,0 +1,361 @@
+.booking-page-container {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 100px);
+  padding: 20px 40px;
+  gap: 30px;
+  background-color: #141414;
+  box-sizing: border-box;
+}
+
+.side-panel {
+  width: 450px;
+  background-color: rgba(36, 11, 46, 0.96);
+  border-radius: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+  color: white;
+  font-family: 'Montserrat', sans-serif;
+  flex-shrink: 0;
+}
+
+.map-view-container {
+  flex-grow: 1;
+  background: #000;
+  border-radius: 40px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1;
+}
+
+app-map {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.panel-logo {
+  width: 40px;
+  height: auto;
+  object-fit: contain;
+  margin-right: 10px;
+}
+
+.scroll-content {
+  padding: 0 25px 25px 25px;
+  overflow-y: auto;
+}
+
+.scroll-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-content::-webkit-scrollbar-thumb {
+  background: #55185D;
+  border-radius: 10px;
+}
+
+.panel-header {
+  padding: 25px 25px 0 25px;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+}
+
+.title-row h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  flex-grow: 1;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #ff4d4d;
+  font-size: 1.8rem;
+  cursor: pointer;
+}
+
+.header-separator {
+  border: 0;
+  border-top: 3px solid #55185D;
+  margin: 15px 0;
+  opacity: 1;
+}
+
+.separator {
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  margin: 20px 0;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+}
+
+.input-group input {
+  background: transparent;
+  border: none;
+  color: white;
+  outline: none;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.dot.outline {
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: white;
+}
+
+.dot.plus {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+}
+
+.remove-stop {
+  background: none;
+  border: none;
+  color: #ff4d4d;
+  cursor: pointer;
+}
+
+/* --- KALENDAR I VREME --- */
+.date-time-flex-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.section-label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  font-weight: bold;
+  color: #FFD524;
+}
+
+.mini-calendar {
+  background: rgba(0,0,0,0.3);
+  border-radius: 15px;
+  padding: 12px;
+  width: 200px;
+}
+
+.cal-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  color: #FFD524;
+  font-weight: bold;
+  font-size: 0.75rem;
+}
+
+.cal-nav button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.cal-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.cal-days-grid span {
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.cal-days-grid span.selected {
+  background: #FFD524;
+  color: black;
+  font-weight: bold;
+}
+
+.cal-days-grid span.today {
+  border: 1px solid #FFD524;
+}
+
+.stepper-time-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: center;
+}
+
+.time-val {
+  font-size: 1.5rem;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+}
+
+.plus-btn {
+  background: #FFD524;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.time-sep {
+  font-size: 1.5rem;
+  color: #FFD524;
+  font-weight: bold;
+  margin-bottom: 35px;
+}
+
+/* --- FAVORITI --- */
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.fav-route-card {
+  background: rgba(0,0,0,0.3);
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fav-route-card p {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.yellow-btn-small {
+  background: #FFD524;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-weight: bold;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+/* --- PUTNICI (LISTA KAO STANICE) --- */
+.add-passenger-btn {
+  background: none;
+  border: none;
+  color: #FFD524;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.passenger-list-container {
+  margin-top: 10px;
+}
+
+.passenger-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 15px;
+  border-radius: 10px;
+  margin-bottom: 5px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.p-email {
+  font-size: 0.85rem;
+  color: #efefef;
+}
+
+.remove-p-btn {
+  background: none;
+  border: none;
+  color: #ff4d4d;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+/* --- VOZILO --- */
+.vehicle-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.type-option {
+  padding: 10px;
+  text-align: center;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.type-option.active {
+  background: #FFD524;
+  color: black;
+  font-weight: bold;
+}
+
+.checkbox-row-custom {
+  display: flex;
+  gap: 20px;
+}
+
+::ng-deep .white-check .mdc-label {
+  color: white !important;
+  font-size: 0.85rem !important;
+}
+
+.main-request-btn {
+  width: 100%;
+  background: #FFD524;
+  color: black;
+  border: none;
+  padding: 16px;
+  border-radius: 35px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin-top: 20px;
+  cursor: pointer;
+}
