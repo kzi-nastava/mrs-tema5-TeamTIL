@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+@font-face {
+    font-family: 'TacticSans';
+    src: url('/fonts/TacticSans-Bld.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    color: #ffffff;
+}
+
+.container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(to bottom, #000 0%, #55185D 100%);
+}
+
+.text-block {
+    width: 50vw;
+    position: relative;
+}
+
+.text1 {
+    position: absolute;
+    top: 12%;
+    left: 28%;
+    line-height: 1.4;
+    font-family: 'TacticSans', sans-serif;
+    font-weight: 700;
+    width: auto;
+    white-space: nowrap;
+    font-size: clamp(3rem, 6vw, 7.5rem);
+}
+
+.text2 {
+    position: absolute;
+    top: 25%;
+    left: 30%;
+    font-family: 'RollerScript', cursive;
+    font-size: clamp(5rem, 10vw, 10rem);
+    line-height: 1.4;
+}
+
+.text3-wrapper {
+    position: absolute;
+    top: 60%;
+    left: 20%;
+    width: max-content;
+    height: auto;
+}
+
+.text3-wrapper .main,
+.text3-wrapper .glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: clamp(1.2rem, 2vw, 2.5rem);
+    font-weight: 600;
+    line-height: 0.8;
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+    white-space: pre-line;
+    width: max-content;
+}
+
+.text3-wrapper .main {
+    color: #FFD524;
+    z-index: 2;
+}
+
+.text3-wrapper .glow {
+    color: #FFD524;
+    filter: blur(8px);
+    opacity: 0.7;
+    z-index: 1;
+}
+
+.image-block {
+    width: 50vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.right-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+}
+
+.center-text-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 5rem 0 5rem 0;
+    background: linear-gradient(to bottom, #55185D 0%, #141414 100%);
+}
+
+.center-text-large {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.4rem, 2.4vw, 2.8rem);
+    line-height: 1.2;
+    margin: 0 0 1rem 0;
+}
+
+.center-text-small {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    font-size: clamp(0.7rem, 1.2vw, 1.4rem);
+    line-height: 1.4;
+    margin: 0;
+}
+
+.map-container {
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+app-map {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.ride-request-card {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 450px;
+    padding: 35px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 40px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 1000;
+}
+
+.ride-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #FFFFFF88;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #FFFFFF;
+    font-size: clamp(0.9rem, 1.2vw, 1rem);
+    outline: none;
+    font-family: Montserrat, sans-serif;
+    font-weight: 400;
+}
+
+.ride-input::placeholder {
+    color: #FFFFFF88;
+}
+
+.ride-btn {
+    width: 90%;
+    padding: 14px 0;
+    margin-top: 15px;
+    background-color: #FFD524;
+    color: #000;
+    font-weight: 500;
+    font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+    font-family: Montserrat, sans-serif;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+    align-self: center;
+}
+
+.ride-btn:hover {
+    background-color: #e6c700;
+}

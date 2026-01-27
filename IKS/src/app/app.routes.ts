@@ -7,6 +7,7 @@ import { UserRideHistory } from './rides/ride-history/user-ride-history/user-rid
 import { AdminRideHistory } from './rides/ride-history/admin-ride-history/admin-ride-history';
 import { AssignedRides } from './rides/assigned-rides/assigned-rides';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
+import { Home } from './layout/home/home';
 import { authGuard } from './guards/auth.guard';
 import { ChangePasswordComponent } from './change-password/change-password';
 import { NewPasswordComponent } from './new-password/new-password';
@@ -19,6 +20,7 @@ export const routes: Routes = [
     path: '',
     component: MainLayoutComponent,
     children: [
+      { path: '', component: Home },
       // Protected routes
       { path: 'driver-history', component: DriverHistory, canActivate: [authGuard] },
       { path: 'assigned-rides', component: AssignedRides, canActivate: [authGuard] },
