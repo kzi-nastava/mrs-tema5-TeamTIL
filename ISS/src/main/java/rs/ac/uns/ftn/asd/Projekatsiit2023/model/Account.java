@@ -9,7 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
-
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -53,6 +53,12 @@ public class Account implements UserDetails {
     @Column(name = "user_type")
     @Enumerated(EnumType.STRING)
     private UserType userType;
+
+    @Column(name = "activation_token")
+    private String activationToken;
+
+    @Column(name = "activation_token_expiration")
+    private java.time.LocalDateTime activationTokenExpiration;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

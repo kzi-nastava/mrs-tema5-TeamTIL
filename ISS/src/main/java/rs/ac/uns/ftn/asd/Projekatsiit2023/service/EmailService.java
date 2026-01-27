@@ -31,4 +31,22 @@ public class EmailService {
 
         mailSender.send(message);
     }
+
+    public void sendActivationEmail(String toEmail, String token) {
+        String activationLink = "http://localhost:4200/new-password?token=" + token;
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("Activate your Driver Account");
+        message.setText(
+                "Hello,\n\n" +
+                        "An administrator has created a driver account for you.\n" +
+                        "Please click the link below to activate your account and set your password:\n\n" +
+                        activationLink +
+                        "\n\nThis link is valid for 24 hours.\n\n" +
+                        "Welcome to the team!"
+        );
+
+        mailSender.send(message);
+    }
 }

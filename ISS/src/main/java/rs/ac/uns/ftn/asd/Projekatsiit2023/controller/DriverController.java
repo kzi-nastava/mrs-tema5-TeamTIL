@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.DriverResponseDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.ActivationRequestDTO;
 
 @RestController
 @RequestMapping("/api/drivers")
@@ -16,6 +17,12 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.DriverResponseDTO;
 public class DriverController {
 
     private final DriverService driverService;
+
+    @PostMapping("/activate")
+    public ResponseEntity<String> activateDriver(@RequestBody ActivationRequestDTO request) {
+        driverService.activateDriverAccount(request);
+        return ResponseEntity.ok("Account successfully activated! You can now log in.");
+    }
 
     // 2.2.3 Driver registration (admin f)
     @PostMapping

@@ -135,4 +135,11 @@ updateUser(user: any) {
     localStorage.setItem('currentUser', JSON.stringify(updatedUser));
   }
 }
+
+activateDriverAccount(token: string, newPassword: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/drivers/activate`, {
+    token: token,
+    newPassword: newPassword
+  }, { responseType: 'text' as 'json' }); 
+}
 }
