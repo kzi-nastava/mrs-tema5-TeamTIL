@@ -10,6 +10,9 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Driver;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Vehicle;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.DriverRepository;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.DriverResponseDTO;
+import java.time.LocalDateTime;
+import java.util.UUID;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.ActivationRequestDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +21,7 @@ public class DriverService {
     private final DriverRepository driverRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final CloudinaryService cloudinaryService;
+    private final EmailService emailService;
 
     @Transactional
     public void registerDriver(DriverRegistrationRequestDTO dto) {
@@ -29,10 +33,15 @@ public class DriverService {
         driver.setPhoneNumber(dto.getPhoneNumber());
         driver.setUserType(UserType.DRIVER);
         driver.setIsBlocked(false);
-        driver.setIsActive(false);
+        driver.setIsActive(false); // Nalog nije aktivan dok ne postavi sifru
 
-        // trenutno fiksna lozinka, dodacemo slanje mejla
-        driver.setPassword(passwordEncoder.encode("sifra1234"));
+        // Generisemo token
+        String token = UUID.randomUUID().toString();
+        driver.setActivationToken(token);
+        driver.setActivationTokenExpiration(LocalDateTime.now().plusHours(24)); // Vazi 24h
+
+        // Postavljamo neku random sifru privremeno (bitno da nije null i da niko ne zna)
+        driver.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
 
         if (dto.getProfilePictureUrl() != null && !dto.getProfilePictureUrl().isEmpty()) {
             String publicId = "driver_" + dto.getEmail().replace("@", "_").replace(".", "_");
@@ -50,6 +59,32 @@ public class DriverService {
 
         driver.setVehicle(vehicle);
         vehicle.setDriver(driver);
+
+        driverRepository.save(driver);
+
+        // saljemo mejl
+        emailService.sendActivationEmail(driver.getEmail(), token);
+    }
+
+    // metoda za aktivaciju
+    @Transactional
+    public void activateDriverAccount(ActivationRequestDTO request) {
+        Driver driver = driverRepository.findByActivationToken(request.getToken())
+                .orElseThrow(() -> new RuntimeException("Invalid or expired activation token"));
+
+        if (driver.getActivationTokenExpiration().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Activation token has expired");
+        }
+
+        // postavi novu sifru
+        driver.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        // aktiviraj nalog
+        driver.setIsActive(true);
+
+        // obrisi token da se ne moze iskoristiti ponovo
+        driver.setActivationToken(null);
+        driver.setActivationTokenExpiration(null);
 
         driverRepository.save(driver);
     }

@@ -39,5 +39,6 @@ export const routes: Routes = [
   { path: 'register', loadComponent: () => import('./forms/register/register').then(m => m.Register) },
   { path: 'forgot-password', loadComponent: () => import('./forms/forgot-password/forgot-password').then(m => m.ForgotPassword) },
   { path: 'reset-password', loadComponent: () => import('./forms/reset-password/reset-password').then(m => m.ResetPassword) },
+  { path: 'new-password', component: NewPasswordComponent },
   { path: '**', redirectTo: '' }
 ];
