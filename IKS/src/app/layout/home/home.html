@@ -22,7 +22,7 @@
   </div>
 </div>
 <div class="map-container">
-  <app-map (mapClicked)="onMapClick()"></app-map>
+  <app-map-view (mapClicked)="onMapClick()"></app-map-view>
 
   <div class="ride-request-card" *ngIf="showForm">
     <input type="text" placeholder="Enter pickup location" class="ride-input" [(ngModel)]="pickupLocation" (input)="onInputChange()" />

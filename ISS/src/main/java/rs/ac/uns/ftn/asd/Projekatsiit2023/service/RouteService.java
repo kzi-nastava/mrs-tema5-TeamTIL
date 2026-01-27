@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Route;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RouteRepository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class RouteService {
 
@@ -38,16 +41,25 @@ public class RouteService {
         try {
             String response = restTemplate.getForObject(url, String.class);
             JSONObject json = new JSONObject(response);
-            JSONArray segments = json.getJSONArray("features")
-                    .getJSONObject(0)
-                    .getJSONObject("properties")
-                    .getJSONArray("segments");
-            JSONObject segment = segments.getJSONObject(0);
+            JSONObject feature = json.getJSONArray("features").getJSONObject(0);
 
+            // Izvuci distance i duration
+            JSONObject segment = feature.getJSONObject("properties")
+                    .getJSONArray("segments")
+                    .getJSONObject(0);
             double distanceKm = segment.getDouble("distance") / 1000.0;
             double durationMin = segment.getDouble("duration") / 60.0;
 
-            return new RouteEstimation(distanceKm, durationMin);
+            // Izvuci koordinate putanje
+            JSONArray coordinates = feature.getJSONObject("geometry").getJSONArray("coordinates");
+            List<List<Double>> routeCoordinates = new ArrayList<>();
+            for (int i = 0; i < coordinates.length(); i++) {
+                JSONArray coord = coordinates.getJSONArray(i);
+                List<Double> point = List.of(coord.getDouble(0), coord.getDouble(1));
+                routeCoordinates.add(point);
+            }
+
+            return new RouteEstimation(distanceKm, durationMin, routeCoordinates);
         } catch (RestClientException e) {
             logger.error("Error while sending request to ORS API: {}", e.getMessage());
         } catch (Exception e) {
@@ -59,10 +71,12 @@ public class RouteService {
     public static class RouteEstimation {
         public final double distanceKm;
         public final double durationMin;
+        public final List<List<Double>> routeCoordinates; // [[lon, lat], [lon, lat], ...]
 
-        public RouteEstimation(double distanceKm, double durationMin) {
+        public RouteEstimation(double distanceKm, double durationMin, List<List<Double>> routeCoordinates) {
             this.distanceKm = distanceKm;
             this.durationMin = durationMin;
+            this.routeCoordinates = routeCoordinates;
         }
     }
 

@@ -1,8 +1,17 @@
+
 import { Component, AfterViewInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import * as L from 'leaflet';
 
+interface VehicleDTO {
+  name: string;
+  type: string;
+  licensePlate: string;
+  available: boolean;
+  latitude: number;
+  longitude: number;
+}
 
 @Component({
   selector: 'app-map-view',
@@ -11,12 +20,14 @@ import * as L from 'leaflet';
   templateUrl: './map.html',
   styleUrls: ['./map.css']
 })
-export class Map implements AfterViewInit {
+export class MapView implements AfterViewInit {
   @Output() mapClicked = new EventEmitter<void>();
   private map!: L.Map;
   private routeLayer?: L.Polyline;
   private startMarker?: L.Marker;
   private endMarker?: L.Marker;
+
+  private vehicleMarkers: Map<string, L.Marker> = new Map();
 
   constructor(private http: HttpClient) {}
 
@@ -100,24 +111,24 @@ export class Map implements AfterViewInit {
 
       if (existingMarker) {
         existingMarker.setLatLng([vehicle.latitude, vehicle.longitude]);
-        const icon = !vehicle.available ? this.activeIcon : this.inactiveIcon;
+        const icon = vehicle.available ? this.activeIcon : this.inactiveIcon;
         existingMarker.setIcon(icon);
         existingMarker.bindPopup(`
           <strong>${vehicle.name}</strong><br/>
             <i>${vehicle.licensePlate}</i><br/>
-            Status: <span style="color: ${!vehicle.available ? 'green' : 'red'}">
-              ${!vehicle.available ? 'Available' : 'Unavailable'}
+            Status: <span style="color: ${vehicle.available ? 'green' : 'red'}">
+              ${vehicle.available ? 'Available' : 'Unavailable'}
             </span>
         `);
       } else {
-        const icon = !vehicle.available ? this.activeIcon : this.inactiveIcon;
+        const icon = vehicle.available ? this.activeIcon : this.inactiveIcon;
         const marker = L.marker([vehicle.latitude, vehicle.longitude], { icon })
           .addTo(this.map)
           .bindPopup(`
             <strong>${vehicle.name}</strong><br/>
             <i>${vehicle.licensePlate}</i><br/>
-            Status: <span style="color: ${!vehicle.available ? 'green' : 'red'}">
-              ${!vehicle.available ? 'Available' : 'Unavailable'}
+            Status: <span style="color: ${vehicle.available ? 'green' : 'red'}">
+              ${vehicle.available ? 'Available' : 'Unavailable'}
             </span>
           `);
 

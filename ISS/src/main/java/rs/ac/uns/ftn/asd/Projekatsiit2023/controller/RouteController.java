@@ -44,7 +44,8 @@ public class RouteController {
                 estimatedTime,
                 Math.round(estimation.distanceKm * 100.0) / 100.0,
                 finalPrice,
-                request.getVehicleType()
+                request.getVehicleType(),
+                estimation.routeCoordinates
         );
 
         return ResponseEntity.ok(response);

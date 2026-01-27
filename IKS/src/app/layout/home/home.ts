@@ -2,19 +2,19 @@
 import { Component, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Map } from '../../map/map';
+import { MapView } from '../../map/map';
 import { RouteService } from '../../services/route.service';
 import { GeocodingService } from '../../services/geocoding.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [Map, FormsModule, CommonModule],
+  imports: [MapView, FormsModule, CommonModule],
   templateUrl: './home.html',
   styleUrls: ['./home.css'],
 })
 export class Home {
-  @ViewChild(Map) mapComponent?: Map;
+  @ViewChild(MapView) mapComponent?: MapView;
   pickupLocation = '';
   destination = '';
   vehicleType = 'STANDARD';
@@ -62,7 +62,11 @@ export class Home {
                 // Očekuje se: { estimatedTime, estimatedDistance, estimatedPrice, vehicleType, route? }
                 // Prikaz na mapi i info korisniku
                 if (this.mapComponent) {
-                  if (result.route) {
+                  if (result.routeCoordinates) {
+                    // Convert [lon, lat] to [lat, lon] for Leaflet
+                    const leafletRoute = result.routeCoordinates.map(([lon, lat]: [number, number]) => [lat, lon]);
+                    this.mapComponent.showRoute(leafletRoute, result.estimatedTime);
+                  } else if (result.route) {
                     this.mapComponent.showRoute(result.route, result.estimatedTime);
                   } else {
                     // Ako nema rute, nacrtaj liniju od pickup do destination
