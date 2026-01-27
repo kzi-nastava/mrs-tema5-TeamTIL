@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Map } from '../map/map';
+import { MapView } from '../map/map';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-ride-booking',
   standalone: true,
-  imports: [CommonModule, Map, FormsModule, ReactiveFormsModule, MatCheckboxModule],
+  imports: [CommonModule, MapView, FormsModule, ReactiveFormsModule, MatCheckboxModule],
   templateUrl: './ride-booking.html',
   styleUrls: ['./ride-booking.css']
 })
