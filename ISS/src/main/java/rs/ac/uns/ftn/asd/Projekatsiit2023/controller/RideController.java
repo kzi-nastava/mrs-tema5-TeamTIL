@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.DriverRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.InconsistencyReportResponseDTO;
@@ -26,10 +27,12 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RideService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/rides")
@@ -314,32 +317,29 @@ public class RideController {
 
     // 2.9.2 Driver's ride history
     @GetMapping("/driver/history")
-    public ResponseEntity<List<RideHistoryDTO>> getDriverRideHistory(
+    public ResponseEntity<List<DriverRideDTO>> getDriverRideHistory(
             @RequestParam String driverEmail,
             @RequestParam(required = false) String dateFrom,
             @RequestParam(required = false) String dateTo) {
 
-        List<RideHistoryDTO> ridesHistory = new ArrayList<>();
+        List<RideStatus> statuses = List.of(RideStatus.FINISHED, RideStatus.CANCELED);
+        List<Ride> rides = rideRepository.findByDriver_EmailAndRideStatusIn(driverEmail, statuses);
 
-        // podaci za vozača
-        for (int i = 1; i <= 5; i++) {
-            RideHistoryDTO ride = new RideHistoryDTO(
-                    100 + i,
-                    "passenger" + i + "@example.com", // demo putnik
-                    driverEmail,
-                    "Start Location " + i,
-                    "End Location " + i,
-                    i % 2 == 0 ? "CANCELLED" : "COMPLETED",
-                    1000.0 + i * 50,
-                    "2025-12-" + String.format("%02d", i) + "T12:00:00");
+        LocalDate from = (dateFrom != null) ? LocalDate.parse(dateFrom) : null;
+        LocalDate to = (dateTo != null) ? LocalDate.parse(dateTo) : null;
 
-            ridesHistory.add(ride);
-        }
+        List<DriverRideDTO> result = rides.stream()
+                .filter(r -> {
+                    LocalDate rideDate = r.getStartTime().toLocalDate();
+                    boolean afterFrom = (from == null) || !rideDate.isBefore(from);
+                    boolean beforeTo = (to == null) || !rideDate.isAfter(to);
+                    return afterFrom && beforeTo;
+                })
+                .sorted((r1, r2) -> r2.getStartTime().compareTo(r1.getStartTime()))
+                .map(rideService::mapRideToDriverRideDTO)
+                .toList();
 
-        // sortiranje po datumu od najskorije do najstarije
-        ridesHistory.sort((r1, r2) -> r2.getCreatedAt().compareTo(r1.getCreatedAt()));
-
-        return ResponseEntity.ok(ridesHistory);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/assigned")

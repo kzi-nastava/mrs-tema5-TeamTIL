@@ -72,12 +72,26 @@ public class Ride {
     @OneToOne(mappedBy = "ride")
     private Rating rating;
 
-//    @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL)
-//    private List<PanicNotification> panicNotifications = new ArrayList<>();
+    @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL)
+    private List<PanicNotification> panicNotifications = new ArrayList<>();
 
     @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL)
     private List<InconsistencyReport> inconsistencyReports = new ArrayList<>();
 
     @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL)
     private List<Notification> notifications = new ArrayList<>();
+
+    public long getDurationMinutes() {
+        if (startTime != null && endTime != null) {
+            return java.time.Duration.between(startTime, endTime).toMinutes();
+        }
+        return 0;
+    }
+
+    public long getDistanceKm() {
+        if (route != null && route.getDistance() != null) {
+            return Math.round(route.getDistance());
+        }
+        return 0;
+    }
 }
