@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { Map } from '../../map/map';
+import { MapView } from '../../map/map';
 
 @Component({
   selector: 'app-home',
-  imports: [Map],
+  imports: [MapView],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

@@ -1,31 +1,33 @@
 import { Component, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import * as L from 'leaflet';
 
+interface VehicleDTO {
+  name: string;
+  type: string;
+  licensePlate: string;
+  available: boolean;
+  latitude: number;
+  longitude: number;
+}
+
 @Component({
-  selector: 'app-map',
+  selector: 'app-map-view',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './map.html',
   styleUrls: ['./map.css']
 })
-export class Map implements AfterViewInit {
+export class MapView implements AfterViewInit {
   private map!: L.Map;
+  private vehicleMarkers: Map<string, L.Marker> = new Map();
 
-  private vehicles = [
-    { id: 1, lat: 45.250147, lng: 19.874772, status: 'active' },
-    { id: 2, lat: 45.237199, lng: 19.827093, status: 'inactive' },
-    { id: 3, lat: 45.237641, lng: 19.841512, status: 'active' },
-    { id: 4, lat: 45.244073, lng: 19.832924, status: 'active' },
-    { id: 5, lat: 45.252339, lng: 19.819532, status: 'inactive' },
-    { id: 6, lat: 45.261022, lng: 19.841963, status: 'inactive' },
-    { id: 7, lat: 45.259013, lng: 19.810785, status: 'active' },
-    { id: 8, lat: 45.285512, lng: 19.762302, status: 'active' }
-  ];
+  constructor(private http: HttpClient) {}
 
   ngAfterViewInit(): void {
     this.initMap();
-    this.addVehicleMarkers();
+    this.fetchVehicles();
   }
 
   private activeIcon = L.icon({
@@ -51,19 +53,45 @@ export class Map implements AfterViewInit {
     }).addTo(this.map);
   }
 
-  private addVehicleMarkers(): void {
-    this.vehicles.forEach(vehicle => {
-      const icon =
-        vehicle.status === 'active'
-          ? this.activeIcon
-          : this.inactiveIcon;
+  private fetchVehicles(): void {
+    this.http.get<VehicleDTO[]>('http://localhost:8080/api/public/vehicles')
+      .subscribe({
+        next: (data) => {
+          this.updateVehicleMarkers(data);
+        },
+        error: (err) => console.error('Error fetching vehicles:', err)
+      });
+  }
+  
+  private updateVehicleMarkers(vehicles: VehicleDTO[]): void {
+    vehicles.forEach(vehicle => {
+      const existingMarker = this.vehicleMarkers.get(vehicle.licensePlate);
 
-      L.marker([vehicle.lat, vehicle.lng], { icon })
-        .addTo(this.map)
-        .bindPopup(`
-          <strong>Vehicle #${vehicle.id}</strong><br/>
-          Status: ${vehicle.status}
+      if (existingMarker) {
+        existingMarker.setLatLng([vehicle.latitude, vehicle.longitude]);
+        const icon = !vehicle.available ? this.activeIcon : this.inactiveIcon;
+        existingMarker.setIcon(icon);
+        existingMarker.bindPopup(`
+          <strong>${vehicle.name}</strong><br/>
+            <i>${vehicle.licensePlate}</i><br/>
+            Status: <span style="color: ${!vehicle.available ? 'green' : 'red'}">
+              ${!vehicle.available ? 'Available' : 'Unavailable'}
+            </span>
         `);
+      } else {
+        const icon = !vehicle.available ? this.activeIcon : this.inactiveIcon;
+        const marker = L.marker([vehicle.latitude, vehicle.longitude], { icon })
+          .addTo(this.map)
+          .bindPopup(`
+            <strong>${vehicle.name}</strong><br/>
+            <i>${vehicle.licensePlate}</i><br/>
+            Status: <span style="color: ${!vehicle.available ? 'green' : 'red'}">
+              ${!vehicle.available ? 'Available' : 'Unavailable'}
+            </span>
+          `);
+
+        this.vehicleMarkers.set(vehicle.licensePlate, marker);
+      }
     });
   }
 }
