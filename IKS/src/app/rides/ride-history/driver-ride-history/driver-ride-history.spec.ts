@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DriverHistory } from './driver-history';
+import { DriverHistory } from './driver-ride-history';
 
 describe('DriverHistory', () => {
   let component: DriverHistory;

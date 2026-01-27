@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { UserProfile } from './profile/user-profile/user-profile';
 import { DriverProfileComponent } from './profile/driver-profile/driver-profile';
 import { AdminProfileComponent } from './profile/admin-profile/admin-profile';
-import { DriverHistory } from './rides/ride-history/driver-history/driver-history';
+import { DriverHistory } from './rides/ride-history/driver-ride-history/driver-ride-history';
 import { UserRideHistory } from './rides/ride-history/user-ride-history/user-ride-history';
 import { AdminRideHistory } from './rides/ride-history/admin-ride-history/admin-ride-history';
 import { AssignedRides } from './rides/assigned-rides/assigned-rides';
@@ -22,8 +22,8 @@ export const routes: Routes = [
     children: [
       { path: '', component: Home },
       // Protected routes
-      { path: 'driver-history', component: DriverHistory, canActivate: [authGuard] },
       { path: 'assigned-rides', component: AssignedRides, canActivate: [authGuard] },
+      { path: 'driver-ride-history', component: DriverHistory, canActivate: [authGuard] },
       { path: 'user-ride-history', component: UserRideHistory, canActivate: [authGuard] },
       { path: 'admin-ride-history', component: AdminRideHistory, canActivate: [authGuard] },
       { path: 'user-profile', component: UserProfile, canActivate: [authGuard] },
