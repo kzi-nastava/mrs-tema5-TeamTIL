@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.util.List;
 
 @Setter
 @Getter
@@ -14,4 +15,5 @@ public class RideEstimationResponseDTO {
     private double estimatedDistance;
     private double estimatedPrice;
     private String vehicleType;
+    private List<List<Double>> routeCoordinates;
 }

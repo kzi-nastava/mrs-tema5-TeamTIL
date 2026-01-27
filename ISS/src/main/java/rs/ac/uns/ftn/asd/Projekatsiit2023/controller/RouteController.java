@@ -8,7 +8,7 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideEstimationResponseDTO
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
 
 @RestController
-@RequestMapping("/api/routes")
+@RequestMapping("/api/route")
 public class RouteController {
 
     @Autowired
@@ -44,7 +44,8 @@ public class RouteController {
                 estimatedTime,
                 Math.round(estimation.distanceKm * 100.0) / 100.0,
                 finalPrice,
-                request.getVehicleType()
+                request.getVehicleType(),
+                estimation.routeCoordinates
         );
 
         return ResponseEntity.ok(response);
