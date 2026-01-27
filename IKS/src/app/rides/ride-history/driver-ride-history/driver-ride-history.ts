@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -54,46 +55,29 @@ export class DriverHistory {
   dateTo: Date | null = null;
   selectedStatus = '';
 
-  allRides: Ride[] = [
-    {
-      id: 1,
-      date: '14 March 2025',
-      startTime: '15:32',
-      endTime: '16:05',
-      from: 'Stražilovska 32',
-      to: 'Bulevar Kralja Petra 7',
-      price: '1,480 RSD',
-      status: 'Completed',
-      panicActivated: false,
-      duration: '33 min',
-      distance: '12 km',
-      passengers: [
-        { name: 'Marko Marković', phone: '+381 65 1234567' },
-        { name: 'Ana Anić', phone: '+381 65 9876543' }
-      ],
-    },
-    {
-      id: 2,
-      date: '14 March 2025',
-      startTime: '14:32',
-      endTime: '14:52',
-      from: 'Gospodska 10',
-      to: 'Jevrejska 2',
-      price: '1,250 RSD',
-      status: 'Canceled',
-      canceledBy: 'Passenger',
-      panicActivated: true,
-      duration: '20 min',
-      distance: '8 km',
-      passengers: [
-        { name: 'Jovan Jovanović', phone: '+381 65 7654321' },
-        { name: 'Ivana Ilić', phone: '+381 65 1122334' }
-      ]
-    }
-  ]
+  allRides: Ride[] = [];
+  rides: Ride[] = [];
+  selectedRide: Ride | null = null;
 
-  rides: Ride[] = [...this.allRides];
-  selectedRide: Ride | null = this.rides[0];
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) { }
+  
+  ngOnInit(): void {
+    this.loadRides();
+  }
+
+  loadRides() {
+    const driverEmail = 'jovan@tiltaxi.com'; // možeš zameniti sa AuthService.getEmail()
+    this.http.get<Ride[]>(`http://localhost:8080/api/rides/driver/history?driverEmail=jovan@tiltaxi.com`)
+      .subscribe({
+        next: (data) => {
+          this.allRides = data;
+          this.rides = [...this.allRides];
+          this.selectedRide = this.rides[0] ?? null;
+          this.cdr.detectChanges();
+        },
+        error: (err) => console.error('Error fetching rides:', err)
+      });
+  }
 
   selectRide(ride: Ride) {
     this.selectedRide = ride;
@@ -145,8 +129,22 @@ export class DriverHistory {
 
     if (this.dateFrom || this.dateTo) {
       filtered = filtered.filter(ride => {
-        const rideDate = this.parseRideDate(ride.date);
-        
+        const rideDateParts = ride.date.split(' ');
+        const months: { [key: string]: number } = {
+          'January': 0, 'February': 1, 'March': 2, 'April': 3,
+          'May': 4, 'June': 5, 'July': 6, 'August': 7,
+          'September': 8, 'October': 9, 'November': 10, 'December': 11
+        };
+        const day = parseInt(rideDateParts[0]);
+        const month = months[rideDateParts[1]];
+        const year = parseInt(rideDateParts[2]);
+
+        const timeParts = ride.startTime.split(':');
+        const hours = parseInt(timeParts[0]);
+        const minutes = parseInt(timeParts[1]);
+
+        const rideDate = new Date(year, month, day, hours, minutes);
+
         if (this.dateFrom && this.dateTo) {
           return rideDate >= this.dateFrom && rideDate <= this.dateTo;
         } else if (this.dateFrom) {
