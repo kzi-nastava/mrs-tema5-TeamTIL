@@ -43,4 +43,10 @@ public class Vehicle {
 
     @OneToMany(mappedBy = "ratedVehicle")
     private List<Rating> ratings = new ArrayList<>();
+
+    @Column(name = "current_latitude")
+    private Double currentLatitude;
+
+    @Column(name = "current_longitude")
+    private Double currentLongitude;
 }

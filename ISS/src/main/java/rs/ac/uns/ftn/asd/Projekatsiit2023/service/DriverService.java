@@ -56,10 +56,10 @@ public class DriverService {
         vehicle.setCapacity(dto.getPassengerCapacity());
         vehicle.setBabyFriendly(dto.getBabyFriendly());
         vehicle.setPetFriendly(dto.getPetFriendly());
+        vehicle.setCurrentLatitude(45.25 + Math.random() * 0.04);
+        vehicle.setCurrentLongitude(19.81 + Math.random() * 0.04);
 
-        driver.setVehicle(vehicle);
-        vehicle.setDriver(driver);
-
+        driver.assignVehicle(vehicle);
         driverRepository.save(driver);
 
         // saljemo mejl
