@@ -12,6 +12,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatNativeDateModule } from '@angular/material/core';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../services/auth.service';
 
 interface Ride {
   id: number;
@@ -59,15 +60,15 @@ export class DriverHistory {
   rides: Ride[] = [];
   selectedRide: Ride | null = null;
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) { }
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private authService: AuthService) { }
   
   ngOnInit(): void {
     this.loadRides();
   }
 
   loadRides() {
-    const driverEmail = 'jovan@tiltaxi.com'; // možeš zameniti sa AuthService.getEmail()
-    this.http.get<Ride[]>(`http://localhost:8080/api/rides/driver/history?driverEmail=jovan@tiltaxi.com`)
+    const driverEmail = this.authService.getEmail();
+    this.http.get<Ride[]>(`http://localhost:8080/api/rides/driver/history?driverEmail=${driverEmail}`)
       .subscribe({
         next: (data) => {
           this.allRides = data;
