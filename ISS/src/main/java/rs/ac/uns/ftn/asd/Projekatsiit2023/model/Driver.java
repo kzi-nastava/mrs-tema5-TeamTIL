@@ -37,4 +37,11 @@ public class Driver extends Account {
 
     @OneToMany(mappedBy = "driver")
     private List<Ride> assignedRides = new ArrayList<>();
+
+    public void assignVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
+        if (vehicle.getDriver() != this) {
+            vehicle.setDriver(this);
+        }
+    }
 }

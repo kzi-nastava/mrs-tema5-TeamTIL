@@ -10,6 +10,8 @@ import lombok.Setter;
 public class VehicleStatusDTO {
     private String name;
     private String type;
+    private String licensePlate;
     private Boolean available;
-    private String location;
+    private Double latitude;
+    private Double longitude;
 }
