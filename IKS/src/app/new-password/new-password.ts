@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
-import { Router, ActivatedRoute } from '@angular/router'; // Dodaj ActivatedRoute
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 @Component({
@@ -16,12 +16,12 @@ import { AuthService } from '../services/auth.service';
 })
 export class NewPasswordComponent implements OnInit {
   resetForm: FormGroup;
-  activationToken: string | null = null; // Ovde cuvamo token ako postoji
+  activationToken: string | null = null;
 
   constructor(
     private fb: FormBuilder, 
     private router: Router,
-    private route: ActivatedRoute, // Injectuj rutu
+    private route: ActivatedRoute,
     private authService: AuthService
   ) {
     this.resetForm = this.fb.group({
@@ -31,7 +31,6 @@ export class NewPasswordComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Proveravamo da li u URL-u postoji query parametar 'token'
     this.route.queryParams.subscribe(params => {
       this.activationToken = params['token'];
       if (this.activationToken) {
@@ -53,14 +52,14 @@ export class NewPasswordComponent implements OnInit {
   onSubmit() {
     if (this.resetForm.invalid) return;
 
-    const newPassword = this.resetForm.value.newPassword; // Pazi, u tvom originalnom kodu je pisalo .newPass, a forma se zove newPassword. Ispravio sam na .newPassword
+    const newPassword = this.resetForm.value.newPassword;
 
     // SCENARIO 1: Aktivacija naloga (imamo token iz URL-a)
     if (this.activationToken) {
       this.authService.activateDriverAccount(this.activationToken, newPassword).subscribe({
         next: (response) => {
           alert("Account activated successfully! Please log in.");
-          this.router.navigate(['/login']); // Preusmeri na login
+          this.router.navigate(['/login']); // preusmeri na login
         },
         error: (err) => {
           console.error(err);
@@ -68,7 +67,7 @@ export class NewPasswordComponent implements OnInit {
         }
       });
     } 
-    // SCENARIO 2: Obicna promena sifre (stari kod)
+    // SCENARIO 2: Obicna promena sifre
     else {
       const oldPassword = this.authService.getOldPassword();
       
