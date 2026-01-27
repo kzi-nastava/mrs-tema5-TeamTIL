@@ -14,6 +14,7 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideRatingResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStopResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideTrackingDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RideStatus;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.VehicleType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Location;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.PriceConfig;
@@ -343,15 +344,49 @@ public class RideController {
     }
 
     @GetMapping("/assigned")
-    public ResponseEntity<List<AssignedRideDTO>> getAssignedRides(@RequestParam String driverEmail) {
-        List<RideStatus> statuses = List.of(RideStatus.IN_PROGRESS, RideStatus.REQUESTED);
+    public ResponseEntity<List<AssignedRideDTO>> getAssignedRides(
+            @RequestParam String driverEmail,
+            @RequestParam(required = false) String status
+    ) {
+        List<RideStatus> statuses;
+        if (status != null && !status.isEmpty()) {
+            statuses = Arrays.stream(status.split(","))
+                    .map(String::trim)
+                    .map(RideStatus::valueOf)
+                    .toList();
+        } else {
+            statuses = List.of(RideStatus.IN_PROGRESS, RideStatus.REQUESTED);
+        }
+
         List<Ride> rides = rideRepository.findByDriver_EmailAndRideStatusIn(driverEmail, statuses);
 
         List<AssignedRideDTO> result = rides.stream()
-                .map(rideService::mapRideToDTO)
+                .map(ride -> rideService.mapRideToDTO(ride, UserType.DRIVER))
                 .toList();
 
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/user/{email}")
+    public List<AssignedRideDTO> getRidesForUser(
+            @PathVariable String email,
+            @RequestParam(required = false) String status
+    ) {
+        List<RideStatus> statuses;
+        if (status != null && !status.isEmpty()) {
+            statuses = Arrays.stream(status.split(","))
+                    .map(String::trim)
+                    .map(RideStatus::valueOf)
+                    .toList();
+        } else {
+            statuses = List.of(RideStatus.IN_PROGRESS, RideStatus.REQUESTED);
+        }
+
+        List<Ride> rides = rideRepository.findByPassenger_EmailAndRideStatusIn(email, statuses);
+
+        return rides.stream()
+                .map(ride -> rideService.mapRideToDTO(ride, UserType.REGISTERED_USER))
+                .toList();
     }
 
 }

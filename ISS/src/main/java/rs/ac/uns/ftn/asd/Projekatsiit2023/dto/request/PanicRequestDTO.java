@@ -11,8 +11,7 @@ public class PanicRequestDTO {
     private Integer rideId;
     private Integer locationId;
     private UserType userType;
-    private Integer registeredUserId;
-    private Integer driverId;
+    private String accountEmail;
 }
 
 

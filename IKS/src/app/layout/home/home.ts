@@ -1,10 +1,20 @@
-
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MapView } from '../../map/map';
 import { RouteService } from '../../services/route.service';
 import { GeocodingService } from '../../services/geocoding.service';
+import { RideService } from '../../rides/services/ride.service';
+import { AuthService } from '../../services/auth.service';
+import { PanicService } from '../../services/panic.service';
+
+interface RideCard {
+  id: number;
+  startTime: string;
+  from: string;
+  to: string;
+  status: string;
+}
 
 @Component({
   selector: 'app-home',
@@ -13,7 +23,8 @@ import { GeocodingService } from '../../services/geocoding.service';
   templateUrl: './home.html',
   styleUrls: ['./home.css'],
 })
-export class Home {
+export class Home implements OnInit {
+    showPanicToast = false;
   @ViewChild(MapView) mapComponent?: MapView;
   pickupLocation = '';
   destination = '';
@@ -21,7 +32,90 @@ export class Home {
   showEstimateButton = false;
   showForm = true;
 
-  constructor(private routeService: RouteService, private geocodingService: GeocodingService) {}
+  userRide: RideCard | null = null;
+  currentUser: any = null;
+  showRideCard = false;
+  isLoggedIn = false;
+
+  constructor(
+    private routeService: RouteService,
+    private geocodingService: GeocodingService,
+    private rideService: RideService,
+    private authService: AuthService,
+    private panicService: PanicService,
+    private cdr: ChangeDetectorRef
+  ) {}
+  onPanicClick() {
+    if (!this.userRide) return;
+    const payload = {
+      rideId: this.userRide.id,
+      locationId: 1, // TODO: Replace with real locationId if available
+      registeredUserId: null, // TODO: Set if user is registered user
+      driverId: this.currentUser?.userType === 'DRIVER' ? this.currentUser?.email : null // Use email as identifier for now
+    };
+    this.panicService.triggerPanic(payload).subscribe({
+      next: () => {
+        alert('Panic sent!');
+      },
+      error: () => {
+        alert('Failed to send panic!');
+      }
+    });
+  }
+
+  ngOnInit(): void {
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+      console.log('[DEBUG] currentUser', user);
+      this.isLoggedIn = !!user && !!user.email;
+      if (
+        this.isLoggedIn && user && user.email &&
+        (user.userType === 'DRIVER' || user.userType === 'REGISTERED_USER')
+      ) {
+        // Odredi koji servis pozivaš na osnovu tipa korisnika
+        const rideObservable =
+          user.userType === 'DRIVER'
+            ? this.rideService.getAssignedRides(user.email)
+            : this.rideService.getUserRides(user.email); // Dodaj getUserRides za registrovanog korisnika
+
+        rideObservable.subscribe(rides => {
+          console.log('[DEBUG] rides for user', rides);
+          // Prikazujemo samo jednu karticu:
+          // 1. Ako postoji IN_PROGRESS, prikazujemo samo nju
+          // 2. Ako nema IN_PROGRESS, prikazujemo najbližu REQUESTED (po startTime)
+          let rideToShow = null;
+          const inProgress = rides.find((r: any) => r.status === 'IN_PROGRESS');
+          if (inProgress) {
+            rideToShow = inProgress;
+          } else {
+            const requestedRides = rides.filter((r: any) => r.status === 'REQUESTED');
+            if (requestedRides.length > 0) {
+              rideToShow = requestedRides.sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
+            }
+          }
+          if (rideToShow) {
+            this.userRide = {
+              id: rideToShow.id,
+              startTime: rideToShow.startTime,
+              from: rideToShow.startLocation,
+              to: rideToShow.endLocation,
+              status: rideToShow.status === 'IN_PROGRESS' ? 'In progress' : 'Requested',
+            };
+          } else {
+            this.userRide = null;
+          }
+          this.showRideCard = true;
+          this.showForm = false;
+          this.cdr.detectChanges();
+        });
+      } else {
+        this.userRide = null;
+        this.showRideCard = false;
+        this.showForm = true;
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   onInputChange() {
     this.showEstimateButton = !!this.pickupLocation && !!this.destination;

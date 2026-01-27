@@ -11,6 +11,11 @@ export class RideService {
   getAssignedRides(driverEmail: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/assigned?driverEmail=${driverEmail}`);
   }
+
+  // Nova metoda za korisnika
+  getUserRides(userEmail: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/user/${userEmail}`);
+  }
   cancelRide(rideId: number, cancellationReason: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/${rideId}/cancel`, { cancellationReason });
   }

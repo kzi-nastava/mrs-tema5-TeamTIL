@@ -1,4 +1,233 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+/* Toast for panic sent */
+.toast-panic {
+    position: fixed;
+    top: 40px;
+    right: 40px;
+    background: linear-gradient(90deg, #b8001c 60%, #a000ff 100%);
+    color: #fff;
+    font-family: 'TacticSans', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding: 18px 36px 18px 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px #b8001c88;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    letter-spacing: 1px;
+    animation: fadeInOut 3s linear;
+}
+.toast-panic-icon {
+    font-size: 2rem;
+    margin-right: 8px;
+    filter: drop-shadow(0 0 8px #fff8);
+}
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(-20px); }
+    10% { opacity: 1; transform: translateY(0); }
+    90% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+}
+.ride-request-card {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 450px;
+    padding: 35px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 40px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 1000;
+}
+
+.ride-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #FFFFFF88;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #FFFFFF;
+    font-size: clamp(0.9rem, 1.2vw, 1rem);
+    outline: none;
+    font-family: Montserrat, sans-serif;
+    font-weight: 400;
+}
+
+.ride-input::placeholder {
+    color: #FFFFFF88;
+}
+.ride-overlay-card {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 600px;
+    max-width: 900px;
+    background: #2d1536;
+    border: 2px solid #ffd524;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px #000a;
+    z-index: 2000;
+    padding: 18px 32px 18px 32px;
+    color: #fff;
+    font-family: Montserrat, sans-serif;
+}
+.ride-overlay-card.extended {
+    min-width: 800px;
+    max-width: 1100px;
+}
+.ride-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+.ride-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+.ride-date {
+    font-size: 1.1rem;
+    color: #ffd524;
+    font-weight: 600;
+    margin-right: 10px;
+}
+.ride-status {
+    padding: 4px 14px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-right: 10px;
+    background: #2e4d2e;
+    color: #d6ffd6;
+}
+.ride-status.upcoming {
+    background: #3a2e4d;
+    color: #ffd524;
+}
+.ride-status.in-progress {
+    background: #2e4d2e;
+    color: #d6ffd6;
+}
+.ride-action-btn {
+    background: #ffd524;
+    color: #2d1536;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-right: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.ride-action-btn:hover {
+    background: #e6c700;
+}
+.ride-cancel-btn {
+    background: #ff3b3b;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.ride-cancel-btn:hover {
+    background: #c90000;
+}
+.panic-btn-container {
+    position: absolute;
+    right: 40px;
+    bottom: 40px;
+    z-index: 3000;
+}
+.panic-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 110px;
+    height: 110px;
+    background: radial-gradient(circle, #630c0c 40%, #2d0036 100%);
+    color: #fff;
+    border: 3px solid #ff2d2d;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    font-weight: 800;
+    box-shadow: 0 0 32px 12px #ff2d2dcc, 0 0 0 4px #2d153644;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    outline: none;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 8px #000a;
+    position: relative;
+    overflow: visible;
+}
+.panic-btn:hover {
+    background: radial-gradient(circle, #c90000 60%, #55185d 100%);
+    box-shadow: 0 0 80px 24px #ff3b3bcc, 0 0 0 12px #ff3b3b44;
+}
+.panic-icon-svg {
+    font-size: 2.2rem;
+    margin-bottom: 0.1em;
+    filter: drop-shadow(0 0 8px #fff8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.panic-text {
+    font-size: 1.1rem;
+    font-family: 'TacticSans', sans-serif;
+    font-weight: 700;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    justify-content: center;
+    margin-top: 0.1em;
+    text-shadow: 0 2px 8px #000a, 0 0 8px #fff8;
+}
+.panic-text-block {
+    width: 100%;
+    text-align: center;
+}
+.ride-end-btn {
+    background: #55185d;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.ride-end-btn:hover {
+    background: #3a1040;
+}
+.ride-card-body {
+    margin-top: 6px;
+    font-size: 1.08rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.ride-location {
+    color: #fff;
+    font-size: 1.08rem;
+    font-weight: 500;
+}
 
 @font-face {
     font-family: 'TacticSans';
@@ -133,36 +362,11 @@ app-map-view {
     position: relative;
 }
 
-.ride-request-card {
-    position: absolute;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 450px;
-    padding: 35px;
-    background-color: rgba(0, 0, 0, 0.8);
-    border-radius: 40px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    z-index: 1000;
-}
 
-.ride-input {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid #FFFFFF88;
-    background-color: rgba(0, 0, 0, 0.5);
-    color: #FFFFFF;
-    font-size: clamp(0.9rem, 1.2vw, 1rem);
-    outline: none;
-    font-family: Montserrat, sans-serif;
-    font-weight: 400;
-}
-
-.ride-input::placeholder {
-    color: #FFFFFF88;
+.ride-location {
+    color: #fff;
+    font-size: 1.08rem;
+    font-weight: 500;
 }
 
 .ride-btn {

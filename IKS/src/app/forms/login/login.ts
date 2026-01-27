@@ -52,17 +52,8 @@ export class Login {
         this.isLoading = false;
         this.snackBar.open(response.message, 'Close', { duration: 3000 });
         
-        // Redirect based on user type
-        switch (response.userType) {
-          case 'DRIVER':
-            this.router.navigate(['/driver-profile']);
-            break;
-          case 'ADMINISTRATOR':
-            this.router.navigate(['/admin-profile']);
-            break;
-          default:
-            this.router.navigate(['/user-profile']);
-        }
+        // Redirect all users to home page after login
+        this.router.navigate(['/']);
       },
       error: (error) => {
         this.isLoading = false;

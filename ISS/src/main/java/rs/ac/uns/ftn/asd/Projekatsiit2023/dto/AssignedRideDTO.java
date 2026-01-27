@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AssignedRideDTO {
     private Integer id;
-    private String passengerEmail;
+    private String accountEmail;
     private String startLocation;
     private String endLocation;
     private String status;
