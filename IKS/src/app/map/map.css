@@ -1,3 +1,15 @@
+/* Stil za estimated time popup na ruti */
+.route-time-popup {
+    background: #fffbe6;
+    color: #55185D;
+    font-weight: bold;
+    border-radius: 8px;
+    border: 2px solid #FFD524;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    padding: 6px 16px;
+    font-size: 1.1em;
+    text-align: center;
+}
 #map {
     height: 500px;
     width: 100%;

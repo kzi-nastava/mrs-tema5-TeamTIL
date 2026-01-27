@@ -8,7 +8,7 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideEstimationResponseDTO
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
 
 @RestController
-@RequestMapping("/api/routes")
+@RequestMapping("/api/route")
 public class RouteController {
 
     @Autowired

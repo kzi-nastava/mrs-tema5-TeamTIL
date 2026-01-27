@@ -22,16 +22,19 @@
   </div>
 </div>
 <div class="map-container">
-  <app-map></app-map>
+  <app-map (mapClicked)="onMapClick()"></app-map>
 
-  <div class="ride-request-card">
-    <input type="text" placeholder="Enter pickup location" class="ride-input" />
-    <input type="text" placeholder="Enter destination" class="ride-input" />
+  <div class="ride-request-card" *ngIf="showForm">
+    <input type="text" placeholder="Enter pickup location" class="ride-input" [(ngModel)]="pickupLocation" (input)="onInputChange()" />
+    <input type="text" placeholder="Enter destination" class="ride-input" [(ngModel)]="destination" (input)="onInputChange()" />
     <button class="ride-btn">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
         <path d="M8 0a5 5 0 0 0-5 5c0 3.75 5 11 5 11s5-7.25 5-11a5 5 0 0 0-5-5zm0 7.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/>
       </svg>
         Request a ride
+    </button>
+    <button *ngIf="showEstimateButton" class="ride-btn" (click)="estimateRideTime()" style="background-color:#55185D;color:#fff;margin-top:10px;">
+      Estimate ride time
     </button>
   </div>
 </div>
