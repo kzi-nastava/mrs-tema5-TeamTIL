@@ -25,4 +25,7 @@ export class RideService {
   cancelRide(rideId: number, cancellationReason: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/${rideId}/cancel`, { cancellationReason });
   }
+  endRide(rideId: number, endRideData: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${rideId}/end`, endRideData);
+  }
 }
