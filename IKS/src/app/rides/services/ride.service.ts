@@ -4,6 +4,9 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class RideService {
+      getAdminRideHistory(): Observable<any[]> {
+        return this.http.get<any[]>('http://localhost:8080/api/rides/admin/history');
+      }
     stopRide(rideId: number, stopRequest: any): Observable<any> {
       return this.http.put(`${this.apiUrl}/${rideId}/stop`, stopRequest);
     }
