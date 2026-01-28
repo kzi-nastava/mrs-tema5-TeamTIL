@@ -3,26 +3,32 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.DriverRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.*;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.InconsistencyReportResponseDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideCancelResponseDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideEstimationResponseDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideRatingResponseDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStopResponseDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideTrackingDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RatingType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RideStatus;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.VehicleType;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Location;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.model.PriceConfig;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Ride;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Route;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.PriceConfigRepository;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RideRepository;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.*;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.LocationService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RideService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.chrono.ChronoLocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -38,6 +44,12 @@ public class RideController {
     private RideRepository rideRepository;
     @Autowired
     private PriceConfigRepository priceConfigRepository;
+
+    @Autowired
+    private RideRatingRepository rideRatingRepository;
+
+    @Autowired
+    private RegisteredUserRepository registeredUserRepository;
 
     @Autowired
     private RouteService routeService;
@@ -217,50 +229,58 @@ public class RideController {
     }
 
     // 2.7 Complete the ride
-//    @PutMapping("/{rideId}/complete")
-//    public ResponseEntity<RideStopResponseDTO> completeRide(
-//            @PathVariable Long rideId,
-//            @RequestParam(required = false) String finalLocation) {
-//
-//        if (rideId <= 0) {
-//            return ResponseEntity.badRequest().build();
-//        }
-//
-//        double finalPrice = Math.random() * 2000 + 500; // 500-2500 din
-//        String duration = String.format("%d min", (int) (Math.random() * 30 + 10)); // 10-40 min
-//
-//        RideStopResponseDTO response = new RideStopResponseDTO(
-//                rideId,
-//                "COMPLETED",
-//                finalLocation != null ? finalLocation : "Destination reached",
-//                Math.round(finalPrice * 100.0) / 100.0,
-//                duration,
-//                "Ride completed and paid successfully");
-//        return ResponseEntity.ok(response);
-//    }
+    @PutMapping("/{rideId}/complete")
+    public ResponseEntity<RideStopResponseDTO> completeRide(
+            @PathVariable Long rideId,
+            @RequestParam(required = false) String finalLocation) {
+
+        if (rideId <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        double finalPrice = Math.random() * 2000 + 500; // 500-2500 din
+        String duration = String.format("%d min", (int) (Math.random() * 30 + 10)); // 10-40 min
+
+        RideStopResponseDTO response = new RideStopResponseDTO(
+                Math.toIntExact(rideId),
+                "COMPLETED",
+                finalLocation != null ? finalLocation : "Destination reached",
+                Math.round(finalPrice * 100.0) / 100.0,
+                duration,
+                "Ride completed and paid successfully");
+        return ResponseEntity.ok(response);
+    }
 
     // 2.8 Rate ride, driver and vehicle
     @PostMapping("/{rideId}/rate")
     public ResponseEntity<RideRatingResponseDTO> rateRide(
             @PathVariable Long rideId,
-            @RequestBody RideRatingRequestDTO request) {
+            @RequestBody RideRatingRequestDTO request,
+            @AuthenticationPrincipal RegisteredUser rater) {
+        Ride ride = rideRepository.findById(Math.toIntExact(rideId))
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
 
-        // provera roka od 3 dana
-        LocalDate rideDate = LocalDate.now().minusDays(2); // primer završene vožnje pre 2 dana
-        boolean withinDeadline = ChronoUnit.DAYS.between(rideDate, LocalDate.now()) <= 3;
-
-        if (!withinDeadline) {
+        if (ride.getEndTime().isBefore(LocalDateTime.now().minusDays(3))) {
             return ResponseEntity.badRequest().body(
                     new RideRatingResponseDTO(rideId, "UNRATED", "Deadline exceeded, rating not accepted"));
         }
 
-        // uspešna ocena
+        Rating rating = new Rating();
+        rating.setDriverRating(request.getDriverRating().doubleValue());
+        rating.setVehicleRating(request.getVehicleRating().doubleValue());
+        rating.setRatedDriver(ride.getDriver());
+        rating.setRater(rater);
+        rating.setRide(ride);
+        rating.setComment(request.getComment());
+        rating.setCreatedAt(LocalDateTime.now());
+        rideRatingRepository.save(rating);
         RideRatingResponseDTO response = new RideRatingResponseDTO(
                 rideId,
                 "RATED",
                 "Rating submitted successfully: Driver=" + request.getDriverRating() +
                         ", Vehicle=" + request.getVehicleRating() +
-                        ", Comment='" + request.getComment() + "'");
+                        ", Comment='" + request.getComment() + "'"
+        );
 
         return ResponseEntity.ok(response);
     }
