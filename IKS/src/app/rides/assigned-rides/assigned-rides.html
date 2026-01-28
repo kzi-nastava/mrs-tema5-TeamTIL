@@ -64,7 +64,7 @@
                 Open ride
               </button>
               <button class="btn-action btn-end" (click)="endRide(ride); $event.stopPropagation()">
-                End ride
+                Stop ride
               </button>
             </div>
           } @else {
@@ -159,7 +159,7 @@
         Open ride
       </button>
       <button class="btn-warning btn-pause-ride" (click)="pauseRide(selectedRide)">
-        Pause ride
+        Stop ride
       </button>
       <button class="btn-secondary btn-end-ride" (click)="endRide(selectedRide)">
         End ride

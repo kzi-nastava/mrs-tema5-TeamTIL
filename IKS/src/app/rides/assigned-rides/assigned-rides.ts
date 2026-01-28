@@ -156,12 +156,46 @@ export class AssignedRides implements OnInit {
   }
 
   pauseRide(ride: Ride) {
-    console.log('Pausing ride:', ride);
-    // TODO: Pause ride logic
+    if (!ride) return;
+    const stopRequest = {
+      rideId: ride.id,
+      actualEndLocation: {
+        latitude: 45.2671,
+        longitude: 19.8335,
+        address: 'Trg slobode 1, Novi Sad'
+      },
+      actualEndTime: new Date().toISOString()
+    };
+    this.rideService.stopRide(ride.id, stopRequest).subscribe({
+      next: () => {
+        alert('Ride stopped successfully!');
+        this.ngOnInit(); // refresh rides
+      },
+      error: () => {
+        alert('Failed to stop ride!');
+      }
+    });
   }
 
   endRide(ride: Ride) {
-    console.log('Ending ride:', ride);
-    // TODO: End ride logic
+    if (!ride) return;
+    const stopRequest = {
+      rideId: ride.id,
+      actualEndLocation: {
+        latitude: 45.2671,
+        longitude: 19.8335,
+        address: 'Trg slobode 1, Novi Sad'
+      },
+      actualEndTime: new Date().toISOString()
+    };
+    this.rideService.stopRide(ride.id, stopRequest).subscribe({
+      next: () => {
+        alert('Ride stopped successfully!');
+        this.ngOnInit(); // refresh rides
+      },
+      error: () => {
+        alert('Failed to stop ride!');
+      }
+    });
   }
 }

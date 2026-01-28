@@ -52,13 +52,12 @@ public class PanicService {
 
         Ride ride = rideRepository.findById(request.getRideId()).orElse(null);
         Location location = locationRepository.findById(request.getLocationId()).orElse(null);
-        RegisteredUser registeredUser = registeredUserRepository.findById(request.getRegisteredUserId()).orElse(null);
-        Driver driver = driverRepository.findById(request.getDriverId()).orElse(null);
 
         panic.setRide(ride);
         panic.setLocation(location);
-        panic.setRegisteredUser(registeredUser);
-        panic.setDriver(driver);
+        assert ride != null;
+        panic.setRegisteredUser(ride.getPassenger());
+        panic.setDriver(ride.getDriver());
         panic.setHandled(false);
         panic.setIsRead(false);
         panic.setTimeSent(LocalTime.now());

@@ -1,3 +1,8 @@
+<!-- Toast notification for panic sent -->
+<div *ngIf="showPanicToast" class="toast-panic">
+  <span class="toast-panic-icon">&#128680;</span>
+  Panic zahtev je uspešno poslat!
+</div>
 <div class="section">
   <div class="container">
     <div class="text-block">
@@ -20,21 +25,70 @@
       Watch our fleet of drivers in real-time. Click on any vehicle to see driver details.
     </p>
   </div>
-</div>
-<div class="map-container">
-  <app-map-view (mapClicked)="onMapClick()"></app-map-view>
+  <div class="map-container">
+    <app-map-view (mapClicked)="onMapClick()"></app-map-view>
 
-  <div class="ride-request-card" *ngIf="showForm">
-    <input type="text" placeholder="Enter pickup location" class="ride-input" [(ngModel)]="pickupLocation" (input)="onInputChange()" />
-    <input type="text" placeholder="Enter destination" class="ride-input" [(ngModel)]="destination" (input)="onInputChange()" />
-    <button class="ride-btn">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M8 0a5 5 0 0 0-5 5c0 3.75 5 11 5 11s5-7.25 5-11a5 5 0 0 0-5-5zm0 7.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/>
-      </svg>
-        Request a ride
-    </button>
-    <button *ngIf="showEstimateButton" class="ride-btn" (click)="estimateRideTime()" style="background-color:#55185D;color:#fff;margin-top:10px;">
-      Estimate ride time
-    </button>
+    <!-- Kartica vožnje preko mape (uvek prikazana za ulogovane korisnike, prazna ako nema vožnje) -->
+    <div *ngIf="showRideCard" class="ride-overlay-card extended">
+      <ng-container *ngIf="userRide; else emptyRideCard">
+        <div>
+          <div class="ride-card-header">
+            <span class="ride-date">{{ userRide.startTime | date:'dd MMM yyyy, HH:mm' }} - {{ userRide.status === 'In progress' ? 'ongoing' : 'upcoming' }}</span>
+          </div>
+          <div class="ride-card-body">
+            <span class="ride-location"><svg style="vertical-align:middle" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg> {{ userRide.from }} → {{ userRide.to }}</span>
+          </div>
+          <div class="ride-card-actions">
+            <span class="ride-status" [ngClass]="{'in-progress': userRide.status === 'In progress', 'upcoming': userRide.status === 'Upcoming'}">{{ userRide.status }}</span>
+            <button class="ride-action-btn">Open ride</button>
+            <button *ngIf="currentUser?.userType === 'DRIVER'" class="ride-end-btn">End ride</button>
+            <button *ngIf="currentUser?.userType === 'DRIVER' && userRide.status === 'In progress'" class="ride-pause-btn" (click)="stopRide()">Stop ride</button>
+            <button *ngIf="userRide.status === 'Requested' && !showCancelForm" class="ride-cancel-btn" (click)="showCancelForm = true">Cancel ride</button>
+          </div>
+          <!-- Inline cancellation reason form for DRIVER -->
+          <div *ngIf="showCancelForm && currentUser?.userType === 'DRIVER'" class="cancel-card-form">
+            <div class="cancel-card-form-header">Cancel ride</div>
+            <div class="cancel-card-form-body">
+              <label for="cancel-reason" class="cancel-card-label">Cancellation reason:</label>
+              <textarea id="cancel-reason" [(ngModel)]="cancelReason" rows="2" class="cancel-card-textarea" placeholder="Enter reason..." autofocus></textarea>
+            </div>
+            <div class="cancel-card-form-actions">
+              <button class="cancel-card-confirm-btn" (click)="confirmCancelRide()" [disabled]="!cancelReason.trim()">Confirm</button>
+              <button class="cancel-card-close-btn" (click)="showCancelForm = false">Close</button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+    <!-- Panic button at the bottom if ride is IN_PROGRESS -->
+    <div *ngIf="userRide && userRide.status === 'In progress'" class="panic-btn-container">
+      <button class="panic-btn" (click)="onPanicClick()">
+        <span class="panic-icon-svg">&#128680;</span>
+        <span class="panic-text panic-text-block">PANIC</span>
+      </button>
+    </div>
+    <ng-template #emptyRideCard>
+      <div class="ride-card-header">
+        <span class="ride-date">No active or upcoming rides</span>
+      </div>
+      <div class="ride-card-body">
+        <span class="ride-location">You have no rides scheduled.</span>
+      </div>
+    </ng-template>
+
+    <!-- Forma za unos lokacija prikazana samo preko mape -->
+    <div class="ride-request-card" *ngIf="showForm">
+      <input type="text" placeholder="Enter pickup location" class="ride-input" [(ngModel)]="pickupLocation" (input)="onInputChange()" />
+      <input type="text" placeholder="Enter destination" class="ride-input" [(ngModel)]="destination" (input)="onInputChange()" />
+      <button class="ride-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 0a5 5 0 0 0-5 5c0 3.75 5 11 5 11s5-7.25 5-11a5 5 0 0 0-5-5zm0 7.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+        </svg>
+          Request a ride
+      </button>
+      <button *ngIf="showEstimateButton" class="ride-btn" (click)="estimateRideTime()" style="background-color:#55185D;color:#fff;margin-top:10px;">
+        Estimate ride time
+      </button>
+    </div>
   </div>
 </div>

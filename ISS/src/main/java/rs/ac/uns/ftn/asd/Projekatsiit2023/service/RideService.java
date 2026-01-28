@@ -9,6 +9,7 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideRequestDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideCancelResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RideStatus;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.VehicleType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Location;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.PriceConfig;
@@ -66,7 +67,7 @@ public class RideService {
         );
     }
 
-    public AssignedRideDTO mapRideToDTO(Ride ride) {
+    public AssignedRideDTO mapRideToDTO(Ride ride, UserType userType) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
 
         // Estimate route
@@ -87,9 +88,13 @@ public class RideService {
 
         double price = calculateFinalPrice(ride.getDriver().getVehicle().getType(), ride.getStartLocation(), ride.getEndLocation());
 
+        String accountEmail = userType == UserType.DRIVER
+                ? ride.getDriver().getEmail()
+                : ride.getPassenger().getEmail();
+
         return new AssignedRideDTO(
                 ride.getId(),
-                ride.getPassenger().getEmail(),
+                accountEmail,
                 ride.getStartLocation().getAddress(),
                 ride.getEndLocation() != null ? ride.getEndLocation().getAddress() : "",
                 ride.getRideStatus().toString(),

@@ -76,6 +76,7 @@ userProfile$ = this.userProfileSource.asObservable();
           };
           console.log('Saving user to localStorage:', user);
           localStorage.setItem('currentUser', JSON.stringify(user));
+          localStorage.setItem('token', response.token); // Dodaj token posebno
           this.currentUserSubject.next(user);
         })
       );
@@ -87,6 +88,7 @@ userProfile$ = this.userProfileSource.asObservable();
 
   logout(): void {
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('token'); // Ukloni token iz localStorage
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
   }
