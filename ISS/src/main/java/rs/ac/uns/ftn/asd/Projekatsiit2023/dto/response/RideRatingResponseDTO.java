@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class RideRatingResponseDTO {
-    private Long rideId;
+    private Integer rideId;
     private String status;
     private String message;
 }

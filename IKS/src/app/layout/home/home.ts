@@ -24,6 +24,36 @@ interface RideCard {
   styleUrls: ['./home.css'],
 })
 export class Home implements OnInit {
+  endRide() {
+    if (!this.userRide) return;
+
+    const requestPayload = {
+      actualEndLocation: {
+        latitude: 45.2671,
+        longitude: 19.8335,
+        address: 'Trg slobode 1, Novi Sad'
+      },
+      actualEndTime: new Date().toISOString()
+    };
+
+    this.rideService.endRide(this.userRide.id, requestPayload).subscribe({
+      next: (response: any) => {
+        alert(`Ride ended successfully! Price: ${response.finalPrice}, Duration: ${response.duration}`);
+        if (this.userRide) {
+          this.userRide.status = 'COMPLETED';
+        }
+        this.showRideCard = false;
+        this.userRide = null;
+        this.showForm = true;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Failed to end ride!');
+      }
+    });
+  }
+
       stopRide() {
         if (!this.userRide) return;
         // For demo, use dummy location and time. Replace with real data if available.
