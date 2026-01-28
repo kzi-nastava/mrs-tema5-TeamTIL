@@ -1,0 +1,133 @@
+<div class="booking-page-container">
+  <div class="side-panel">
+    <div class="panel-header">
+      <div class="title-row">
+        <img src="assets/logo.png" alt="TilTaxi Logo" class="panel-logo" />
+        <h2>Ride booking</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <hr class="header-separator">
+    </div>
+
+    <div class="scroll-content">
+      <div class="section-container">
+        <div class="input-group">
+          <span class="dot outline">S</span>
+          <input type="text" [(ngModel)]="startLocation" placeholder="Add starting location">
+        </div>
+
+        <div class="input-group" *ngFor="let stop of intermediateStops; let i = index">
+          <span class="dot outline">S{{i + 1}}</span>
+          <input type="text" [(ngModel)]="intermediateStops[i]" placeholder="Add stop">
+          <button class="remove-stop" (click)="removeStop(i)">&times;</button>
+        </div>
+        
+        <div class="input-group clickable" (click)="addStop()">
+          <span class="dot plus">+</span>
+          <input type="text" placeholder="Add stop" readonly>
+        </div>
+
+        <div class="input-group">
+          <span class="dot outline">E</span>
+          <input type="text" [(ngModel)]="endLocation" placeholder="Add ending location">
+        </div>
+      </div>
+
+      <hr class="separator">
+
+      <div class="date-time-flex-row">
+        <div class="date-section">
+          <label class="section-label">Choose date</label>
+          <div class="mini-calendar">
+            <div class="cal-nav">
+              <button (click)="prevMonth()">&lt;</button>
+              <span>{{monthNames[viewDate.getMonth()]}} {{viewDate.getFullYear()}}</span>
+              <button (click)="nextMonth()">&gt;</button>
+            </div>
+            <div class="cal-days-grid">
+              <span *ngFor="let d of daysInMonth" 
+                    [class.empty]="!d"
+                    [class.selected]="selectedDate.getDate() === d && selectedDate.getMonth() === viewDate.getMonth()"
+                    [class.today]="isToday(d)"
+                    (click)="selectDay(d)">{{d}}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="time-section">
+          <label class="section-label">Enter time</label>
+          <div class="stepper-time-picker">
+            <div class="time-unit">
+              <span class="time-val">{{formatTime(hourValue)}}</span>
+              <button class="plus-btn" (click)="incrementHour()">+</button>
+            </div>
+            <span class="time-sep">:</span>
+            <div class="time-unit">
+              <span class="time-val">{{formatTime(minuteValue)}}</span>
+              <button class="plus-btn" (click)="incrementMinute()">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="separator">
+
+      <div class="section-container">
+        <div class="accordion-header" (click)="toggleFavorites()">
+          <span>Select from Favorite Routes</span>
+          <span class="arrow" [class.open]="showFavorites">▼</span>
+        </div>
+        <div class="accordion-content" *ngIf="showFavorites">
+          <div class="fav-route-card" *ngFor="let i of [1,2,3]">
+            <div class="route-info">
+              <span class="dist">Distance 8.2km</span>
+              <p>Stražilovska → Bulevar Kralja Petra I</p>
+            </div>
+            <button class="yellow-btn-small">Choose</button>
+          </div>
+        </div>
+      </div>
+
+      <hr class="separator">
+
+      <div class="section-container">
+        <label class="section-label">Invite passengers</label>
+        <div class="input-group">
+          <span class="dot outline">@</span>
+          <input type="email" [(ngModel)]="newPassengerEmail" (keyup.enter)="addPassenger()" placeholder="Enter email address">
+          <button class="add-passenger-btn" (click)="addPassenger()">+</button>
+        </div>
+        
+        <div class="passenger-list-container">
+          <div class="passenger-row" *ngFor="let email of passengers; let i = index">
+            <span class="p-email">{{email}}</span>
+            <button class="remove-p-btn" (click)="removePassenger(i)">&times;</button>
+          </div>
+        </div>
+      </div>
+
+      <hr class="separator">
+
+      <div class="section-container">
+        <label class="section-label">Vehicle Type</label>
+        <div class="vehicle-type-grid">
+          <div class="type-option" [class.active]="selectedVehicleType === 'STANDARD'" (click)="selectedVehicleType = 'STANDARD'">Standard</div>
+          <div class="type-option" [class.active]="selectedVehicleType === 'LUXURY'" (click)="selectedVehicleType = 'LUXURY'">Luxury</div>
+          <div class="type-option" [class.active]="selectedVehicleType === 'VAN'" (click)="selectedVehicleType = 'VAN'">Van</div>
+        </div>
+        
+        <div class="checkbox-row-custom">
+          <mat-checkbox class="white-check" [(ngModel)]="babyFriendly">Baby Friendly</mat-checkbox>
+          <mat-checkbox class="white-check" [(ngModel)]="petFriendly">Pet Friendly</mat-checkbox>
+        </div>
+      </div>
+
+      <hr class="separator">
+      <button class="main-request-btn" (click)="requestRide()">Request ride</button>
+    </div>
+  </div>
+
+  <div class="map-view-container">
+    <app-map-view></app-map-view>
+  </div>
+</div>

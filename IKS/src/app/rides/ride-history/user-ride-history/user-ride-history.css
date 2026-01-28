@@ -564,6 +564,24 @@ mat-card.ride-card.selected,
   transform: translateY(-1px);
 }
 
+.rate-btn {
+  background-color: #3e0046 !important;
+  color: #ffca33 !important;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 100%;
+}
+
+.rate-btn:hover {
+  background-color: #3e0972 !important;
+  transform: translateY(-1px);
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .details-sidebar.open {

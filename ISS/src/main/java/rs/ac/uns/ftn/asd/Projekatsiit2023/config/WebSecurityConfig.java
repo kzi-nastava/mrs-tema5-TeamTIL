@@ -74,6 +74,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/route/estimate").permitAll()
                 .requestMatchers("/api/drivers/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers("/api/rides/**").permitAll()
                 .anyRequest().authenticated()
         );
 

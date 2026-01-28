@@ -6,25 +6,40 @@ import org.springframework.transaction.annotation.Transactional;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.AdminRideResponseDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.DriverRideDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideRequestDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideCancelResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RideStatus;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.VehicleType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Location;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.PriceConfig;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.RegisteredUser;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Ride;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.PanicNotificationRepository;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.PriceConfigRepository;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RegisteredUserRepository;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RideRepository;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 @Service
 public class RideService {
     @Autowired
     private RouteService routeService;
+
+    @Autowired
+    private RegisteredUserRepository userRepository;
+
+    @Autowired
+    private LocationService locationService;
 
     @Autowired
     private PriceConfigRepository priceConfigRepository;
@@ -140,6 +155,47 @@ public class RideService {
         }).collect(Collectors.toList());
     }
 
+    public DriverRideDTO mapRideToDriverRideDTO(Ride ride) {
+        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm");
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.ENGLISH);
+
+        List<DriverRideDTO.PassengerDTO> passengers = new ArrayList<>();
+        if (ride.getPassenger() != null) {
+            passengers.add(new DriverRideDTO.PassengerDTO(
+                    ride.getPassenger().getFirstName() + " " + ride.getPassenger().getLastName(),
+                    ride.getPassenger().getPhoneNumber()
+            ));
+        }
+        if (ride.getCoPassengers() != null) {
+            ride.getCoPassengers().forEach(p -> passengers.add(new DriverRideDTO.PassengerDTO(
+                    ride.getPassenger().getFirstName() + " " + ride.getPassenger().getLastName(),
+                    p.getPhoneNumber()
+            )));
+        }
+
+        String canceledBy = null;
+        if (ride.getRideStatus() == RideStatus.CANCELED && ride.getCanceledBy() != null) {
+            canceledBy = ride.getCanceledBy().name(); // "Driver" | "Passenger"
+        }
+
+        return new DriverRideDTO(
+                ride.getId(),
+                ride.getStartTime().format(dateFormat),
+                ride.getStartTime().format(timeFormat),
+                ride.getEndTime() != null ? ride.getEndTime().format(timeFormat) : null,
+                ride.getStartLocation().getAddress(),
+                ride.getEndLocation().getAddress(),
+                String.format("%,.0f RSD", ride.getTotalPrice()), // "1,480 RSD"
+                ride.getRideStatus() == RideStatus.FINISHED ? "Completed" : "Canceled",
+                canceledBy,
+                !ride.getPanicNotifications().isEmpty(),
+                ride.getDurationMinutes() + " min ",
+                ride.getDistanceKm() + " km",
+                passengers
+        );
+    }
+
+
     public double calculateFinalPrice(VehicleType vehicleType, Location start, Location end) {
         PriceConfig priceConfig = priceConfigRepository.findByVehicleType(vehicleType)
                 .orElseThrow(() -> new RuntimeException("Price config not found"));
@@ -154,5 +210,23 @@ public class RideService {
                 end.getLatitude(), end.getLongitude()
         );
         return estimation != null ? estimation.distanceKm : 0.0;
+    }
+
+    @Transactional
+    public RideHistoryDTO createNewRide(RideRequestDTO request) {
+        Ride ride = new Ride();
+
+        ride.setRideStatus(RideStatus.REQUESTED); // Ili ACCEPTED zavisno od tvoje logike
+
+        return new RideHistoryDTO(
+                101,
+                request.getPassengerEmails().isEmpty() ? "guest@example.com" : request.getPassengerEmails().get(0),
+                "pending@driver.com",
+                request.getLocations().get(0),
+                request.getLocations().get(request.getLocations().size() - 1),
+                "REQUESTED",
+                1200.0,
+                java.time.LocalDateTime.now().toString()
+        );
     }
 }
