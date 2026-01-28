@@ -6,78 +6,82 @@
     </header>
 
     <section class="filters-section">
-        <div class="filter-inputs">
-          <mat-form-field appearance="outline">
-            <mat-label>From</mat-label>
-            <input matInput [matDatepicker]="pickerFrom" [(ngModel)]="dateFrom">
-            <mat-datepicker-toggle matIconSuffix [for]="pickerFrom"></mat-datepicker-toggle>
-            <mat-datepicker #pickerFrom></mat-datepicker>
-          </mat-form-field>
+      <div class="filter-inputs">
+        <mat-form-field appearance="outline">
+          <mat-label>From</mat-label>
+          <input matInput [matDatepicker]="pickerFrom" [(ngModel)]="dateFrom" />
+          <mat-datepicker-toggle matIconSuffix [for]="pickerFrom"></mat-datepicker-toggle>
+          <mat-datepicker #pickerFrom></mat-datepicker>
+        </mat-form-field>
 
-          <mat-form-field appearance="outline">
-            <mat-label>To</mat-label>
-            <input matInput [matDatepicker]="pickerTo" [(ngModel)]="dateTo">
-            <mat-datepicker-toggle matIconSuffix [for]="pickerTo"></mat-datepicker-toggle>
-            <mat-datepicker #pickerTo></mat-datepicker>
-          </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>To</mat-label>
+          <input matInput [matDatepicker]="pickerTo" [(ngModel)]="dateTo" />
+          <mat-datepicker-toggle matIconSuffix [for]="pickerTo"></mat-datepicker-toggle>
+          <mat-datepicker #pickerTo></mat-datepicker>
+        </mat-form-field>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Status</mat-label>
-            <mat-select [(ngModel)]="selectedStatus">
-              <mat-option value="">All</mat-option>
-              <mat-option value="completed">Completed</mat-option>
-              <mat-option value="canceled">Canceled</mat-option>
-            </mat-select>
-          </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="selectedStatus">
+            <mat-option value="">All</mat-option>
+            <mat-option value="completed">Completed</mat-option>
+            <mat-option value="canceled">Canceled</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-          <button mat-raised-button color="primary" class="btn-apply" (click)="applyFilters()">Apply Filters</button>
-        </div>
+        <button mat-raised-button color="primary" class="btn-apply" (click)="applyFilters()">
+          Apply Filters
+        </button>
+      </div>
 
-        <mat-chip-set aria-label="Quick filters">
-          @for (option of filterOptions; track option) {
-            <mat-chip-option 
-              [selected]="activeFilter === option"
-              (click)="setActiveFilter(option)">
-              {{ option }}
-            </mat-chip-option>
-          }
-        </mat-chip-set>
-      </section>
+      <mat-chip-set aria-label="Quick filters">
+        @for (option of filterOptions; track option) {
+          <mat-chip-option [selected]="activeFilter === option" (click)="setActiveFilter(option)">
+            {{ option }}
+          </mat-chip-option>
+        }
+      </mat-chip-set>
+    </section>
 
-      <div class="rides-list">
-        @for (date of getUniqueDates(); track date) {
+    <div class="rides-list">
+      @for (date of getUniqueDates(); track date) {
         <div class="date-divider">
           <span>{{ date }}</span>
         </div>
 
         @for (ride of getRidesByDate(date); track ride.id) {
-        <mat-card 
-          class="ride-card"
-          [class.selected]="selectedRide?.id === ride.id"
-          (click)="selectRide(ride)">
-          <mat-card-content>
-            <div class="ride-info">
-              <span class="time">{{ ride.date.split(' ')[0] }} {{ ride.date.split(' ')[1] }} {{ ride.date.split(' ')[2] }}, {{ ride.startTime }} - {{ ride.endTime }}</span>
-              <div class="route-wrapper">
-                <mat-icon>location_on</mat-icon>
-                <span class="route">{{ ride.from }} → {{ ride.to }}</span>
+          <mat-card
+            class="ride-card"
+            [class.selected]="selectedRide?.id === ride.id"
+            (click)="selectRide(ride)"
+          >
+            <mat-card-content>
+              <div class="ride-info">
+                <span class="time"
+                  >{{ ride.date.split(' ')[0] }} {{ ride.date.split(' ')[1] }}
+                  {{ ride.date.split(' ')[2] }}, {{ ride.startTime }} - {{ ride.endTime }}</span
+                >
+                <div class="route-wrapper">
+                  <mat-icon>location_on</mat-icon>
+                  <span class="route">{{ ride.from }} → {{ ride.to }}</span>
+                </div>
               </div>
-            </div>
-            <div class="ride-meta">
-              <span class="price">{{ ride.price }} RSD</span>
-              <span class="status" [class]="'status-' + ride.status.toLowerCase()">
-                {{ ride.status }}
-              </span>
-            </div>
-          </mat-card-content>
-        </mat-card>
+              <div class="ride-meta">
+                <span class="price">{{ ride.price }} RSD</span>
+                <span class="status" [class]="'status-' + ride.status.toLowerCase()">
+                  {{ ride.status }}
+                </span>
+              </div>
+            </mat-card-content>
+          </mat-card>
         }
-        }
-      </div>
-    </main>
+      }
+    </div>
+  </main>
 
-    <aside class="details-sidebar" [class.open]="selectedRide">
-      @if (selectedRide) {
+  <aside class="details-sidebar" [class.open]="selectedRide">
+    @if (selectedRide) {
       <div class="sidebar-header">
         <h2>Ride Details</h2>
         <button mat-icon-button class="close-btn" (click)="selectedRide = null">
@@ -127,8 +131,13 @@
           </div>
         </div>
 
-        <button mat-raised-button color="primary" class="view-full-btn">View full ride details</button>
+        <button mat-raised-button color="primary" class="view-full-btn">
+          View full ride details
+        </button>
+        <button mat-stroked-button color="accent" class="rate-btn" (click)="openRateRide(selectedRide)">
+          Rate ride
+        </button>
       </div>
-      }
-    </aside>
-</div> 
+    }
+  </aside>
+</div>

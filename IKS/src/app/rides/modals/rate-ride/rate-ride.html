@@ -1,0 +1,75 @@
+<mat-dialog-content>
+  <h2 class="modal-title">Rate Vehicle & Driver</h2>
+
+  <div class="entity-section">
+    <div class="entity-header">
+      <div class="driver-avatar">
+        <i class="fas fa-user"></i>
+      </div>
+      <div class="entity-info">
+        <div class="entity-name">{{ ride.driver?.name }}</div>
+
+        <div class="stars">
+          <mat-icon
+            *ngFor="let star of [1, 2, 3, 4, 5]"
+            (click)="setDriverRating(star)"
+            [class.active]="star <= driverRating"
+          >
+            star
+          </mat-icon>
+        </div>
+
+        <div *ngIf="driverRating === 0" class="rating-warning">Please rate the driver</div>
+      </div>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="entity-section">
+    <div class="entity-header">
+      <div class="vehicle-image-col">
+        <img src="assets/vehicle info.png" alt="Vehicle img" class="car-icon-big" />
+      </div>
+
+      <div class="entity-info">
+        <div class="entity-name">
+          {{ ride.vehicle?.model }}
+          <span class="plate">({{ ride.vehicle?.plate }})</span>
+        </div>
+
+        <div class="stars">
+          <mat-icon
+            *ngFor="let star of [1, 2, 3, 4, 5]"
+            (click)="setVehicleRating(star)"
+            [class.active]="star <= vehicleRating"
+          >
+            star
+          </mat-icon>
+        </div>
+
+        <div *ngIf="vehicleRating === 0" class="rating-warning">Please rate the vehicle</div>
+      </div>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="feedback">
+    <label class="feedback-label">Additional Feedback</label>
+
+    <textarea matInput class="feedback-input" placeholder="Optional" [(ngModel)]="comment">
+    </textarea>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button
+    mat-raised-button
+    class="submit-btn"
+    (click)="submit()"
+    [disabled]="driverRating === 0 || vehicleRating === 0"
+  >
+    Submit Rating
+  </button>
+</mat-dialog-actions>

@@ -11,6 +11,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatNativeDateModule } from '@angular/material/core';
 import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { RateRideComponent } from '../../modals/rate-ride/rate-ride';
 
 interface Ride {
   id: number;
@@ -24,6 +26,7 @@ interface Ride {
   duration?: string;
   distance?: string;
   driver?: { name: string; phone: string };
+  vehicle?: { model: string; plate: string };
 }
 
 @Component({
@@ -66,6 +69,7 @@ export class UserRideHistory {
       duration: '33 min',
       distance: '8.2 km',
       driver: { name: 'John Pork', phone: '+381 125 456 789' },
+      vehicle: { model: 'Toyota Corolla', plate: 'BG123XY' }
     },
     {
       id: 2,
@@ -79,6 +83,7 @@ export class UserRideHistory {
       duration: '33 min',
       distance: '8.2 km',
       driver: { name: 'John Pork', phone: '+381 125 456 789' },
+      vehicle: { model: 'Volkswagen Golf', plate: 'NS456AB' }
     },
     {
       id: 3,
@@ -92,6 +97,7 @@ export class UserRideHistory {
       duration: '33 min',
       distance: '8.2 km',
       driver: { name: 'John Pork', phone: '+381 125 456 789' },
+      vehicle: { model: 'Honda Civic', plate: 'NI789CD' }
     },
     {
       id: 4,
@@ -105,6 +111,7 @@ export class UserRideHistory {
       duration: '30 min',
       distance: '5.5 km',
       driver: { name: 'Jane Smith', phone: '+381 125 456 780' },
+      vehicle: { model: 'Ford Focus', plate: 'SU321EF' }
     },
     {
       id: 5,
@@ -118,8 +125,11 @@ export class UserRideHistory {
       duration: '35 min',
       distance: '7.8 km',
       driver: { name: 'Mike Johnson', phone: '+381 125 456 781' },
+      vehicle: { model: 'Chevrolet Cruze', plate: 'KG654GH' }
     },
   ];
+
+  constructor(private dialog: MatDialog) {}
 
   rides: Ride[] = [...this.allRides];
   selectedRide: Ride | null = this.rides[0];
@@ -240,5 +250,23 @@ export class UserRideHistory {
 
   getRidesByDate(date: string): Ride[] {
     return this.rides.filter(ride => ride.date === date);
+  }
+
+  openRateRide(ride: Ride) {
+    if (!ride) return;
+
+    const dialogRef = this.dialog.open(RateRideComponent, {
+      width: '420px',
+      data: ride,
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      console.log('Rating:', result.rating, result.comment);
+
+      // TODO: backend poziv
+      // this.ridesService.rateRide(ride.id, result)
+    }
+  });
   }
 }
