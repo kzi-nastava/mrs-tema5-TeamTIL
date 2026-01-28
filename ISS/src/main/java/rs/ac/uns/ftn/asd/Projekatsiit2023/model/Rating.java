@@ -18,11 +18,10 @@ public class Rating {
     private Integer id;
 
     @Column(nullable = false)
-    private Double score;
+    private Double vehicleRating;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private RatingType ratingType;
+    private Double driverRating;
 
     @ManyToOne
     @JoinColumn(name = "driver_id")
