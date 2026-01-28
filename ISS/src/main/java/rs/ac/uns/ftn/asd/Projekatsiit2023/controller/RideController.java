@@ -229,32 +229,65 @@ public class RideController {
     }
 
     // 2.7 Complete the ride
-    @PutMapping("/{rideId}/complete")
-    public ResponseEntity<RideStopResponseDTO> completeRide(
-            @PathVariable Long rideId,
-            @RequestParam(required = false) String finalLocation) {
+    @PutMapping("/{rideId}/end")
+    public ResponseEntity<RideStopResponseDTO> endRide(
+            @PathVariable Integer rideId,
+            @RequestBody RideEndRequestDTO request) {
 
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
 
-        double finalPrice = Math.random() * 2000 + 500; // 500-2500 din
-        String duration = String.format("%d min", (int) (Math.random() * 30 + 10)); // 10-40 min
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
 
-        RideStopResponseDTO response = new RideStopResponseDTO(
-                Math.toIntExact(rideId),
-                "COMPLETED",
-                finalLocation != null ? finalLocation : "Destination reached",
-                Math.round(finalPrice * 100.0) / 100.0,
-                duration,
-                "Ride completed and paid successfully");
-        return ResponseEntity.ok(response);
+        Route route = ride.getRoute();
+        VehicleType vehicleType = ride.getDriver().getVehicle().getType();
+
+        double finalPrice = rideService.calculateFinalPrice(
+                vehicleType,
+                ride.getStartLocation(),
+                request.getActualEndLocation()
+        );
+
+        Location endLocation = request.getActualEndLocation();
+        endLocation.setRoute(route);
+        endLocation = locationService.findOrSaveLocation(endLocation, route);
+        if (endLocation != null) {
+            route.getLocations().add(endLocation);
+        }
+        routeService.save(route);
+
+        ride.setRideStatus(RideStatus.FINISHED);
+        ride.setEndLocation(endLocation);
+        ride.setEndTime(request.getActualEndTime() != null ? request.getActualEndTime() : LocalDateTime.now());
+        ride.setTotalPrice(finalPrice);
+        ride.setRoute(route);
+
+        rideRepository.save(ride);
+
+        long durationMinutes = ChronoUnit.MINUTES.between(ride.getStartTime(), ride.getEndTime());
+
+        if (endLocation != null) {
+            RideStopResponseDTO response = new RideStopResponseDTO(
+                    rideId,
+                    "COMPLETED",
+                    endLocation.getAddress(),
+                    Math.round(finalPrice * 100.0) / 100.0,
+                    durationMinutes + " min",
+                    "Ride completed successfully"
+            );
+
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     // 2.8 Rate ride, driver and vehicle
     @PostMapping("/{rideId}/rate")
     public ResponseEntity<RideRatingResponseDTO> rateRide(
-            @PathVariable Long rideId,
+            @PathVariable Integer rideId,
             @RequestBody RideRatingRequestDTO request,
             @AuthenticationPrincipal RegisteredUser rater) {
         Ride ride = rideRepository.findById(Math.toIntExact(rideId))
