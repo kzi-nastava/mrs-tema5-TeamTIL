@@ -135,17 +135,14 @@ export class Home implements OnInit {
         this.isLoggedIn && user && user.email &&
         (user.userType === 'DRIVER' || user.userType === 'REGISTERED_USER')
       ) {
-        // Odredi koji servis pozivaš na osnovu tipa korisnika
+        // Prikaz za ulogovanog korisnika: kartica vožnje
         const rideObservable =
           user.userType === 'DRIVER'
             ? this.rideService.getAssignedRides(user.email)
-            : this.rideService.getUserRides(user.email); // Dodaj getUserRides za registrovanog korisnika
+            : this.rideService.getUserRides(user.email);
 
         rideObservable.subscribe(rides => {
           console.log('[DEBUG] rides for user', rides);
-          // Prikazujemo samo jednu karticu:
-          // 1. Ako postoji IN_PROGRESS, prikazujemo samo nju
-          // 2. Ako nema IN_PROGRESS, prikazujemo najbližu REQUESTED (po startTime)
           let rideToShow = null;
           const inProgress = rides.find((r: any) => r.status === 'IN_PROGRESS');
           if (inProgress) {
@@ -172,9 +169,10 @@ export class Home implements OnInit {
           this.cdr.detectChanges();
         });
       } else {
+        // Prikaz za gosta: samo forma za procenu vožnje
         this.userRide = null;
-        this.showRideCard = true;
-        this.showForm = false;
+        this.showRideCard = false;
+        this.showForm = true;
         this.cdr.detectChanges();
       }
     });
