@@ -13,20 +13,23 @@
       <div class="section-container">
         <div class="input-group">
           <span class="dot outline">S</span>
-          <input type="text" placeholder="Add starting location">
+          <input type="text" [(ngModel)]="startLocation" placeholder="Add starting location">
         </div>
+
         <div class="input-group" *ngFor="let stop of intermediateStops; let i = index">
           <span class="dot outline">S{{i + 1}}</span>
           <input type="text" [(ngModel)]="intermediateStops[i]" placeholder="Add stop">
           <button class="remove-stop" (click)="removeStop(i)">&times;</button>
         </div>
+        
         <div class="input-group clickable" (click)="addStop()">
           <span class="dot plus">+</span>
           <input type="text" placeholder="Add stop" readonly>
         </div>
+
         <div class="input-group">
           <span class="dot outline">E</span>
-          <input type="text" placeholder="Add ending location">
+          <input type="text" [(ngModel)]="endLocation" placeholder="Add ending location">
         </div>
       </div>
 
@@ -120,7 +123,7 @@
       </div>
 
       <hr class="separator">
-      <button class="main-request-btn">Request ride</button>
+      <button class="main-request-btn" (click)="requestRide()">Request ride</button>
     </div>
   </div>
 

@@ -3,16 +3,23 @@ import { CommonModule } from '@angular/common';
 import { MapView } from '../map/map';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { HttpClientModule } from '@angular/common/http';
+import { RideService } from '../services/ride.service';
+import { RideRequestDTO } from '../models/ride-dto.model';
 
 @Component({
   selector: 'app-ride-booking',
   standalone: true,
-  imports: [CommonModule, MapView, FormsModule, ReactiveFormsModule, MatCheckboxModule],
+  imports: [CommonModule, MapView, FormsModule, ReactiveFormsModule, MatCheckboxModule, HttpClientModule],
   templateUrl: './ride-booking.html',
   styleUrls: ['./ride-booking.css']
 })
 export class RideBooking implements OnInit {
+  
+  startLocation: string = '';
+  endLocation: string = '';
   intermediateStops: string[] = ['']; 
+  
   showFavorites: boolean = false;
   
   // lista mejlova za putnike
@@ -35,16 +42,67 @@ export class RideBooking implements OnInit {
   hourValue: number = 12;
   minuteValue: number = 0;
 
+  // Injektujemo servis
+  constructor(private rideService: RideService) {}
+
   ngOnInit() {
     this.generateCalendar();
   }
 
-  // funkcija za dodavanje putnika (slicno kao stanice)
+  // --- GLAVNA FUNKCIJA ZA SLANJE ---
+  requestRide() {
+    if (!this.startLocation || !this.endLocation) {
+      alert("Please enter start and end locations!");
+      return;
+    }
+
+    // Spajamo lokacije: [Start, ...Stanice, Kraj]
+    // Filter izbacuje prazne stringove ako korisnik nije popunio medjustanicu
+    const allLocations = [
+      this.startLocation,
+      ...this.intermediateStops.filter(s => s && s.trim() !== ''),
+      this.endLocation
+    ];
+
+    // Priprema datuma
+    const scheduledDateTime = new Date(this.selectedDate);
+    scheduledDateTime.setHours(this.hourValue);
+    scheduledDateTime.setMinutes(this.minuteValue);
+
+    // Konverzija u ISO string za backend (pazimo na vremensku zonu)
+    // Ovo salje lokalno vreme kao string
+    const offset = scheduledDateTime.getTimezoneOffset();
+    const localDate = new Date(scheduledDateTime.getTime() - (offset * 60 * 1000));
+    const isoString = localDate.toISOString().split('.')[0]; 
+
+    const request: RideRequestDTO = {
+      locations: allLocations,
+      passengerEmails: this.passengers,
+      vehicleType: this.selectedVehicleType,
+      babyFriendly: this.babyFriendly,
+      petFriendly: this.petFriendly,
+      scheduledTime: isoString 
+    };
+
+    console.log('Sending request:', request);
+
+    this.rideService.createRide(request).subscribe({
+      next: (response) => {
+        console.log('Ride created:', response);
+        alert('Ride ordered successfully! Price: ' + response.price);
+      },
+      error: (err) => {
+        console.error('Error:', err);
+        alert('Failed to order ride.');
+      }
+    });
+  }
+
   addPassenger() {
     const email = this.newPassengerEmail.trim();
     if (email && email.includes('@') && !this.passengers.includes(email)) {
       this.passengers.push(email);
-      this.newPassengerEmail = ''; // resetuj polje nakon unosa
+      this.newPassengerEmail = ''; 
     }
   }
 
@@ -52,12 +110,10 @@ export class RideBooking implements OnInit {
     this.passengers.splice(index, 1);
   }
 
-  // time stepper logika
   incrementHour() { this.hourValue = (this.hourValue + 1) % 24; }
   incrementMinute() { this.minuteValue = (this.minuteValue + 1) % 60; }
   formatTime(val: number): string { return val.toString().padStart(2, '0'); }
 
-  // kalendar logika
   generateCalendar() {
     const year = this.viewDate.getFullYear();
     const month = this.viewDate.getMonth();
@@ -77,7 +133,6 @@ export class RideBooking implements OnInit {
     return today.getDate() === day && today.getMonth() === this.viewDate.getMonth() && today.getFullYear() === this.viewDate.getFullYear();
   }
 
-  // stopovi logika
   addStop() { if (this.intermediateStops.length < 5) this.intermediateStops.push(''); }
   removeStop(index: number) { this.intermediateStops.splice(index, 1); }
   toggleFavorites() { this.showFavorites = !this.showFavorites; }

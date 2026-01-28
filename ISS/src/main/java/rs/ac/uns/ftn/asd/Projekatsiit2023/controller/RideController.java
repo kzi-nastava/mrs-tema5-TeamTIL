@@ -199,15 +199,14 @@ public class RideController {
 
     // 2.4.1 Ordering a ride
     @PostMapping
-    public ResponseEntity<RideHistoryDTO> createRide(@RequestBody RideRequestDTO request) {
-
-        Double price = 150.0 + (Math.random() * 10 * 120);
-
-        RideHistoryDTO response = new RideHistoryDTO(
-                101, "me@example.com", "driver@example.com",
-                request.getLocations().get(0), request.getLocations().get(request.getLocations().size() - 1),
-                "ACCEPTED", Math.round(price * 100.0) / 100.0, "2025-12-28T15:00:00");
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> createRide(@RequestBody RideRequestDTO request) {
+        try {
+            // Pozivamo servis da obradi logiku i sacuva u bazu
+            RideHistoryDTO response = rideService.createNewRide(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error creating ride: " + e.getMessage());
+        }
     }
 
     // 2.4.3 Ordering from your favorite routes
