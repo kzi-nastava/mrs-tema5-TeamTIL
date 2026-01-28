@@ -24,6 +24,69 @@ interface RideCard {
   styleUrls: ['./home.css'],
 })
 export class Home implements OnInit {
+      stopRide() {
+        if (!this.userRide) return;
+        // For demo, use dummy location and time. Replace with real data if available.
+        const stopRequest = {
+          rideId: this.userRide.id,
+          actualEndLocation: {
+            latitude: 45.2671,
+            longitude: 19.8335,
+            address: 'Trg slobode 1, Novi Sad'
+          },
+          actualEndTime: new Date().toISOString()
+        };
+        this.rideService.stopRide(this.userRide.id, stopRequest).subscribe({
+          next: () => {
+            alert('Ride stopped successfully!');
+            // Optionally update UI or refetch ride status
+          },
+          error: () => {
+            alert('Failed to stop ride!');
+          }
+        });
+      }
+      showCancelForm = false;
+      cancelReason = '';
+
+      confirmCancelRide() {
+        if (!this.userRide) return;
+        this.rideService.cancelRide(this.userRide.id, this.cancelReason).subscribe({
+          next: () => {
+            alert('Ride cancelled successfully!');
+            this.showCancelForm = false;
+            this.cancelReason = '';
+            this.userRide = null;
+            this.showRideCard = false;
+            this.showForm = true;
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            alert('Failed to cancel ride!');
+          }
+        });
+      }
+      onCancelRide() {
+        if (!this.userRide) return;
+        if (this.currentUser?.userType === 'DRIVER') {
+          this.showCancelForm = true;
+          return;
+        }
+        // For user, instant cancel
+        const reason = 'Cancelled by user';
+        this.rideService.cancelRide(this.userRide.id, reason).subscribe({
+          next: () => {
+            alert('Ride cancelled successfully!');
+            this.userRide = null;
+            this.showRideCard = false;
+            this.showForm = true;
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            alert('Failed to cancel ride!');
+          }
+        });
+      }
     showPanicToast = false;
   @ViewChild(MapView) mapComponent?: MapView;
   pickupLocation = '';
@@ -110,8 +173,8 @@ export class Home implements OnInit {
         });
       } else {
         this.userRide = null;
-        this.showRideCard = false;
-        this.showForm = true;
+        this.showRideCard = true;
+        this.showForm = false;
         this.cdr.detectChanges();
       }
     });

@@ -1,3 +1,103 @@
+/* Pause button style */
+.ride-pause-btn {
+    background: #d32f2f;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-right: 8px;
+    transition: background 0.2s;
+}
+.ride-pause-btn:hover {
+    background: #b71c1c;
+}
+/* Inline cancel card form styles */
+.cancel-card-form {
+    background: #2a1a2e;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    padding: 24px 24px 18px 24px;
+    margin-top: 18px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 500px;
+}
+.cancel-card-form-header {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffc107;
+    margin-bottom: 6px;
+}
+.cancel-card-form-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.cancel-card-label {
+    font-size: 15px;
+    color: #a098ae;
+    margin-bottom: 4px;
+}
+.cancel-card-textarea {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #ffc107;
+    background: #1e1222;
+    color: #fff;
+    font-size: 15px;
+    padding: 10px;
+    resize: none;
+    font-family: 'Montserrat', sans-serif;
+    outline: none;
+    transition: border 0.2s;
+}
+.cancel-card-textarea:focus {
+    border-color: #ffca33;
+}
+.cancel-card-form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+.cancel-card-confirm-btn {
+    background: #ffd524;
+    color: #2d1536;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.cancel-card-confirm-btn:disabled {
+    background: #ffd52488;
+    color: #2d153688;
+    cursor: not-allowed;
+}
+.cancel-card-confirm-btn:hover:not(:disabled) {
+    background: #e6c700;
+}
+.cancel-card-close-btn {
+    background: #55185d;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.cancel-card-close-btn:hover {
+    background: #3a1040;
+}
 /* Toast for panic sent */
 .toast-panic {
     position: fixed;
