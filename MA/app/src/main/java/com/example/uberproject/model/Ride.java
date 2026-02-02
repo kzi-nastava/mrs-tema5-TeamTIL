@@ -1,4 +1,4 @@
-package com.example.uberproject.models;
+package com.example.uberproject.model;
 
 import java.io.Serializable;
 

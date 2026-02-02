@@ -12,6 +12,16 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.uberproject.R;
+import com.example.uberproject.activities.MainActivity;
+import com.example.uberproject.api.AuthApi;
+import com.example.uberproject.api.RetrofitClient;
+import com.example.uberproject.dto.request.LoginRequestDTO;
+import com.example.uberproject.dto.response.LoginResponseDTO;
+import com.example.uberproject.utils.AuthGuard;
+import com.example.uberproject.utils.TokenManager;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginFragment extends Fragment {
 
@@ -79,8 +89,68 @@ public class LoginFragment extends Fragment {
         String password = etPassword.getText().toString().trim();
 
         if (validateLoginInputs(email, password)) {
-            // TODO: Implement actual login logic
-            Toast.makeText(getContext(), "Login validation passed", Toast.LENGTH_SHORT).show();
+            LoginRequestDTO request = new LoginRequestDTO(email, password);
+
+            AuthApi authApi = RetrofitClient.getInstance(requireContext()).create(AuthApi.class);
+
+            authApi.login(request).enqueue(new Callback<LoginResponseDTO>() {
+                @Override
+                public void onResponse(Call<LoginResponseDTO> call, Response<LoginResponseDTO> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        String token = response.body().getToken();
+                        String role = response.body().getUserType();
+                        String userEmail = response.body().getEmail();
+                        String profilePictureUrl = response.body().getProfilePictureUrl();
+
+                        saveToken(token, role, userEmail, profilePictureUrl);
+                        Toast.makeText(getContext(), "Login successful", Toast.LENGTH_SHORT).show();
+                        navigateToProfileByRole();
+                    } else {
+                        Toast.makeText(getContext(), "Invalid credentials", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<LoginResponseDTO> call, Throwable t) {
+                    Toast.makeText(getContext(), "Server error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void saveToken(String token, String role, String email, String profilePictureUrl) {
+        TokenManager tokenManager = TokenManager.getInstance(requireContext());
+        tokenManager.saveToken(token, role, email, profilePictureUrl);
+    }
+
+    private void navigateToProfileByRole() {
+        String userRole = AuthGuard.getUserRole(requireContext());
+        Fragment targetFragment = null;
+
+        switch (userRole.toUpperCase()) {
+            case "DRIVER":
+                targetFragment = new DriverProfileFragment();
+                break;
+            case "ADMIN":
+                targetFragment = new AdminProfileFragment();
+                break;
+            case "USER":
+            default:
+                targetFragment = new ProfileFragment();
+                break;
+        }
+
+        if (targetFragment != null) {
+            if (getActivity() instanceof MainActivity) {
+                MainActivity mainActivity = (MainActivity) getActivity();
+                mainActivity.showToolbar();
+                // Osvezi toolbar menu da prikaze profile umesto login/register
+                mainActivity.invalidateOptionsMenu();
+            }
+
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, targetFragment)
+                    .commit();
         }
     }
 }

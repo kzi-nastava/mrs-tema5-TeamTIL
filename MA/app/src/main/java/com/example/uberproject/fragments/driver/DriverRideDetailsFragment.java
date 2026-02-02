@@ -13,7 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.uberproject.R;
-import com.example.uberproject.models.Ride;
+import com.example.uberproject.model.Ride;
 
 public class DriverRideDetailsFragment extends Fragment {
 
