@@ -1,5 +1,7 @@
 package com.example.uberproject.activities;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -26,6 +28,7 @@ import com.example.uberproject.fragments.forms.AdminProfileFragment;
 import com.example.uberproject.fragments.forms.DriverProfileFragment;
 import com.example.uberproject.fragments.forms.LoginFragment;
 import com.example.uberproject.fragments.forms.RegisterFragment;
+import com.example.uberproject.fragments.forms.ResetPasswordFragment;
 import com.example.uberproject.utils.AuthGuard;
 import com.example.uberproject.utils.TokenManager;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -36,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
     private MaterialToolbar toolbar;
-    private BottomNavigationView bottomNavigation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
 
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
+
+        // Obrada Deep Link-a za reset lozinke
+        handleDeepLink(getIntent());
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -228,21 +233,62 @@ public class MainActivity extends AppCompatActivity {
         loadFragment(new RegisterFragment());
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleDeepLink(intent);
+    }
+
+    private void handleDeepLink(Intent intent) {
+        if (intent == null || intent.getData() == null) {
+            return;
+        }
+
+        Uri data = intent.getData();
+        String scheme = data.getScheme();
+        String host = data.getHost();
+        String path = data.getPath();
+
+        // Provera da li je ovo reset-password link (http://localhost ili https://uberproject.app)
+        boolean isValidLink = false;
+
+        if ("http".equals(scheme) && "localhost".equals(host) && "/reset-password".equals(path)) {
+            isValidLink = true;  // http://localhost/reset-password
+        } else if ("https".equals(scheme) && "uberproject.app".equals(host) && "/reset-password".equals(path)) {
+            isValidLink = true;  // https://uberproject.app/reset-password
+        }
+
+        if (isValidLink) {
+            // Izvuci reset token iz query parametara
+            // URL format: http://localhost/reset-password?token=XYZ123
+            String resetToken = data.getQueryParameter("token");
+
+            if (resetToken != null && !resetToken.isEmpty()) {
+                // Kreiraj Bundle sa reset tokenopm
+                Bundle bundle = new Bundle();
+                bundle.putString("resetToken", resetToken);
+
+                // Kreiraj ResetPasswordFragment sa tokenopm
+                ResetPasswordFragment resetPasswordFragment = new ResetPasswordFragment();
+                resetPasswordFragment.setArguments(bundle);
+
+                // Učitaj fragment
+                hideToolbar();
+                loadFragment(resetPasswordFragment);
+            }
+        }
+    }
+
     private void hideToolbar() {
         if (toolbar != null) {
             toolbar.setVisibility(android.view.View.GONE);
-        }
-        if (bottomNavigation != null) {
-            bottomNavigation.setVisibility(android.view.View.GONE);
         }
     }
 
     public void showToolbar() {
         if (toolbar != null) {
             toolbar.setVisibility(android.view.View.VISIBLE);
-        }
-        if (bottomNavigation != null) {
-            bottomNavigation.setVisibility(android.view.View.VISIBLE);
         }
     }
 }

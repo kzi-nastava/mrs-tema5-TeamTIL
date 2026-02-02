@@ -34,6 +34,28 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- Deep linking za reset lozinke - HTTPS (production) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="uberproject.app"
+                    android:pathPrefix="/reset-password" />
+            </intent-filter>
+
+            <!-- Deep linking za reset lozinke - HTTP (development/localhost) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="http"
+                    android:host="localhost"
+                    android:pathPrefix="/reset-password" />
+            </intent-filter>
         </activity>
     </application>
 
