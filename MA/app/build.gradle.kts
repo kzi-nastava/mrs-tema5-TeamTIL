@@ -1,6 +1,19 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
 }
+
+// Čitaj API_HOST iz local.properties
+val localPropertiesFile = rootProject.file("local.properties")
+val localProperties = Properties()
+
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+
+val apiHost = localProperties.getProperty("API_HOST") ?: "http://10.0.2.2:8080/"
 
 android {
     namespace = "com.example.uberproject"
@@ -16,6 +29,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "API_HOST", "\"$apiHost\"")
     }
 
     buildTypes {
@@ -31,6 +46,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
@@ -41,4 +60,20 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+
+    // JWT Dekodiranje
+    implementation("com.auth0.android:jwtdecode:2.0.2")
+
+    // Enkriptovana memorija (SharedPreferences sa enkripcijom)
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // CircleImageView za profile slike
+    implementation("de.hdodenhof:circleimageview:3.1.0")
+
+    // Glide za učitavanje slika iz URL-a
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 }

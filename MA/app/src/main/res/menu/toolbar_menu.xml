@@ -9,4 +9,9 @@
     <item android:id="@+id/nav_register"
         android:title="@string/register_title"
         app:showAsAction="always" />
+
+    <item android:id="@+id/nav_profile"
+        android:title=""
+        app:showAsAction="always"
+        app:actionLayout="@layout/toolbar_profile_layout" />
 </menu>

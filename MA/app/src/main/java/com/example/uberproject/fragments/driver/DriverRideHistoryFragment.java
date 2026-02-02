@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.uberproject.R;
 import com.example.uberproject.adapters.RideAdapter;
-import com.example.uberproject.models.Ride;
+import com.example.uberproject.model.Ride;
 import com.google.android.material.chip.Chip;
 
 import java.text.ParseException;

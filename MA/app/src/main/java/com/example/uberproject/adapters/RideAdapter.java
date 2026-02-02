@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.uberproject.R;
-import com.example.uberproject.models.Ride;
+import com.example.uberproject.model.Ride;
 
 import java.util.ArrayList;
 import java.util.List;
