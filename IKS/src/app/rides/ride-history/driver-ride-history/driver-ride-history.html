@@ -68,7 +68,7 @@
                 </div>
               </div>
               <div class="ride-meta">
-                <span class="price">{{ ride.price }} RSD</span>
+                <span class="price">{{ ride.price }}</span>
                 <span class="status" [class]="'status-' + ride.status.toLowerCase()">
                   {{ ride.status }}
                 </span>
@@ -107,7 +107,7 @@
 
         <div class="detail-item">
           <label>Total Price</label>
-          <p class="price-value">{{ selectedRide.price }} RSD</p>
+          <p class="price-value">{{ selectedRide.price }}</p>
         </div>
 
         <div class="detail-item">

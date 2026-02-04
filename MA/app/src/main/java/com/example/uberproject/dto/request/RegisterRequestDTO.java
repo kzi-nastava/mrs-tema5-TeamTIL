@@ -1,43 +1,60 @@
 package com.example.uberproject.dto.request;
 
+import com.google.gson.annotations.SerializedName;
+
 public class RegisterRequestDTO {
-    private String firstName;
-    private String lastName;
+    @SerializedName("name")
+    private String name;
+
+    @SerializedName("surname")
+    private String surname;
+
+    @SerializedName("email")
     private String email;
+
+    @SerializedName("password")
     private String password;
-    private String address;
+
+    @SerializedName("phoneNumber")
     private String phoneNumber;
+
+    @SerializedName("city")
+    private String city;
+
+    @SerializedName("profilePictureUrl")
+    private String profilePictureUrl;
+
+    @SerializedName("userType")
     private String userType;
-    private String profilePictureUrl; // Base64 string slike
 
     public RegisterRequestDTO() {}
 
-    public RegisterRequestDTO(String firstName, String lastName, String email, String password,
-                            String address, String phoneNumber, String userType, String profilePictureUrl) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public RegisterRequestDTO(String name, String surname, String email, String password,
+                            String phoneNumber, String city, String profilePictureUrl, String userType) {
+        this.name = name;
+        this.surname = surname;
         this.email = email;
         this.password = password;
-        this.address = address;
         this.phoneNumber = phoneNumber;
-        this.userType = userType;
+        this.city = city;
         this.profilePictureUrl = profilePictureUrl;
+        this.userType = userType;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getName() {
+        return name;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getSurname() {
+        return surname;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setSurname(String surname) {
+        this.surname = surname;
     }
 
     public String getEmail() {
@@ -56,20 +73,28 @@ public class RegisterRequestDTO {
         this.password = password;
     }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
+    }
+
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
     }
 
     public String getUserType() {
@@ -80,11 +105,18 @@ public class RegisterRequestDTO {
         this.userType = userType;
     }
 
-    public String getProfilePictureUrl() {
-        return profilePictureUrl;
-    }
-
-    public void setProfilePictureUrl(String profilePictureUrl) {
-        this.profilePictureUrl = profilePictureUrl;
+    @Override
+    public String toString() {
+        return "RegisterRequestDTO{" +
+                "name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + (password != null ? "[HIDDEN]" : "null") + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", city='" + city + '\'' +
+                ", userType='" + userType + '\'' +
+                ", profilePictureUrl='" + (profilePictureUrl != null ? "[" + profilePictureUrl.length() + " chars]" : "null") + '\'' +
+                '}';
     }
 }
+

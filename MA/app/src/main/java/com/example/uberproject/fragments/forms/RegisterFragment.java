@@ -243,7 +243,7 @@ public class RegisterFragment extends Fragment {
             String surname = etSurname.getText().toString().trim();
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
-            String address = etAddress.getText().toString().trim();
+            String city = etAddress.getText().toString().trim();
             String phoneNumber = etPhoneNumber.getText().toString().trim();
             String userType = "REGISTERED_USER"; // Po defaultu
 
@@ -259,11 +259,22 @@ public class RegisterFragment extends Fragment {
                     surname,
                     email,
                     password,
-                    address,
                     phoneNumber,
-                    userType,
-                    profilePictureBase64
+                    city,
+                    profilePictureBase64,
+                    userType
             );
+
+            // LOGOVANJE - ŠALJE SE NA BACKEND
+            android.util.Log.d("RegisterFragment", "=== REGISTRACIJA POČETA ===");
+            android.util.Log.d("RegisterFragment", "Ime: " + name);
+            android.util.Log.d("RegisterFragment", "Prezime: " + surname);
+            android.util.Log.d("RegisterFragment", "Email: " + email);
+            android.util.Log.d("RegisterFragment", "Lozinka: [SKRIVENA]");
+            android.util.Log.d("RegisterFragment", "Grad: " + city);
+            android.util.Log.d("RegisterFragment", "Telefon: " + phoneNumber);
+            android.util.Log.d("RegisterFragment", "Tip korisnika: " + userType);
+            android.util.Log.d("RegisterFragment", "Slika: " + (profilePictureBase64 != null ? "[Base64 - " + profilePictureBase64.length() + " karaktera]" : "NEMA SLIKE"));
 
             // Kreiraj API poziv
             AuthApi authApi = RetrofitClient.getInstance(requireContext()).create(AuthApi.class);
@@ -271,12 +282,26 @@ public class RegisterFragment extends Fragment {
             authApi.register(request).enqueue(new Callback<RegisterResponseDTO>() {
                 @Override
                 public void onResponse(Call<RegisterResponseDTO> call, Response<RegisterResponseDTO> response) {
+                    // LOGOVANJE - ODGOVOR SERVERA
+                    android.util.Log.d("RegisterFragment", "=== ODGOVOR SERVERA ===");
+                    android.util.Log.d("RegisterFragment", "Status kod: " + response.code());
+                    android.util.Log.d("RegisterFragment", "URL: " + call.request().url());
+                    android.util.Log.d("RegisterFragment", "Poruka: " + response.message());
+
                     if (response.isSuccessful() && response.body() != null) {
-                        Toast.makeText(getContext(), "Registration successful!", Toast.LENGTH_SHORT).show();
+                        android.util.Log.d("RegisterFragment", "✓ REGISTRACIJA USPEŠNA!");
+                        Toast.makeText(getContext(), "Registration successful! Please login.", Toast.LENGTH_SHORT).show();
 
                         // Navigiraj na Login fragment
                         navigateToLogin();
                     } else {
+                        try {
+                            String errorBody = response.errorBody().string();
+                            android.util.Log.e("RegisterFragment", "GREŠKA OD SERVERA: " + errorBody);
+                        } catch (IOException e) {
+                            android.util.Log.e("RegisterFragment", "Greška pri čitanju error body-a", e);
+                        }
+
                         String errorMessage = "Registration failed";
                         if (response.body() != null && response.body().getMessage() != null) {
                             errorMessage = response.body().getMessage();
@@ -287,6 +312,12 @@ public class RegisterFragment extends Fragment {
 
                 @Override
                 public void onFailure(Call<RegisterResponseDTO> call, Throwable t) {
+                    // LOGOVANJE - MREŽNA GREŠKA
+                    android.util.Log.e("RegisterFragment", "=== MREŽNA GREŠKA ===");
+                    android.util.Log.e("RegisterFragment", "Poruka: " + t.getMessage());
+                    android.util.Log.e("RegisterFragment", "URL: " + call.request().url());
+                    android.util.Log.e("RegisterFragment", "Uzrok greške: ", t);
+
                     Toast.makeText(getContext(), "Server error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
@@ -306,7 +337,7 @@ public class RegisterFragment extends Fragment {
             }
 
             byte[] imageBytes = outputStream.toByteArray();
-            String base64String = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+            String base64String = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
 
             inputStream.close();
             outputStream.close();
