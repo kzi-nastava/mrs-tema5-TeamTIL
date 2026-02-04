@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Patterns;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,10 +25,20 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.uberproject.R;
+import com.example.uberproject.api.AuthApi;
+import com.example.uberproject.api.RetrofitClient;
+import com.example.uberproject.dto.request.RegisterRequestDTO;
+import com.example.uberproject.dto.response.RegisterResponseDTO;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import java.io.IOException;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 import android.Manifest;
+import android.content.ContentResolver;
 
 public class RegisterFragment extends Fragment {
 
@@ -92,6 +103,7 @@ public class RegisterFragment extends Fragment {
         btnRemovePhoto.setEnabled(false);
         btnRemovePhoto.setAlpha(0.5f);
     }
+
 
     private void setupClickListeners() {
         btnInsertPhoto.setOnClickListener(v -> checkPermissionAndOpenPicker());
@@ -227,13 +239,120 @@ public class RegisterFragment extends Fragment {
 
     private void handleRegistration() {
         if (validateInputs()) {
-            // TODO: Implement actual registration logic
-            Toast.makeText(getContext(), "Registration successful!", Toast.LENGTH_LONG).show();
+            String name = etName.getText().toString().trim();
+            String surname = etSurname.getText().toString().trim();
+            String email = etEmail.getText().toString().trim();
+            String password = etPassword.getText().toString().trim();
+            String city = etAddress.getText().toString().trim();
+            String phoneNumber = etPhoneNumber.getText().toString().trim();
+            String userType = "REGISTERED_USER"; // Po defaultu
 
-            // Navigate back or to main activity
-            if (getActivity() != null) {
-                getActivity().finish();
+            // Konvertuj sliku u Base64 (ako je korisnik izabrao sliku)
+            String profilePictureBase64 = null;
+            if (selectedImageUri != null) {
+                profilePictureBase64 = convertImageToBase64(selectedImageUri);
             }
+
+            // Kreiraj zahtev za registraciju
+            RegisterRequestDTO request = new RegisterRequestDTO(
+                    name,
+                    surname,
+                    email,
+                    password,
+                    phoneNumber,
+                    city,
+                    profilePictureBase64,
+                    userType
+            );
+
+            // LOGOVANJE - ŠALJE SE NA BACKEND
+            android.util.Log.d("RegisterFragment", "=== REGISTRACIJA POČETA ===");
+            android.util.Log.d("RegisterFragment", "Ime: " + name);
+            android.util.Log.d("RegisterFragment", "Prezime: " + surname);
+            android.util.Log.d("RegisterFragment", "Email: " + email);
+            android.util.Log.d("RegisterFragment", "Lozinka: [SKRIVENA]");
+            android.util.Log.d("RegisterFragment", "Grad: " + city);
+            android.util.Log.d("RegisterFragment", "Telefon: " + phoneNumber);
+            android.util.Log.d("RegisterFragment", "Tip korisnika: " + userType);
+            android.util.Log.d("RegisterFragment", "Slika: " + (profilePictureBase64 != null ? "[Base64 - " + profilePictureBase64.length() + " karaktera]" : "NEMA SLIKE"));
+
+            // Kreiraj API poziv
+            AuthApi authApi = RetrofitClient.getInstance(requireContext()).create(AuthApi.class);
+
+            authApi.register(request).enqueue(new Callback<RegisterResponseDTO>() {
+                @Override
+                public void onResponse(Call<RegisterResponseDTO> call, Response<RegisterResponseDTO> response) {
+                    // LOGOVANJE - ODGOVOR SERVERA
+                    android.util.Log.d("RegisterFragment", "=== ODGOVOR SERVERA ===");
+                    android.util.Log.d("RegisterFragment", "Status kod: " + response.code());
+                    android.util.Log.d("RegisterFragment", "URL: " + call.request().url());
+                    android.util.Log.d("RegisterFragment", "Poruka: " + response.message());
+
+                    if (response.isSuccessful() && response.body() != null) {
+                        android.util.Log.d("RegisterFragment", "✓ REGISTRACIJA USPEŠNA!");
+                        Toast.makeText(getContext(), "Registration successful! Please login.", Toast.LENGTH_SHORT).show();
+
+                        // Navigiraj na Login fragment
+                        navigateToLogin();
+                    } else {
+                        try {
+                            String errorBody = response.errorBody().string();
+                            android.util.Log.e("RegisterFragment", "GREŠKA OD SERVERA: " + errorBody);
+                        } catch (IOException e) {
+                            android.util.Log.e("RegisterFragment", "Greška pri čitanju error body-a", e);
+                        }
+
+                        String errorMessage = "Registration failed";
+                        if (response.body() != null && response.body().getMessage() != null) {
+                            errorMessage = response.body().getMessage();
+                        }
+                        Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<RegisterResponseDTO> call, Throwable t) {
+                    // LOGOVANJE - MREŽNA GREŠKA
+                    android.util.Log.e("RegisterFragment", "=== MREŽNA GREŠKA ===");
+                    android.util.Log.e("RegisterFragment", "Poruka: " + t.getMessage());
+                    android.util.Log.e("RegisterFragment", "URL: " + call.request().url());
+                    android.util.Log.e("RegisterFragment", "Uzrok greške: ", t);
+
+                    Toast.makeText(getContext(), "Server error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         }
+    }
+
+    private String convertImageToBase64(Uri imageUri) {
+        try {
+            ContentResolver contentResolver = requireContext().getContentResolver();
+            InputStream inputStream = contentResolver.openInputStream(imageUri);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+
+            byte[] imageBytes = outputStream.toByteArray();
+            String base64String = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
+
+            inputStream.close();
+            outputStream.close();
+
+            return base64String;
+        } catch (IOException e) {
+            Toast.makeText(getContext(), "Error reading image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            return null;
+        }
+    }
+
+    private void navigateToLogin() {
+        LoginFragment fragment = new LoginFragment();
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit();
     }
 }

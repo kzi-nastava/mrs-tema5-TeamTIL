@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -51,7 +51,7 @@ interface Ride {
   styleUrl: './admin-ride-history.css',
 })
 export class AdminRideHistory implements OnInit {
-      constructor(private rideService: RideService) {}
+      constructor(private rideService: RideService, private cdr: ChangeDetectorRef) {}
     ngOnInit(): void {
       this.rideService.getAdminRideHistory().subscribe({
         next: (ridesFromBackend) => {
@@ -72,6 +72,7 @@ export class AdminRideHistory implements OnInit {
           }));
           this.rides = [...this.allRides];
           this.selectedRide = this.rides.length > 0 ? this.rides[0] : null;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error fetching admin ride history:', err);
