@@ -2,9 +2,11 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.DriverRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
@@ -12,11 +14,9 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.InconsistencyReportResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideCancelResponseDTO;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideEstimationResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideRatingResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStopResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideTrackingDTO;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RatingType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RideStatus;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.VehicleType;
@@ -28,13 +28,10 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.chrono.ChronoLocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/rides")
@@ -190,24 +187,24 @@ public class RideController {
 
     // 2.6.2 Track ride location
     @GetMapping("/{rideId}/tracking")
-    public ResponseEntity<RideTrackingDTO> trackRide(@PathVariable Long rideId) {
+    public ResponseEntity<RideTrackingDTO> trackRide(@PathVariable Integer rideId) {
 
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
 
-        String[] locations = { "Main Street 1", "Bulevar Oslobođenja 5", "Trg Slobode 3" };
-        String vehicleLocation = locations[(int) (Math.random() * locations.length)];
-
-        // Procena vremena dolaska: 5-15 minuta
-        int minutes = 5 + (int) (Math.random() * 11);
-        String estimatedArrivalTime = minutes + " min";
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found"));
 
         RideTrackingDTO response = new RideTrackingDTO(
-                rideId,
-                vehicleLocation,
-                estimatedArrivalTime,
-                "IN_PROGRESS");
+                ride.getStartLocation().getLatitude(),
+                ride.getStartLocation().getLongitude(),
+                ride.getEndLocation().getLatitude(),
+                ride.getEndLocation().getLongitude(),
+                ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName(),
+                ride.getDriver().getPhoneNumber(),
+                ride.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"))
+        );
 
         return ResponseEntity.ok(response);
     }
