@@ -1,0 +1,76 @@
+<div class="history-container">
+  <main class="history-main map-mode">
+    <div class="ride-route-header">
+      <mat-icon class="route-pin">location_on</mat-icon>
+      <h1>{{ selectedRide.from }} → {{ selectedRide.to }}</h1>
+    </div>
+
+    <div class="ride-map-wrapper">
+      <app-map-view [liveUpdate]="liveUpdate$ | async">
+      </app-map-view>
+
+      <div class="panic-btn-container">
+        <button class="panic-btn" (click)="onPanicClick()">
+          <span class="panic-icon-svg">&#128680;</span>
+          <span class="panic-text panic-text-block">PANIC</span>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <aside class="details-sidebar" [class.open]="selectedRide">
+    @if (selectedRide) {
+      <div class="sidebar-header">
+        <h2>Ride Details</h2>
+      </div>
+
+      <div class="live-ride-indicator">
+        <span class="dot"></span>
+        <span class="text">Ride is live</span>
+        <div class="line"></div>
+      </div>
+
+      <div class="details-body minimal">
+        <div class="detail-item">
+          <label>Driver</label>
+          <div class="driver-info">
+            <div class="driver-avatar">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="driver-details">
+              <p class="driver-name">{{ selectedRide.driver.name }}</p>
+              <p class="driver-phone">{{ selectedRide.driver.phone }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <label>Start time</label>
+          <p>{{ selectedRide.startTime }}</p>
+        </div>
+
+        <div class="detail-item">
+          <label>ETA</label>
+          <p class="eta">
+            {{ selectedRide.estimatedEndTime }}
+            <span class="eta-muted">(in {{ selectedRide.eta }})</span>
+          </p>
+        </div>
+
+        <div class="detail-item">
+          <label>Current price</label>
+          <p class="price-value">{{ selectedRide.price }} RSD</p>
+        </div>
+      </div>
+
+      <button
+        mat-stroked-button
+        color="accent"
+        class="report-btn"
+        (click)="openReportDriver(selectedRide)"
+      >
+        Report driver
+      </button>
+    }
+  </aside>
+</div>

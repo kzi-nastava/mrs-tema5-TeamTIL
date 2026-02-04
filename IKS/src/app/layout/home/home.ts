@@ -2,11 +2,19 @@ import { Component, ViewChild, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MapView } from '../../map/map';
-import { RouteService } from '../../services/route.service';
-import { GeocodingService } from '../../services/geocoding.service';
 import { RideService } from '../../rides/services/ride.service';
 import { AuthService } from '../../services/auth.service';
 import { PanicService } from '../../services/panic.service';
+import { HttpClient } from '@angular/common/http';
+
+interface VehicleDTO {
+  name: string;
+  type: string;
+  licensePlate: string;
+  available: boolean;
+  latitude: number;
+  longitude: number;
+}
 
 interface RideCard {
   id: number;
@@ -24,6 +32,18 @@ interface RideCard {
   styleUrls: ['./home.css'],
 })
 export class Home implements OnInit {
+  private vehicleMarkers: Map<string, L.Marker> = new Map();
+
+  private fetchVehicles(): void {
+    this.http.get<VehicleDTO[]>('http://localhost:8080/api/public/vehicles')
+      .subscribe({
+        next: (data) => {
+          this.mapComponent?.updateVehicleMarkers(data, this.vehicleMarkers);
+        },
+        error: (err) => console.error('Error fetching vehicles:', err)
+      });
+  }
+
   endRide() {
     if (!this.userRide) return;
 
@@ -131,12 +151,11 @@ export class Home implements OnInit {
   isLoggedIn = false;
 
   constructor(
-    private routeService: RouteService,
-    private geocodingService: GeocodingService,
     private rideService: RideService,
     private authService: AuthService,
     private panicService: PanicService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient
   ) {}
   onPanicClick() {
     if (!this.userRide) return;
@@ -157,6 +176,7 @@ export class Home implements OnInit {
   }
 
   ngOnInit(): void {
+    this.fetchVehicles();
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       console.log('[DEBUG] currentUser', user);
@@ -214,65 +234,12 @@ export class Home implements OnInit {
 
   estimateRideTime() {
     this.showForm = false;
-    // Prvo geokodiraj pickup
-    this.geocodingService.geocode(this.pickupLocation).subscribe({
-      next: (pickupResults) => {
-        if (!pickupResults || pickupResults.length === 0) {
-          alert('Pickup address not found!');
-          return;
-        }
-        const pickupLat = parseFloat(pickupResults[0].lat);
-        const pickupLon = parseFloat(pickupResults[0].lon);
-        // Sada geokodiraj destination
-        this.geocodingService.geocode(this.destination).subscribe({
-          next: (destResults) => {
-            if (!destResults || destResults.length === 0) {
-              alert('Destination address not found!');
-              return;
-            }
-            const destinationLat = parseFloat(destResults[0].lat);
-            const destinationLon = parseFloat(destResults[0].lon);
-            // Sada šalji zahtev backendu
-            const req = {
-              pickupAddress: this.pickupLocation,
-              destinationAddress: this.destination,
-              vehicleType: this.vehicleType,
-              pickupLat,
-              pickupLon,
-              destinationLat,
-              destinationLon
-            };
-            this.routeService.estimateRouteFull(req).subscribe(
-              (result) => {
-                // Očekuje se: { estimatedTime, estimatedDistance, estimatedPrice, vehicleType, route? }
-                // Prikaz na mapi i info korisniku
-                if (this.mapComponent) {
-                  if (result.routeCoordinates) {
-                    // Convert [lon, lat] to [lat, lon] for Leaflet
-                    const leafletRoute = result.routeCoordinates.map(([lon, lat]: [number, number]) => [lat, lon]);
-                    this.mapComponent.showRoute(leafletRoute, result.estimatedTime);
-                  } else if (result.route) {
-                    this.mapComponent.showRoute(result.route, result.estimatedTime);
-                  } else {
-                    // Ako nema rute, nacrtaj liniju od pickup do destination
-                    this.mapComponent.showRoute([
-                      [pickupLat, pickupLon],
-                      [destinationLat, destinationLon]
-                    ], result.estimatedTime);
-                  }
-                }
-                // info o ceni se više ne prikazuje
-              },
-              () => {
-                alert('Failed to estimate route.');
-              }
-            );
-          },
-          error: () => alert('Failed to geocode destination address!')
-        });
-      },
-      error: () => alert('Failed to geocode pickup address!')
-    });
+    this.mapComponent?.setPickupDestinationAndVehicleType(
+      this.pickupLocation,
+      this.destination,
+      this.vehicleType
+    );
+    this.mapComponent?.estimateRideTime();
   }
 
   onMapClick() {
