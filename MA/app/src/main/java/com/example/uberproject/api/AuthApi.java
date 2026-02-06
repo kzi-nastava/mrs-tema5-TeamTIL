@@ -15,18 +15,18 @@ import retrofit2.http.POST;
 
 public interface AuthApi {
 
-    @POST("api/auth/login")
+    @POST("auth/login")
     Call<LoginResponseDTO> login(@Body LoginRequestDTO request);
 
-    @POST("api/auth/register")
+    @POST("auth/register")
     Call<RegisterResponseDTO> register(@Body RegisterRequestDTO request);
 
-    @POST("api/auth/logout")
+    @POST("auth/logout")
     Call<Void> logout();
 
-    @POST("api/auth/forgot-password")
+    @POST("auth/forgot-password")
     Call<ForgotPasswordResponseDTO> forgotPassword(@Body ForgotPasswordRequestDTO request);
 
-    @POST("api/auth/reset-password")
+    @POST("auth/reset-password")
     Call<ResetPasswordResponseDTO> resetPassword(@Body ResetPasswordRequestDTO request);
 }

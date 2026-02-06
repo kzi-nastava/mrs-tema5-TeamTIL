@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 interface NavLink {
@@ -32,7 +32,14 @@ export class NavbarComponent implements OnInit {
   userName: string = 'Username';
   profilePhoto: string | null = null;
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
+  // Handler for all navbar link clicks when not logged in
+  onNavLinkClick(event: Event) {
+    if (!this.isLoggedIn) {
+      event.preventDefault();
+      this.router.navigate(['/login']);
+    }
+  }
 
   ngOnInit() {
     this.authService.currentUser$.subscribe(user => {

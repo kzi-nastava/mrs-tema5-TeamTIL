@@ -26,6 +26,7 @@ public class RetrofitClient {
 
             Gson gson = new GsonBuilder()
                     .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
+                    .setFieldNamingPolicy(com.google.gson.FieldNamingPolicy.IDENTITY)
                     .create();
 
             retrofit = new Retrofit.Builder()
