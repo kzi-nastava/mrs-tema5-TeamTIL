@@ -12,7 +12,15 @@ import lombok.Setter;
 public class AdminRideResponseDTO {
     private Integer id;
     private String passengerEmail;
+    private String passengerFirstName;
+    private String passengerLastName;
+    private String passengerProfilePictureUrl;
+    private String passengerPhoneNumber;
     private String driverEmail;
+    private String driverFirstName;
+    private String driverLastName;
+    private String driverProfilePictureUrl;
+    private String driverPhoneNumber;
     private String startLocation;
     private String endLocation;
     private String status;

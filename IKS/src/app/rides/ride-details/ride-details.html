@@ -1,0 +1,148 @@
+<div class="ride-details-container">
+  <div class="page-header">
+    <h1>Ride Details</h1>
+  </div>
+
+  <div class="content-wrapper">
+    <!-- Left Side - Map and Details -->
+    <div class="left-section">
+      <!-- Route Information -->
+      <div class="route-header">
+        <svg class="location-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="white"/>
+        </svg>
+        <span class="route-text">{{ rideDetails.route.start }} → {{ rideDetails.route.end }}</span>
+      </div>
+
+      <!-- Map Container -->
+      <div class="map-container">
+        <div id="rideDetailsMap" class="map-placeholder"></div>
+        <div class="map-controls">
+          <button class="map-btn zoom-in">+</button>
+          <button class="map-btn zoom-out">−</button>
+        </div>
+      </div>
+
+      <!-- Ride Rating -->
+      <div class="rating-section">
+        <div class="rating-header">
+          <h3>Ride rating</h3>
+          <span class="optional-text">Write a review (optional)</span>
+        </div>
+        <div class="rating-stars">
+          <span class="star" *ngFor="let star of [1,2,3,4,5]">★</span>
+        </div>
+        <button class="change-rating-btn" (click)="changeRating()">Change rating</button>
+      </div>
+
+      <!-- Passengers Section -->
+      <div class="passengers-section">
+        <h3>Passengers</h3>
+        <div class="passenger-list">
+          <div class="passenger-item" *ngFor="let passenger of rideDetails.passengers">
+            <div class="passenger-avatar">
+              <svg width="40" height="40" viewBox="0 0 40 40">
+                <circle cx="20" cy="20" r="20" fill="#4a4a4a"/>
+                <circle cx="20" cy="16" r="8" fill="#fff"/>
+                <path d="M8 32c0-6.627 5.373-12 12-12s12 5.373 12 12" fill="#fff"/>
+              </svg>
+            </div>
+            <div class="passenger-info">
+              <div class="passenger-name">{{ passenger.name }}</div>
+              <div class="passenger-phone">{{ passenger.phone }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reported Issues -->
+      <div class="issues-section">
+        <h3>Reported Issues</h3>
+        <div class="issue-list">
+          <div class="issue-item" *ngFor="let issue of rideDetails.reportedIssues">
+            <svg class="warning-icon" width="24" height="24" viewBox="0 0 24 24">
+              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" fill="#FFB800"/>
+            </svg>
+            <span>{{ issue }}</span>
+          </div>
+        </div>
+        <button class="report-issue-btn" (click)="reportIssue()">Report an issue</button>
+      </div>
+    </div>
+
+    <!-- Right Side - Ride Info Panel -->
+    <div class="right-section">
+      <div class="ride-info-panel">
+        <div class="panel-header">
+          <h2>Ride Info</h2>
+          <button class="close-btn" (click)="closeRideInfo()">×</button>
+        </div>
+
+        <!-- Driver Info -->
+        <div class="info-section">
+          <div class="section-label">Driver</div>
+          <div class="driver-info">
+            <div class="driver-avatar">
+              <svg width="48" height="48" viewBox="0 0 48 48">
+                <circle cx="24" cy="24" r="24" fill="#6B4E9C"/>
+                <circle cx="24" cy="20" r="10" fill="#fff"/>
+                <path d="M8 40c0-8.837 7.163-16 16-16s16 7.163 16 16" fill="#fff"/>
+              </svg>
+            </div>
+            <div class="driver-details">
+              <div class="driver-name-rating">
+                <span class="driver-name">{{ rideDetails.driver.name }}</span>
+                <span class="driver-rating">{{ rideDetails.driver.rating }}</span>
+              </div>
+              <div class="vehicle-type">{{ rideDetails.driver.vehicle }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Price -->
+        <div class="info-section price-section">
+          <div class="section-label">Total Price</div>
+          <div class="price-status">
+            <div class="price">{{ rideDetails.totalPrice }} {{ rideDetails.currency }}</div>
+            <div class="status-badge">{{ rideDetails.status }}</div>
+          </div>
+        </div>
+
+        <!-- Start Time -->
+        <div class="info-section">
+          <div class="section-label">Start Time</div>
+          <div class="info-value">{{ rideDetails.startTime | date:'dd MMM yyyy, HH:mm' }}</div>
+        </div>
+
+        <!-- End Time -->
+        <div class="info-section">
+          <div class="section-label">End Time</div>
+          <div class="info-value">{{ rideDetails.endTime | date:'HH:mm' }}</div>
+        </div>
+
+        <!-- Duration -->
+        <div class="info-section">
+          <div class="section-label">Duration</div>
+          <div class="info-value">{{ rideDetails.duration }} min</div>
+        </div>
+
+        <!-- Distance -->
+        <div class="info-section">
+          <div class="section-label">Distance</div>
+          <div class="distance-value">
+            <svg class="location-pin" width="20" height="20" viewBox="0 0 20 20">
+              <path d="M10 2C7.24 2 5 4.24 5 7c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5z" fill="white"/>
+            </svg>
+            <span>{{ rideDetails.distance }} km</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button class="rebook-btn" (click)="rebookRide()">Rebook this ride</button>
+          <button class="schedule-btn" (click)="scheduleForLater()">Schedule for later</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

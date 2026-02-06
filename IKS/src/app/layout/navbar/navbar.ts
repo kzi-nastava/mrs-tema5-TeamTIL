@@ -76,7 +76,7 @@ export class NavbarComponent implements OnInit {
         case 'DRIVER':
           this.navLinks = [
             { label: 'My Vehicle', route: '/my-vehicle' },
-            { label: 'Ride History', route: '/driver-history' },
+            { label: 'Ride History', route: '/driver-ride-history' },
             { label: 'My rides', route: '/assigned-rides' },
             { label: 'Support', route: '/support' }
           ];
@@ -84,7 +84,7 @@ export class NavbarComponent implements OnInit {
           this.menuItems = [
             { label: 'View Profile', route: '/driver-profile', icon: 'fas fa-user' },
             { label: 'My Rides', route: '/assigned-rides', icon: 'fas fa-route' },
-            { label: 'Ride History', route: '/driver-history', icon: 'fas fa-calendar-alt' },
+            { label: 'Ride History', route: '/driver-ride-history', icon: 'fas fa-calendar-alt' },
             { label: 'My Vehicle', route: '/my-vehicle', icon: 'fas fa-car' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },
             { label: 'Change Password', route: '/change-password', icon: 'fas fa-key' },

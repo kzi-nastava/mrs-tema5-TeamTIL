@@ -6,6 +6,7 @@ import { DriverHistory } from './rides/ride-history/driver-ride-history/driver-r
 import { UserRideHistory } from './rides/ride-history/user-ride-history/user-ride-history';
 import { AdminRideHistory } from './rides/ride-history/admin-ride-history/admin-ride-history';
 import { AssignedRides } from './rides/assigned-rides/assigned-rides';
+import { RideDetailsComponent } from './rides/ride-details/ride-details';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
 import { Home } from './layout/home/home';
 import { authGuard } from './guards/auth.guard';
@@ -24,6 +25,7 @@ export const routes: Routes = [
       { path: '', component: Home },
       // Protected routes
       { path: 'assigned-rides', component: AssignedRides, canActivate: [authGuard] },
+      { path: 'ride-details/:id', component: RideDetailsComponent, canActivate: [authGuard] },
       { path: 'driver-ride-history', component: DriverHistory, canActivate: [authGuard] },
       { path: 'user-ride-history', component: UserRideHistory, canActivate: [authGuard] },
       { path: 'admin-ride-history', component: AdminRideHistory, canActivate: [authGuard] },

@@ -1,0 +1,510 @@
+.ride-details-container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #000 0%, #55185D 100%);
+  color: white;
+  padding: 40px 60px;
+}
+
+.page-header {
+  margin-bottom: 30px;
+}
+
+.page-header h1 {
+  font-size: 48px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+  color: white;
+}
+
+.content-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Left Section */
+.left-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.route-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: rgba(85, 24, 93, 0.7);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.location-icon {
+  flex-shrink: 0;
+}
+
+.route-text {
+  font-size: 20px;
+  font-weight: 500;
+  color: white;
+}
+
+/* Map Container */
+.map-container {
+  position: relative;
+  background: rgba(64, 8, 72, 0.75);
+  border-radius: 12px;
+  overflow: hidden;
+  height: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.map-placeholder {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.map-info {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.time-badge {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-badge .time {
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+}
+
+.time-badge .duration {
+  font-size: 14px;
+  font-weight: 400;
+  color: #ccc;
+}
+
+.map-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.map-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 4px;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.map-btn:hover {
+  background: white;
+}
+
+/* Rating Section */
+.rating-section {
+  background: rgba(64, 8, 72, 0.75);
+  border-radius: 12px;
+  padding: 24px;  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);}
+
+.rating-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.rating-header h3 {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0;
+  color: white;
+}
+
+.optional-text {
+  font-size: 14px;
+  color: #999;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.star {
+  font-size: 32px;
+  color: #FFB800;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.star:hover {
+  transform: scale(1.1);
+}
+
+.change-rating-btn {
+  background: #FFB800;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.change-rating-btn:hover {
+  background: #FFC929;
+}
+
+/* Passengers Section */
+.passengers-section {
+  background: rgba(64, 8, 72, 0.75);
+  border-radius: 12px;
+  padding: 24px;  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);}
+
+.passengers-section h3 {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0 0 16px 0;
+  color: white;
+}
+
+.passenger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.passenger-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.passenger-avatar {
+  flex-shrink: 0;
+}
+
+.passenger-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.passenger-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+}
+
+.passenger-phone {
+  font-size: 14px;
+  color: #999;
+}
+
+/* Issues Section */
+.issues-section {
+  background: rgba(64, 8, 72, 0.75);
+  border-radius: 12px;
+  padding: 24px;  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);}
+
+.issues-section h3 {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0 0 16px 0;
+  color: white;
+}
+
+.issue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.issue-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(64, 8, 72, 0.75);
+  border-radius: 8px;
+  border-left: 3px solid #FFB800;
+}
+
+.warning-icon {
+  flex-shrink: 0;
+}
+
+.issue-item span {
+  font-size: 14px;
+  color: white;
+}
+
+.report-issue-btn {
+  background: #FFB800;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s;
+}
+
+.report-issue-btn:hover {
+  background: #FFC929;
+}
+
+/* Right Section - Ride Info Panel */
+.right-section {
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+}
+
+.ride-info-panel {
+  background: rgba(64, 8, 72, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-header h2 {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0;
+  color: white;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #a098ae;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #ffffff;
+}
+
+/* Info Sections */
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-label {
+  font-size: 13px;
+  color: #a098ae;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 15px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+/* Driver Info */
+.driver-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.driver-avatar {
+  flex-shrink: 0;
+}
+
+.driver-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.driver-name-rating {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.driver-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.driver-rating {
+  background: #FFB800;
+  color: #000;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.vehicle-type {
+  font-size: 14px;
+  color: #999;
+}
+
+/* Price Section */
+.price-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.price-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffc107;
+}
+
+.status-badge {
+  background: #4CAF50;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Distance */
+.distance-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.rebook-btn {
+  background: #FFB800;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.rebook-btn:hover {
+  background: #FFC929;
+}
+
+.schedule-btn {
+  background: transparent;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.schedule-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .content-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .right-section {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .ride-details-container {
+    padding: 24px;
+  }
+
+  .page-header h1 {
+    font-size: 36px;
+  }
+
+  .route-text {
+    font-size: 16px;
+  }
+
+  .map-container {
+    height: 300px;
+  }
+}
