@@ -1,6 +1,7 @@
 import { Component, ViewChild, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { MapView } from '../../map/map';
 import { RouteService } from '../../services/route.service';
 import { GeocodingService } from '../../services/geocoding.service';
@@ -176,7 +177,8 @@ export class Home implements OnInit {
     private rideService: RideService,
     private authService: AuthService,
     private panicService: PanicService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
   onPanicClick() {
     if (!this.userRide) return;
@@ -317,5 +319,10 @@ export class Home implements OnInit {
 
   onMapClick() {
     this.showForm = true;
+  }
+
+  openRideDetails() {
+    if (!this.userRide) return;
+    this.router.navigate(['/ride-details', this.userRide.id]);
   }
 }
