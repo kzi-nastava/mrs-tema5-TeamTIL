@@ -2,6 +2,8 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Account;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.AccountService;
@@ -11,11 +13,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/accounts")
 @RequiredArgsConstructor
+@Validated
 public class AccountController {
 
     private final AccountService accountService;
 
     @PutMapping("/{id}/profile-picture")
+    @PreAuthorize("hasAnyRole('REGISTERED_USER', 'ADMINISTRATOR', 'DRIVER')")
     public ResponseEntity<Void> updateProfilePicture(
             @PathVariable Integer id,
             @RequestBody Map<String, String> request) {
@@ -25,6 +29,7 @@ public class AccountController {
     }
 
     @GetMapping("/{id}/profile-picture")
+    @PreAuthorize("hasAnyRole('REGISTERED_USER', 'ADMINISTRATOR', 'DRIVER')")
     public ResponseEntity<String> getProfilePicture(@PathVariable Integer id) {
         Account account = accountService.findById(id);
 

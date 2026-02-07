@@ -39,3 +39,9 @@ export interface CurrentUser {
   name: string;
   profilePictureUrl?: string; // Base64 string
 }
+
+// Token validation response from backend
+export interface TokenValidationResponse {
+  valid: boolean;
+  message: string;
+}

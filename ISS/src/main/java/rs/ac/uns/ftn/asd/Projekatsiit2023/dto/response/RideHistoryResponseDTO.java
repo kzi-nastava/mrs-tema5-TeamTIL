@@ -9,15 +9,27 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminRideResponseDTO {
+public class RideHistoryResponseDTO {
     private Integer id;
     private String passengerEmail;
+    private String passengerFirstName;
+    private String passengerLastName;
+    private String passengerProfilePictureUrl;
+    private String passengerPhoneNumber;
+
     private String driverEmail;
+    private String driverFirstName;
+    private String driverLastName;
+    private String driverProfilePictureUrl;
+    private String driverPhoneNumber;
+
     private String startLocation;
     private String endLocation;
     private String status;
+
     private String startTime;
     private String estimatedEndTime;
+
     private Double price;
     private Double distance;
     private Double duration;

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -129,7 +130,7 @@ export class UserRideHistory {
     },
   ];
 
-  constructor(private dialog: MatDialog) {}
+  constructor(private router: Router, private dialog: MatDialog) {}
 
   rides: Ride[] = [...this.allRides];
   selectedRide: Ride | null = this.rides[0];
@@ -239,6 +240,10 @@ export class UserRideHistory {
 
   selectRide(ride: Ride) {
     this.selectedRide = ride;
+  }
+
+  viewFullRideDetails(ride: Ride) {
+    this.router.navigate(['/ride-details', ride.id]);
   }
 
   getUniqueDates(): string[] {

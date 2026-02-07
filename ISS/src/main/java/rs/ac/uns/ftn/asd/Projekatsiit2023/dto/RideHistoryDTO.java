@@ -1,12 +1,15 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class RideHistoryDTO {
-    // Getters and setters
     private Integer id;
     private String passengerEmail;
     private String driverEmail;
@@ -15,19 +18,4 @@ public class RideHistoryDTO {
     private String status;
     private Double price;
     private String createdAt;
-
-    public RideHistoryDTO() {}
-
-    public RideHistoryDTO(Integer id, String passengerEmail, String driverEmail,
-                          String startLocation, String endLocation, String status,
-                          Double price, String createdAt) {
-        this.id = id;
-        this.passengerEmail = passengerEmail;
-        this.driverEmail = driverEmail;
-        this.startLocation = startLocation;
-        this.endLocation = endLocation;
-        this.status = status;
-        this.price = price;
-        this.createdAt = createdAt;
-    }
 }

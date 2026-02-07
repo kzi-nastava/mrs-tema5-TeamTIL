@@ -1,6 +1,8 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.ForgotPasswordRequest;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.ResetPasswordRequest;
@@ -9,6 +11,7 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.service.PasswordResetService;
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/auth")
+@Validated
 public class PasswordResetController {
 
     private final PasswordResetService passwordResetService;
@@ -18,13 +21,13 @@ public class PasswordResetController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         passwordResetService.requestPasswordReset(request.getEmail());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         passwordResetService.resetPassword(
                 request.getToken(),
                 request.getNewPassword()

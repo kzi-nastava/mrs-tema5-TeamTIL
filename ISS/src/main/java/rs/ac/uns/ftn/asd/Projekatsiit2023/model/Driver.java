@@ -44,4 +44,12 @@ public class Driver extends Account {
             vehicle.setDriver(this);
         }
     }
+
+    public double getAverageRating() {
+        if (ratings.isEmpty()) {
+            return 0.0;
+        }
+        double sum = ratings.stream().mapToDouble(Rating::getDriverRating).sum();
+        return sum / ratings.size();
+    }
 }

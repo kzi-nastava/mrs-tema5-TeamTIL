@@ -1,0 +1,170 @@
+<div class="ride-details-container">
+  <div class="page-header">
+    <h1>Ride Details</h1>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <p>Loading ride details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="error-container">
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <div class="content-wrapper" [hidden]="isLoading || !!errorMessage || !rideDetails">
+    <ng-container *ngIf="rideDetails">
+    <!-- Left Side - Map and Details -->
+    <div class="left-section">
+      <!-- Route Information -->
+      <div class="route-header">
+        <svg class="location-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 3.75 5 9 5 9s5-5.25 5-9c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="white"/>
+        </svg>
+        <span class="route-text">{{ rideDetails.route[0]?.name }} → {{ rideDetails.route[rideDetails.route.length - 1]?.name }}</span>
+      </div>
+
+      <!-- Map Container -->
+      <div class="map-container">
+        <div id="rideDetailsMap" class="map-placeholder"></div>
+        <div class="map-controls">
+          <button class="map-btn zoom-in" (click)="zoomIn()">+</button>
+          <button class="map-btn zoom-out" (click)="zoomOut()">−</button>
+        </div>
+      </div>
+
+      <!-- Ride Rating -->
+      <div class="rating-section" *ngIf="isRegisteredUser()">
+        <div class="rating-header">
+          <h3>Ride rating</h3>
+          <span class="optional-text">Write a review (optional)</span>
+        </div>
+        <div class="rating-stars">
+          <span class="star" *ngFor="let star of [1,2,3,4,5]">★</span>
+        </div>
+        <button class="change-rating-btn" (click)="changeRating()">Change rating</button>
+      </div>
+
+      <!-- Passengers Section -->
+      <div class="passengers-section">
+        <h3>Passenger</h3>
+        <div class="passenger-list">
+          <div class="passenger-item">
+            <div class="passenger-avatar">
+              <img *ngIf="rideDetails.passengerProfilePictureUrl" 
+                   [src]="rideDetails.passengerProfilePictureUrl" 
+                   alt="Passenger photo"
+                   width="40"
+                   height="40">
+              <svg *ngIf="!rideDetails.passengerProfilePictureUrl" width="40" height="40" viewBox="0 0 40 40">
+                <circle cx="20" cy="20" r="20" fill="#4a4a4a"/>
+                <circle cx="20" cy="16" r="8" fill="#fff"/>
+                <path d="M8 32c0-6.627 5.373-12 12-12s12 5.373 12 12" fill="#fff"/>
+              </svg>
+            </div>
+            <div class="passenger-info">
+              <div class="passenger-name">{{ rideDetails.passengerFirstName }} {{ rideDetails.passengerLastName }}</div>
+              <div class="passenger-phone">{{ formatPhoneNumber(rideDetails.passengerPhoneNumber) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panic Alert -->
+      <div class="issues-section" *ngIf="rideDetails.panicSent">
+        <h3>Alert</h3>
+        <div class="issue-list">
+          <div class="issue-item">
+            <svg class="warning-icon" width="24" height="24" viewBox="0 0 24 24">
+              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" fill="#FFB800"/>
+            </svg>
+            <span>Panic button was pressed during this ride</span>
+          </div>
+        </div>
+      </div>
+      <div class="issues-section" *ngIf="!rideDetails.panicSent && isRegisteredUser()">
+        <button class="report-issue-btn" (click)="reportIssue()">Report an issue</button>
+      </div>
+    </div>
+
+    <!-- Right Side - Ride Info Panel -->
+    <div class="right-section">
+      <div class="ride-info-panel">
+        <div class="panel-header">
+          <h2>Ride Info</h2>
+          <button class="close-btn" (click)="closeRideInfo()">×</button>
+        </div>
+
+        <!-- Driver Info -->
+        <div class="info-section">
+          <div class="section-label">Driver</div>
+          <div class="driver-info">
+            <div class="driver-avatar">
+              <img *ngIf="rideDetails.driverProfilePictureUrl" 
+                   [src]="rideDetails.driverProfilePictureUrl" 
+                   alt="Driver photo">
+              <svg *ngIf="!rideDetails.driverProfilePictureUrl" width="48" height="48" viewBox="0 0 48 48">
+                <circle cx="24" cy="24" r="24" fill="#6B4E9C"/>
+                <circle cx="24" cy="20" r="10" fill="#fff"/>
+                <path d="M8 40c0-8.837 7.163-16 16-16s16 7.163 16 16" fill="#fff"/>
+              </svg>
+            </div>
+            <div class="driver-details">
+              <div class="driver-name-rating">
+                <span class="driver-name">{{ rideDetails.driverFirstName }} {{ rideDetails.driverLastName }}</span>
+                <span class="driver-rating" *ngIf="rideDetails.driverRating">{{ rideDetails.driverRating | number:'1.1-2' }}</span>
+              </div>
+              <div class="vehicle-type">{{ formatPhoneNumber(rideDetails.driverPhoneNumber) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Price -->
+        <div class="info-section price-section">
+          <div class="section-label">Total Price</div>
+          <div class="price-status">
+            <div class="price">{{ rideDetails.price | number:'1.2-2' }} RSD</div>
+            <div class="status-badge" [ngClass]="getStatusClass(rideDetails.status)">{{ rideDetails.status }}</div>
+          </div>
+        </div>
+
+        <!-- Start Time -->
+        <div class="info-section">
+          <div class="section-label">Start Time</div>
+          <div class="info-value">{{ rideDetails.startTime | date:'dd MMM yyyy, HH:mm' }}</div>
+        </div>
+
+        <!-- Estimated End Time -->
+        <div class="info-section">
+          <div class="section-label">Estimated End Time</div>
+          <div class="info-value">{{ rideDetails.estimatedEndTime | date:'HH:mm' }}</div>
+        </div>
+
+        <!-- Duration -->
+        <div class="info-section">
+          <div class="section-label">Duration</div>
+          <div class="info-value">{{ rideDetails.duration | number:'1.2-2' }} min</div>
+        </div>
+
+        <!-- Distance -->
+        <div class="info-section">
+          <div class="section-label">Distance</div>
+          <div class="distance-value">
+            <svg class="location-pin" width="20" height="20" viewBox="0 0 20 20">
+              <path d="M10 2C7.24 2 5 4.24 5 7c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5z" fill="white"/>
+            </svg>
+            <span>{{ rideDetails.distance | number:'1.2-2' }} km</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons" *ngIf="isRegisteredUser()">
+          <button class="rebook-btn" (click)="rebookRide()">Rebook this ride</button>
+          <button class="schedule-btn" (click)="scheduleForLater()">Schedule for later</button>
+        </div>
+      </div>
+    </div>
+    </ng-container>
+  </div>
+</div>
