@@ -76,13 +76,45 @@ export class Home implements OnInit {
           }
         });
       }
-      showCancelForm = false;
-      cancelReason = '';
+
+      quickCancelRide() {
+        if (!this.userRide) {
+          console.error('[Home] No ride to cancel');
+          return;
+        }
+        
+        console.log('[Home] Registered user cancelling ride:', this.userRide.id);
+        
+        this.rideService.cancelRide(this.userRide.id, 'User cancelled').subscribe({
+          next: (response) => {
+            console.log('[Home] Ride cancelled successfully:', response);
+            alert('Ride cancelled successfully!');
+            this.userRide = null;
+            this.showRideCard = false;
+            this.showForm = true;
+            this.cdr.detectChanges();
+          },
+          error: (error) => {
+            console.error('[Home] Error cancelling ride:', error);
+            console.error('[Home] Error status:', error.status);
+            console.error('[Home] Error message:', error.message);
+            alert(`Failed to cancel ride: ${error.message || 'Unknown error'}`);
+            this.cdr.detectChanges();
+          }
+        });
+      }
 
       confirmCancelRide() {
-        if (!this.userRide) return;
+        if (!this.userRide) {
+          console.error('[Home] No ride to cancel');
+          return;
+        }
+        
+        console.log('[Home] Driver cancelling ride:', this.userRide.id, 'with reason:', this.cancelReason);
+        
         this.rideService.cancelRide(this.userRide.id, this.cancelReason).subscribe({
-          next: () => {
+          next: (response) => {
+            console.log('[Home] Ride cancelled successfully:', response);
             alert('Ride cancelled successfully!');
             this.showCancelForm = false;
             this.cancelReason = '';
@@ -91,8 +123,14 @@ export class Home implements OnInit {
             this.showForm = true;
             this.cdr.detectChanges();
           },
-          error: () => {
-            alert('Failed to cancel ride!');
+          error: (error) => {
+            console.error('[Home] Error cancelling ride:', error);
+            console.error('[Home] Error status:', error.status);
+            console.error('[Home] Error message:', error.message);
+            alert(`Failed to cancel ride: ${error.message || 'Unknown error'}`);
+            this.showCancelForm = false;
+            this.cancelReason = '';
+            this.cdr.detectChanges();
           }
         });
       }
@@ -129,6 +167,8 @@ export class Home implements OnInit {
   currentUser: any = null;
   showRideCard = false;
   isLoggedIn = false;
+  showCancelForm = false;
+  cancelReason = '';
 
   constructor(
     private routeService: RouteService,

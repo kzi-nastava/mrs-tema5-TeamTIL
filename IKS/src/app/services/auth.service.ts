@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { Observable, BehaviorSubject, tap, catchError, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   LoginRequest,
   LoginResponse,
   RegisterRequest,
   RegisterResponse,
-  CurrentUser
+  CurrentUser,
+  TokenValidationResponse
 } from '../models/auth.models';
 
 @Injectable({
@@ -115,6 +116,31 @@ userProfile$ = this.userProfileSource.asObservable();
 
   getProfilePictureUrl(): string | null {
     return this.currentUserSubject.value?.profilePictureUrl || null;
+  }
+
+  validateToken(): Observable<TokenValidationResponse> {
+    const token = this.getToken();
+    if (!token) {
+      console.log('[AuthService] No token found');
+      return of({ valid: false, message: 'No token found' });
+    }
+
+    console.log('[AuthService] Validating token...');
+    return this.http.get<TokenValidationResponse>(`${this.apiUrl}/auth/validate`)
+      .pipe(
+        tap(response => {
+          console.log('[AuthService] Token validation response:', response);
+          if (!response.valid) {
+            console.log('[AuthService] Token is invalid, logging out...');
+            this.logout();
+          }
+        }),
+        catchError(error => {
+          console.error('[AuthService] Token validation failed:', error);
+          this.logout();
+          return of({ valid: false, message: 'Token validation failed' });
+        })
+      );
   }
 
   updateUserProfile(user: any) {

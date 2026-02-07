@@ -18,8 +18,8 @@
 
 .content-wrapper {
   display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 30px;
+  grid-template-columns: 1fr 380px;
+  gap: 25px;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -57,14 +57,23 @@
   background: rgba(64, 8, 72, 0.75);
   border-radius: 12px;
   overflow: hidden;
-  height: 400px;
+  height: 320px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  isolation: isolate;
 }
 
 .map-placeholder {
   width: 100%;
   height: 100%;
   position: relative;
+  background: #2d2d2d;
+}
+
+#rideDetailsMap {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  border-radius: 12px;
 }
 
 .map-info {
@@ -213,6 +222,10 @@
 
 .passenger-avatar {
   flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .passenger-info {
@@ -366,6 +379,10 @@
 
 .driver-avatar {
   flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .driver-details {
@@ -421,12 +438,32 @@
 }
 
 .status-badge {
-  background: #4CAF50;
   color: white;
   padding: 6px 16px;
   border-radius: 20px;
   font-size: 14px;
   font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-badge.status-completed {
+  background: #4CAF50;
+}
+
+.status-badge.status-canceled,
+.status-badge.status-cancelled {
+  background: #F44336;
+}
+
+.status-badge.status-pending,
+.status-badge.status-waiting {
+  background: #FFC107;
+  color: #000;
+}
+
+.status-badge.status-active,
+.status-badge.status-in-progress {
+  background: #2196F3;
 }
 
 /* Distance */
@@ -507,4 +544,37 @@
   .map-container {
     height: 300px;
   }
+}
+
+/* Loading and Error States */
+.loading-container,
+.error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  padding: 40px;
+  text-align: center;
+}
+
+.loading-container p {
+  font-size: 20px;
+  color: white;
+}
+
+.error-container p {
+  font-size: 18px;
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 20px 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.passenger-avatar img,
+.driver-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }

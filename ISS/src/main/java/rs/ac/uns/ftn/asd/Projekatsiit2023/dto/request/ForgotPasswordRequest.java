@@ -1,9 +1,16 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request;
 
-public class ForgotPasswordRequest {
-    private String email;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-    public String getEmail() {
-        return email;
-    }
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ForgotPasswordRequest {
+    @NotNull
+    private String email;
 }

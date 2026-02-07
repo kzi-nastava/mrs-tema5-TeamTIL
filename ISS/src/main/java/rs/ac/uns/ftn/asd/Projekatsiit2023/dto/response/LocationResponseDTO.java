@@ -9,10 +9,8 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RideCancelResponseDTO {
-    private Integer rideId;
-    private String status;
-    private String cancellationReason;
-    private String message;
-    private String cancelledBy; // "PASSENGER" or "DRIVER"
+public class LocationResponseDTO {
+    private String name;
+    private String latitude;
+    private String longitude;
 }
