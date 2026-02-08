@@ -3,8 +3,6 @@ package com.example.uberproject.utils;
 import android.content.Context;
 import androidx.fragment.app.Fragment;
 
-import com.example.uberproject.fragments.forms.AdminProfileFragment;
-import com.example.uberproject.fragments.forms.DriverProfileFragment;
 import com.example.uberproject.fragments.forms.ProfileFragment;
 import com.example.uberproject.fragments.forms.LoginFragment;
 
@@ -20,22 +18,13 @@ public class RoleBasedNavigationManager {
         if (userRole == null) {
             return new LoginFragment();
         }
-        switch (userRole.toUpperCase()) {
-            case "DRIVER":
-                return new DriverProfileFragment();
-            case "ADMIN":
-                return new AdminProfileFragment();
-            case "USER":
-            default:
-                return new ProfileFragment();
-        }
+        return new ProfileFragment();
     }
 
     public static boolean canAccessFragment(Context context, String requiredRole) {
         if (requiredRole == null || requiredRole.isEmpty()) {
             return AuthGuard.isUserAuthenticated(context);
         }
-
         return AuthGuard.hasAccessByRole(context, requiredRole);
     }
 

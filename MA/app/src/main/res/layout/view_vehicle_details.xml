@@ -57,10 +57,11 @@
                         android:textColor="#B0B0B0"
                         android:textSize="14sp" />
                     <TextView
+                        android:id="@+id/tvModelValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:text="Kia Sportage"
+                        android:text=""
                         android:textColor="@color/white"
                         android:textStyle="bold"
                         android:textSize="14sp" />
@@ -82,10 +83,11 @@
                         android:textColor="#B0B0B0"
                         android:textSize="14sp" />
                     <TextView
+                        android:id="@+id/tvTypeValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:text="Standard"
+                        android:text=""
                         android:textColor="@color/white"
                         android:textStyle="bold"
                         android:textSize="14sp" />
@@ -107,10 +109,11 @@
                         android:textColor="#B0B0B0"
                         android:textSize="14sp" />
                     <TextView
+                        android:id="@+id/tvPlateValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:text="NS-123-AB"
+                        android:text=""
                         android:textColor="@color/white"
                         android:textStyle="bold"
                         android:textSize="14sp" />
@@ -132,10 +135,11 @@
                         android:textColor="#B0B0B0"
                         android:textSize="14sp" />
                     <TextView
+                        android:id="@+id/tvCapacityValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:text="4"
+                        android:text=""
                         android:textColor="@color/white"
                         android:textStyle="bold"
                         android:textSize="14sp" />
@@ -159,31 +163,28 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp">
-
                     <ImageView
-                        android:id="@+id/ivBabyCheck"
+                        android:id="@+id/ivBabyIcon"
                         android:layout_width="18dp"
                         android:layout_height="18dp"
                         android:layout_centerVertical="true"
-                        android:src="@drawable/ic_check"
-                        app:tint="#4CAF50" />
-
+                        android:src="@drawable/ic_check" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_toEndOf="@id/ivBabyCheck"
+                        android:layout_toEndOf="@id/ivBabyIcon"
                         android:layout_marginStart="8dp"
                         android:layout_centerVertical="true"
                         android:text="@string/baby_transport_title"
                         android:textColor="@color/white"
                         android:textSize="14sp" />
-
                     <TextView
+                        android:id="@+id/tvBabyValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="@string/yes_title"
+                        android:text=""
                         android:textColor="@color/white"
                         android:textSize="14sp" />
                 </RelativeLayout>
@@ -192,35 +193,31 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp">
-
                     <ImageView
-                        android:id="@+id/ivPetClose"
+                        android:id="@+id/ivPetIcon"
                         android:layout_width="18dp"
                         android:layout_height="18dp"
                         android:layout_centerVertical="true"
-                        android:src="@drawable/ic_close"
-                        app:tint="#F44336" />
-
+                        android:src="@drawable/ic_close" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_toEndOf="@id/ivPetClose"
+                        android:layout_toEndOf="@id/ivPetIcon"
                         android:layout_marginStart="8dp"
                         android:layout_centerVertical="true"
                         android:text="@string/pet_friendly_title"
                         android:textColor="@color/white"
                         android:textSize="14sp" />
-
                     <TextView
+                        android:id="@+id/tvPetValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:text="@string/no_title"
+                        android:text=""
                         android:textColor="@color/white"
                         android:textSize="14sp" />
                 </RelativeLayout>
-
             </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>

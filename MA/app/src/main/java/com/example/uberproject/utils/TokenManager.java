@@ -90,4 +90,10 @@ public class TokenManager {
     public void clearAll() {
         encryptedPreferences.edit().clear().apply();
     }
+
+    public void saveProfilePictureUrl(String url) {
+        encryptedPreferences.edit()
+                .putString(USER_PROFILE_PICTURE_KEY, url)
+                .apply();
+    }
 }
