@@ -1,21 +1,24 @@
 package com.example.uberproject.fragments.forms;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
 import com.example.uberproject.R;
 import com.example.uberproject.api.RetrofitClient;
 import com.example.uberproject.api.UserApi;
 import com.example.uberproject.dto.response.UserResponseDTO;
+import com.example.uberproject.utils.TokenManager;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -27,6 +30,11 @@ public class ProfileInfoFragment extends Fragment {
     private Button btnSave;
     private UserApi userApi;
     private UserResponseDTO currentUser;
+    private String newBase64Photo = null;
+
+    public void setNewProfilePicture(String base64) {
+        this.newBase64Photo = base64;
+    }
 
     @Nullable
     @Override
@@ -40,122 +48,102 @@ public class ProfileInfoFragment extends Fragment {
         phone = view.findViewById(R.id.valuePhone);
         btnSave = view.findViewById(R.id.btnSaveChanges);
 
-        android.text.TextWatcher headerUpdater = new android.text.TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                Fragment parent = getParentFragment();
-                if (parent != null && parent.getView() != null) {
-                    TextView headerName = parent.getView().findViewById(R.id.headerName);
-                    if (headerName != null) {
-                        String fullName = name.getText().toString() + " " + surname.getText().toString();
-                        headerName.setText(fullName);
-                    }
-                }
-            }
-
-            @Override
-            public void afterTextChanged(android.text.Editable s) {}
-        };
-
-        name.addTextChangedListener(headerUpdater);
-        surname.addTextChangedListener(headerUpdater);
-
         userApi = RetrofitClient.getInstance(getContext()).create(UserApi.class);
-        loadUserDataFromServer();
+        loadUserData();
 
-        btnSave.setOnClickListener(v -> {
-            updateUserDataOnServer();
-        });
+        setupTextWatcher();
+
+        btnSave.setOnClickListener(v -> updateUserData());
 
         return view;
     }
 
-    private void loadUserDataFromServer() {
+    private void setupTextWatcher() {
+        TextWatcher watcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Fragment parent = getParentFragment();
+                if (parent instanceof ProfileFragment) {
+                    ((ProfileFragment) parent).updateHeaderUI(name.getText().toString(), surname.getText().toString(), email.getText().toString(), null);
+                }
+            }
+            @Override
+            public void afterTextChanged(Editable s) {}
+        };
+        name.addTextChangedListener(watcher);
+        surname.addTextChangedListener(watcher);
+    }
+
+    private void loadUserData() {
         userApi.getMyProfile().enqueue(new Callback<UserResponseDTO>() {
             @Override
             public void onResponse(Call<UserResponseDTO> call, Response<UserResponseDTO> response) {
-
                 if (response.isSuccessful() && response.body() != null) {
                     currentUser = response.body();
-
                     name.setText(currentUser.getFirstName());
                     surname.setText(currentUser.getLastName());
                     email.setText(currentUser.getEmail());
                     address.setText(currentUser.getAddress());
                     phone.setText(currentUser.getPhoneNumber());
 
-                    // odmah saljemo podatke u ProfileFragment zaglavlje
                     Fragment parent = getParentFragment();
-                    if (parent != null && parent.getView() != null) {
-                        TextView headerName = parent.getView().findViewById(R.id.headerName);
-                        TextView headerEmail = parent.getView().findViewById(R.id.headerEmail);
-
-                        if (headerName != null) {
-                            headerName.setText(currentUser.getFirstName() + " " + currentUser.getLastName());
-                        }
-                        if (headerEmail != null) {
-                            headerEmail.setText(currentUser.getEmail());
-                        }
+                    if (parent instanceof ProfileFragment) {
+                        ((ProfileFragment) parent).updateHeaderUI(currentUser.getFirstName(), currentUser.getLastName(), currentUser.getEmail(), currentUser.getProfilePictureUrl());
                     }
                 }
             }
-
             @Override
-            public void onFailure(Call<UserResponseDTO> call, Throwable t) {
-                Toast.makeText(getContext(), "Failed to load profile", Toast.LENGTH_SHORT).show();
-            }
+            public void onFailure(Call<UserResponseDTO> call, Throwable t) {}
         });
     }
 
-    private void updateUserDataOnServer() {
+    private void updateUserData() {
         if (currentUser == null) return;
 
-        // uzmi šta je korisnik upisao u polja
         currentUser.setFirstName(name.getText().toString());
         currentUser.setLastName(surname.getText().toString());
         currentUser.setAddress(address.getText().toString());
         currentUser.setPhoneNumber(phone.getText().toString());
 
-        // posalji na backend - put
+        if (newBase64Photo != null) {
+            currentUser.setProfilePictureUrl(newBase64Photo);
+        }
+
         userApi.updateMyProfile(currentUser).enqueue(new Callback<UserResponseDTO>() {
             @Override
             public void onResponse(Call<UserResponseDTO> call, Response<UserResponseDTO> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     currentUser = response.body();
-                    toggleEditing(false);
-                    Toast.makeText(getContext(), "Changes saved successfully!", Toast.LENGTH_SHORT).show();
 
-                    // dinamicka izmena
-                    Fragment parent = getParentFragment();
-                    if (parent != null && parent.getView() != null) {
-                        TextView headerName = parent.getView().findViewById(R.id.headerName);
-                        TextView headerEmail = parent.getView().findViewById(R.id.headerEmail);
+                    TokenManager.getInstance(getContext()).saveProfilePictureUrl(currentUser.getProfilePictureUrl());
 
-                        if (headerName != null) {
-                            headerName.setText(currentUser.getFirstName() + " " + currentUser.getLastName());
-                        }
-                        if (headerEmail != null) {
-                            headerEmail.setText(currentUser.getEmail());
-                        }
-
-                        // ponovo vidljivo edit dugme
-                        if (parent instanceof ProfileFragment) {
-                            ((ProfileFragment) parent).showEditButton();
-                        }
+                    if (getActivity() != null) {
+                        getActivity().invalidateOptionsMenu();
                     }
-                } else {
-                    Toast.makeText(getContext(), "Failed to save changes", Toast.LENGTH_SHORT).show();
+
+                    Fragment parent = getParentFragment();
+                    if (parent instanceof ProfileFragment) {
+                        ((ProfileFragment) parent).updateHeaderUI(
+                                currentUser.getFirstName(),
+                                currentUser.getLastName(),
+                                currentUser.getEmail(),
+                                currentUser.getProfilePictureUrl()
+                        );
+                        ((ProfileFragment) parent).showEditButton();
+                    }
+
+                    newBase64Photo = null;
+                    toggleEditing(false);
+                    hideKeyboard();
+                    Toast.makeText(getContext(), "Changes saved!", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<UserResponseDTO> call, Throwable t) {
-                if (isAdded() && getContext() != null) {
-                    Toast.makeText(getContext(), "Network issue occurred while saving", Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -163,9 +151,25 @@ public class ProfileInfoFragment extends Fragment {
     public void toggleEditing(boolean enable) {
         name.setEnabled(enable);
         surname.setEnabled(enable);
-        email.setEnabled(false);
         address.setEnabled(enable);
         phone.setEnabled(enable);
         btnSave.setVisibility(enable ? View.VISIBLE : View.GONE);
+        if (enable) {
+            btnSave.setFocusableInTouchMode(false);
+            btnSave.bringToFront();
+        }
+
+        Fragment parent = getParentFragment();
+        if (parent instanceof ProfileFragment) {
+            ((ProfileFragment) parent).setChangePhotoVisible(enable);
+        }
+    }
+
+    private void hideKeyboard() {
+        View view = getActivity().getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

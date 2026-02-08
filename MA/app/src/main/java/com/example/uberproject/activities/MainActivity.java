@@ -289,4 +289,24 @@ public class MainActivity extends AppCompatActivity {
             toolbar.setVisibility(android.view.View.VISIBLE);
         }
     }
+
+    public void refreshToolbarImage(String photoUrlOrBase64) {
+        if (toolbar != null && toolbar.getMenu() != null) {
+            MenuItem profileItem = toolbar.getMenu().findItem(R.id.nav_profile);
+            if (profileItem != null) {
+                View actionView = profileItem.getActionView();
+                if (actionView == null) return;
+
+                ImageView ivProfileImage = actionView.findViewById(R.id.ivProfileImage);
+                if (ivProfileImage != null) {
+                    Glide.with(this)
+                            .load(photoUrlOrBase64)
+                            .placeholder(R.drawable.ic_person_placeholder)
+                            .circleCrop()
+                            .signature(new com.bumptech.glide.signature.ObjectKey(System.currentTimeMillis())) // FORSIRA OSVEŽAVANJE
+                            .into(ivProfileImage);
+                }
+            }
+        }
+    }
 }
