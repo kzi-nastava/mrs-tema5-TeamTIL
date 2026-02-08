@@ -24,8 +24,6 @@ import com.bumptech.glide.Glide;
 import com.example.uberproject.R;
 import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
 import com.example.uberproject.fragments.forms.ProfileFragment;
-import com.example.uberproject.fragments.forms.AdminProfileFragment;
-import com.example.uberproject.fragments.forms.DriverProfileFragment;
 import com.example.uberproject.fragments.forms.LoginFragment;
 import com.example.uberproject.fragments.forms.RegisterFragment;
 import com.example.uberproject.fragments.forms.ResetPasswordFragment;
@@ -92,13 +90,13 @@ public class MainActivity extends AppCompatActivity {
                 if (!AuthGuard.isDriver(this)) {
                     Toast.makeText(this, "Only drivers can access this page", Toast.LENGTH_SHORT).show();
                 } else {
-                    loadFragment(new DriverProfileFragment());
+                    loadFragment(new ProfileFragment());
                 }
             } else if (itemId == R.id.support) {
                 if (!AuthGuard.isAdmin(this)) {
                     Toast.makeText(this, "Only admins can access this page", Toast.LENGTH_SHORT).show();
                 } else {
-                    loadFragment(new AdminProfileFragment());
+                    loadFragment(new ProfileFragment());
                 }
             } else if (itemId == R.id.nav_logout) {
                 AuthGuard.logout(this);

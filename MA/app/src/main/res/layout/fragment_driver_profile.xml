@@ -61,18 +61,7 @@
                     android:id="@+id/headerName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Petar"
-                    android:textColor="@color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:singleLine="true"
-                    android:ellipsize="end" />
-
-                <TextView
-                    android:id="@+id/headerSurname"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Petrovic"
+                    android:text=""
                     android:textColor="@color/white"
                     android:textSize="18sp"
                     android:textStyle="bold"
@@ -84,7 +73,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="petarpetrovic@gmail.com"
+                    android:text=""
                     android:textColor="#B0B0B0"
                     android:textSize="12sp"
                     android:singleLine="true"
@@ -138,7 +127,7 @@
                 android:background="@drawable/bg_tabs_outline"
                 android:orientation="horizontal"
                 android:padding="4dp"
-                android:weightSum="4"
+                android:weightSum="2"
                 app:layout_constraintTop_toBottomOf="@id/tvHoursActive">
 
                 <TextView
@@ -162,25 +151,6 @@
                     android:textSize="11sp"
                     android:textColor="@color/black" />
 
-                <TextView
-                    android:id="@+id/tabMyRides"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="@string/my_rides_title"
-                    android:textSize="11sp"
-                    android:textColor="@color/black" />
-
-                <TextView
-                    android:id="@+id/tabHistory"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="@string/ride_history_title"
-                    android:textSize="11sp"
-                    android:textColor="@color/black" />
             </LinearLayout>
 
             <FrameLayout
