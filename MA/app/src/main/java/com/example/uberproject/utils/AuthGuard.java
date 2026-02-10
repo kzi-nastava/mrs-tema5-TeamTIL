@@ -41,7 +41,7 @@ public class AuthGuard {
     }
 
     public static boolean isAdmin(Context context) {
-        return hasAccessByRole(context, "ADMIN");
+        return hasAccessByRole(context, "ADMINISTRATOR") || hasAccessByRole(context, "ADMIN");
     }
 
     public static boolean isUser(Context context) {

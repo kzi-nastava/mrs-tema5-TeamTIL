@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
         } else if ("DRIVER".equalsIgnoreCase(userRole)) {
             // Prikaži samo DRIVER grupu
             showMenuGroup(menu, "DRIVER");
-        } else if ("ADMIN".equalsIgnoreCase(userRole)) {
+        } else if ("ADMIN".equalsIgnoreCase(userRole) || "ADMINISTRATOR".equalsIgnoreCase(userRole)) {
             // Prikaži samo ADMIN grupu
             showMenuGroup(menu, "ADMIN");
         } else {
