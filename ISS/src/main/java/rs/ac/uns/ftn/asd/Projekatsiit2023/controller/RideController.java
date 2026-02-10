@@ -69,30 +69,24 @@ public class RideController {
             return ResponseEntity.badRequest().build();
         }
 
-        Ride ride = rideRepository.findById(rideId)
-                .orElseThrow(() -> new RuntimeException("Ride not found"));
-
         String reason = (request != null && request.getCancellationReason() != null)
                 ? request.getCancellationReason()
-                : "User cancelled";
+                : null;
 
-        if (reason.equals("User cancelled")) {ride.setCanceledBy(UserType.REGISTERED_USER);}
-        else {ride.setCanceledBy(UserType.DRIVER);}
-
-        ride.setRideStatus(RideStatus.CANCELED);
-        ride.setCancellationReason(reason);
-
-        rideRepository.save(ride);
-
-        RideCancelResponseDTO response = new RideCancelResponseDTO(
-                rideId,
-                "CANCELLED",
-                reason,
-                "Ride cancelled successfully",
-                ride.getCanceledBy().name()
-        );
-
-        return ResponseEntity.ok(response);
+        try {
+            RideCancelResponseDTO response = rideService.cancelRide(rideId, reason);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(
+                    new RideCancelResponseDTO(
+                            rideId,
+                            "CANCEL_FAILED",
+                            reason != null ? reason : "",
+                            e.getMessage(),
+                            null
+                    )
+            );
+        }
     }
 
     @PutMapping("/{rideId}/stop")
@@ -105,62 +99,56 @@ public class RideController {
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
-
-        Ride ride = rideRepository.findById(rideId)
-                .orElseThrow(() -> new RuntimeException("Ride not found"));
-        Route route = ride.getRoute();
-
-        VehicleType vehicleType = ride.getDriver().getVehicle().getType();
-        double finalPrice = rideService.calculateFinalPrice(
-                vehicleType,
-                ride.getStartLocation(),
-                request.getActualEndLocation()
-        );
-
-        Location endLocation = request.getActualEndLocation();
-        endLocation.setRoute(route);
-
-        endLocation = locationService.findOrSaveLocation(endLocation, route);
-
-        if (endLocation != null) {
-            route.getLocations().add(endLocation);
+        try {
+            RideStopResponseDTO response = rideService.stopRide(
+                    rideId,
+                    request.getActualEndLocation(),
+                    request.getActualEndTime()
+            );
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(
+                    new RideStopResponseDTO(
+                            rideId,
+                            "STOP_FAILED",
+                            request.getActualEndLocation() != null ? request.getActualEndLocation().getAddress() : "",
+                            null,
+                            null,
+                            e.getMessage()
+                    )
+            );
         }
-        routeService.save(route);
-
-        ride.setRideStatus(RideStatus.FINISHED);
-        ride.setEndLocation(endLocation);
-        ride.setEndTime(request.getActualEndTime());
-        ride.setTotalPrice(finalPrice);
-        ride.setRoute(route);
-
-        rideRepository.save(ride);
-
-        assert endLocation != null;
-        RideStopResponseDTO response = new RideStopResponseDTO(
-                rideId,
-                "COMPLETED",
-                endLocation.getAddress(),
-                Math.round(finalPrice * 100.0) / 100.0,
-                "duration",
-                "Ride completed successfully"
-        );
-
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/admin/history")
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<List<RideHistoryResponseDTO>> getAllRidesHistory(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String driverEmail,
-            @RequestParam(required = false) String passengerEmail,
-            @RequestParam(required = false) String startLocation,
-            @RequestParam(required = false) String endLocation,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        List<RideHistoryResponseDTO> ridesHistory = rideService.getAllRidesWithPanicInfoForAdmin();
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        LocalDateTime dateFromParsed = dateFrom != null ? LocalDateTime.parse(dateFrom) : null;
+        LocalDateTime dateToParsed = dateTo != null ? LocalDateTime.parse(dateTo) : null;
+
+        List<RideHistoryResponseDTO> ridesHistory = rideService.getAdminRideHistory(dateFromParsed, dateToParsed, sortBy, sortDirection);
+
+        return ResponseEntity.ok(ridesHistory);
+    }
+
+    @GetMapping("/{passengerEmail}/history")
+    @PreAuthorize("hasRole('REGISTERED_USER')")
+    public ResponseEntity<List<RideHistoryResponseDTO>> getUserRidesHistory(
+            @PathVariable String passengerEmail,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        LocalDateTime dateFromParsed = dateFrom != null ? LocalDateTime.parse(dateFrom) : null;
+        LocalDateTime dateToParsed = dateTo != null ? LocalDateTime.parse(dateTo) : null;
+
+        List<RideHistoryResponseDTO> ridesHistory = rideService.getUserRideHistory(passengerEmail, dateFromParsed, dateToParsed, sortBy, sortDirection);
 
         return ResponseEntity.ok(ridesHistory);
     }
@@ -408,3 +396,4 @@ public class RideController {
         return ResponseEntity.ok(response);
     }
 }
+
