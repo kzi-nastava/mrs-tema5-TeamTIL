@@ -23,7 +23,7 @@ export class RideService {
 
   // Nova metoda za korisnika
   getUserRides(userEmail: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/user/${userEmail}`);
+    return this.http.get<any[]>(`${this.apiUrl}/${userEmail}/history`);
   }
 
   cancelRide(rideId: number, cancellationReason: string): Observable<any> {

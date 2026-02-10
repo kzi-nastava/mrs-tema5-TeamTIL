@@ -126,7 +126,7 @@
             </div>
             <div class="driver-details">
               <p class="driver-name">{{ selectedRide.driver?.name }}</p>
-              <p class="driver-phone">{{ selectedRide.driver?.phone }}</p>
+              <p class="driver-phone">{{ formatPhoneNumber(selectedRide.driver?.phone || '') }}</p>
             </div>
           </div>
         </div>
