@@ -130,6 +130,7 @@ public class LoginFragment extends Fragment {
             MainActivity mainActivity = (MainActivity) getActivity();
             mainActivity.showToolbar();
             mainActivity.invalidateOptionsMenu();
+            mainActivity.refreshNavigationMenu();
         }
 
         getParentFragmentManager().beginTransaction()

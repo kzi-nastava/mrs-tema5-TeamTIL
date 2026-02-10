@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.DriverRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideRequestDTO;
@@ -261,6 +262,7 @@ public class RideService {
         List<LocationResponseDTO> routeLocations = new ArrayList<>();
         if (ride.getRoute() != null && ride.getRoute().getLocations() != null) {
             routeLocations = ride.getRoute().getLocations().stream()
+                    .filter(location -> location != null)
                     .map(location -> new LocationResponseDTO(
                             location.getAddress(),
                             String.valueOf(location.getLatitude()),
@@ -326,10 +328,12 @@ public class RideService {
                 Double.valueOf(duration),
                 ride.getRating() != null ? ride.getRating().getOverallRating() : null,
                 ride.getRating() != null ? ride.getRating().getComment() : null,
-                !ride.getPanicNotifications().isEmpty(),
-                ride.getInconsistencyReports().stream()
-                        .map(InconsistencyReport::getDescription)
-                        .collect(Collectors.toList())
+                ride.getPanicNotifications() != null && !ride.getPanicNotifications().isEmpty(),
+                ride.getInconsistencyReports() != null ?
+                        ride.getInconsistencyReports().stream()
+                                .map(InconsistencyReport::getDescription)
+                                .collect(Collectors.toList())
+                        : new ArrayList<>()
         );
     }
 

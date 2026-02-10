@@ -81,7 +81,6 @@ export class UserRideHistory implements OnInit {
 
     this.rideService.getUserRides(passengerEmail).subscribe({
       next: (ridesFromBackend) => {
-        console.log('Backend response:', ridesFromBackend);
         this.allRides = ridesFromBackend.map(ride => ({
           id: ride.id,
           date: ride.startTime?.split(',')[0]?.trim() || '-', // "04 Feb 2026"
@@ -106,7 +105,7 @@ export class UserRideHistory implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error fetching user ride history:', err);
+        console.error('[UserRideHistory] Error fetching user ride history:', err);
       }
     });
   }
