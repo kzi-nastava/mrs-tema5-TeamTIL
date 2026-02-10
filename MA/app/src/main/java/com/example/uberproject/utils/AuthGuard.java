@@ -45,7 +45,11 @@ public class AuthGuard {
     }
 
     public static boolean isUser(Context context) {
-        return hasAccessByRole(context, "USER");
+        return hasAccessByRole(context, "REGISTERED_USER");
+    }
+
+    public static boolean isRegisteredUser(Context context) {
+        return hasAccessByRole(context, "REGISTERED_USER");
     }
 
     public static String getUserRole(Context context) {

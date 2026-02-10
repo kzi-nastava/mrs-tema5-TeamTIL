@@ -3,7 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <group android:checkableBehavior="single">
+    <!-- REGISTERED USER MENU ITEMS -->
+    <group android:checkableBehavior="single"
+        android:id="@+id/menu_registered_user">
         <item android:id="@+id/book_an_uber"
             android:title="@string/book_an_uber"
             android:icon="@drawable/ic_vehicle_placeholder"
@@ -23,13 +25,57 @@
         <item android:id="@+id/support"
             android:title="@string/support"
             android:icon="@drawable/support"
+            android:orderInCategory="400" />
+    </group>
+
+    <!-- DRIVER MENU ITEMS -->
+    <group android:checkableBehavior="single"
+        android:id="@+id/menu_driver">
+        <item android:id="@+id/my_vehicle"
+            android:title="@string/my_vehicle"
+            android:icon="@drawable/ic_vehicle_placeholder"
+            android:orderInCategory="100" />
+
+        <item android:id="@+id/driver_ride_history"
+            android:title="@string/ride_history"
+            android:icon="@drawable/ic_calendar_placeholder"
+            android:orderInCategory="200" />
+
+        <item android:id="@+id/my_rides"
+            android:title="@string/my_rides"
+            android:icon="@drawable/favorite_rides"
+            android:orderInCategory="300" />
+
+        <item android:id="@+id/driver_support"
+            android:title="@string/support"
+            android:icon="@drawable/support"
+            android:orderInCategory="400" />
+    </group>
+
+    <!-- ADMIN MENU ITEMS -->
+    <group android:checkableBehavior="single"
+        android:id="@+id/menu_admin">
+        <item android:id="@+id/driver_registration_admin"
+            android:title="@string/driver_registration"
+            android:icon="@drawable/ic_vehicle_placeholder"
+            android:orderInCategory="100" />
+
+        <item android:id="@+id/admin_ride_history"
+            android:title="@string/ride_history"
+            android:icon="@drawable/ic_calendar_placeholder"
+            android:orderInCategory="200" />
+
+        <item android:id="@+id/admin_support"
+            android:title="@string/support"
+            android:icon="@drawable/support"
             android:orderInCategory="300" />
     </group>
 
+    <!-- LOGOUT (COMMON FOR ALL LOGGED-IN USERS) -->
     <group android:checkableBehavior="none">
         <item android:id="@+id/nav_logout"
             android:title="Logout"
             android:icon="@drawable/ic_logout"
-            android:orderInCategory="400" />
+            android:orderInCategory="500" />
     </group>
 </menu>
