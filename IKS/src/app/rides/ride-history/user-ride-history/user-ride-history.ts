@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
+import { OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,6 +15,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { RateRideComponent } from '../../modals/rate-ride/rate-ride';
+import { RideService } from '../../services/ride.service';
+import { AuthService } from '../../../services/auth.service';
 
 interface Ride {
   id: number;
@@ -50,90 +53,63 @@ interface Ride {
   templateUrl: './user-ride-history.html',
   styleUrl: './user-ride-history.css',
 })
-export class UserRideHistory {
-  filterOptions = ['All', 'Last 7 days', 'Last month', 'Completed only', 'Cancelled only'];
+export class UserRideHistory implements OnInit {
+  filterOptions = ['All', 'Last 7 days', 'Last month', 'Completed only', 'Canceled only'];
   activeFilter = 'All';
   dateFrom: Date | null = null;
   dateTo: Date | null = null;
   selectedStatus = '';
 
-  allRides: Ride[] = [
-    {
-      id: 1,
-      date: '14 March 2025',
-      startTime: '15:32',
-      endTime: '16:05',
-      from: 'Stražilovska',
-      to: 'Bulevar Kralja Petra I',
-      price: '1,480',
-      status: 'Completed',
-      duration: '33 min',
-      distance: '8.2 km',
-      driver: { name: 'John Pork', phone: '+381 125 456 789' },
-      vehicle: { model: 'Toyota Corolla', plate: 'BG123XY' }
-    },
-    {
-      id: 2,
-      date: '14 March 2025',
-      startTime: '14:32',
-      endTime: '15:05',
-      from: 'Stražilovska',
-      to: 'Bulevar Kralja Petra I',
-      price: '1,480',
-      status: 'Canceled',
-      duration: '33 min',
-      distance: '8.2 km',
-      driver: { name: 'John Pork', phone: '+381 125 456 789' },
-      vehicle: { model: 'Volkswagen Golf', plate: 'NS456AB' }
-    },
-    {
-      id: 3,
-      date: '12 March 2025',
-      startTime: '15:32',
-      endTime: '16:05',
-      from: 'Stražilovska',
-      to: 'Bulevar Kralja Petra I',
-      price: '1,480',
-      status: 'Completed',
-      duration: '33 min',
-      distance: '8.2 km',
-      driver: { name: 'John Pork', phone: '+381 125 456 789' },
-      vehicle: { model: 'Honda Civic', plate: 'NI789CD' }
-    },
-    {
-      id: 4,
-      date: '10 March 2025',
-      startTime: '10:15',
-      endTime: '10:45',
-      from: 'Futoška',
-      to: 'Trg Slobode',
-      price: '980',
-      status: 'Completed',
-      duration: '30 min',
-      distance: '5.5 km',
-      driver: { name: 'Jane Smith', phone: '+381 125 456 780' },
-      vehicle: { model: 'Ford Focus', plate: 'SU321EF' }
-    },
-    {
-      id: 5,
-      date: '5 March 2025',
-      startTime: '18:20',
-      endTime: '18:55',
-      from: 'Bulevar Oslobođenja',
-      to: 'Petrovaradin',
-      price: '1,250',
-      status: 'Canceled',
-      duration: '35 min',
-      distance: '7.8 km',
-      driver: { name: 'Mike Johnson', phone: '+381 125 456 781' },
-      vehicle: { model: 'Chevrolet Cruze', plate: 'KG654GH' }
-    },
-  ];
+  allRides: Ride[] = [];
+  rides: Ride[] = [];
+  selectedRide: Ride | null = null;
 
-  constructor(private router: Router, private dialog: MatDialog) {}
+  constructor(
+    private router: Router,
+    private dialog: MatDialog,
+    private rideService: RideService,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-  rides: Ride[] = [...this.allRides];
-  selectedRide: Ride | null = this.rides[0];
+  ngOnInit(): void {
+    const passengerEmail = this.authService.getEmail();
+    if (!passengerEmail) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    this.rideService.getUserRides(passengerEmail).subscribe({
+      next: (ridesFromBackend) => {
+        console.log('Backend response:', ridesFromBackend);
+        this.allRides = ridesFromBackend.map(ride => ({
+          id: ride.id,
+          date: ride.startTime?.split(',')[0]?.trim() || '-', // "04 Feb 2026"
+          startTime: ride.startTime?.split(',')[1]?.trim() || '-', // "21:20"
+          endTime: ride.estimatedEndTime ? ride.estimatedEndTime.split(',')[1]?.trim() : '-',
+          from: ride.startLocation || '-',
+          to: ride.endLocation || '-',
+          price: ride.price ? `${ride.price.toFixed(0)}` : '-',
+          status: ride.status === 'FINISHED' ? 'Completed' : (ride.status === 'CANCELED' ? 'Canceled' : ride.status),
+          duration: ride.duration && ride.duration > 0 ? `${Math.round(ride.duration)} min` : '-',
+          distance: ride.distance && ride.distance > 0 ? `${ride.distance.toFixed(1)} km` : '-',
+          driver: {
+            name: ride.driverFirstName && ride.driverLastName
+              ? `${ride.driverFirstName} ${ride.driverLastName}`
+              : ride.driverEmail || '-',
+            phone: ride.driverPhoneNumber || '-'
+          },
+          vehicle: { model: '-', plate: '-' }
+        }));
+        this.rides = [...this.allRides];
+        this.selectedRide = this.rides.length > 0 ? this.rides[0] : null;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error fetching user ride history:', err);
+      }
+    });
+  }
 
   setActiveFilter(option: string) {
     this.activeFilter = option;
@@ -149,8 +125,10 @@ export class UserRideHistory {
       case 'Last 7 days':
         const sevenDaysAgo = new Date(today);
         sevenDaysAgo.setDate(today.getDate() - 7);
+        const endOfToday = new Date(today);
+        endOfToday.setHours(23, 59, 59, 999);
         this.dateFrom = sevenDaysAgo;
-        this.dateTo = today;
+        this.dateTo = endOfToday;
         this.selectedStatus = '';
         this.applyFilters();
         break;
@@ -158,8 +136,10 @@ export class UserRideHistory {
       case 'Last month':
         const thirtyDaysAgo = new Date(today);
         thirtyDaysAgo.setDate(today.getDate() - 30);
+        const endOfTodayMonth = new Date(today);
+        endOfTodayMonth.setHours(23, 59, 59, 999);
         this.dateFrom = thirtyDaysAgo;
-        this.dateTo = today;
+        this.dateTo = endOfTodayMonth;
         this.selectedStatus = '';
         this.applyFilters();
         break;
@@ -169,7 +149,7 @@ export class UserRideHistory {
         this.applyFilters();
         break;
         
-      case 'Cancelled only':
+      case 'Canceled only':
         this.selectedStatus = 'canceled';
         this.applyFilters();
         break;
@@ -211,9 +191,11 @@ export class UserRideHistory {
   }
 
   parseRideDate(dateString: string): Date {
-    // Parse "14 March 2025" format
+    // Parse "04 Feb 2026" format (short and long month names)
     const months: { [key: string]: number } = {
-      'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4, 'June': 5,
+      'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+      'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11,
+      'January': 0, 'February': 1, 'March': 2, 'April': 3, 'June': 5,
       'July': 6, 'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11
     };
     
@@ -225,6 +207,34 @@ export class UserRideHistory {
     return new Date(year, month, day);
   }
 
+  formatPhoneNumber(phone: string): string {
+    if (!phone || phone === '-') return phone;
+    
+    const digitsOnly = phone.replace(/\D/g, '');
+    const length = digitsOnly.length;
+    
+    if (length <= 3) return digitsOnly;
+    
+    const remainder = length % 3;
+    
+    if (remainder === 1) {
+      const groups: string[] = [];
+      let i = 0;
+      while (i < length - 4) {
+        groups.push(digitsOnly.slice(i, i + 3));
+        i += 3;
+      }
+      groups.push(digitsOnly.slice(i));
+      return groups.join(' ');
+    } else {
+      const groups: string[] = [];
+      for (let i = 0; i < length; i += 3) {
+        groups.push(digitsOnly.slice(i, i + 3));
+      }
+      return groups.join(' ');
+    }
+  }
+
   resetFilters() {
     this.dateFrom = null;
     this.dateTo = null;
@@ -232,7 +242,6 @@ export class UserRideHistory {
     this.activeFilter = 'All';
     this.rides = [...this.allRides];
     
-    // Keep selected ride if still in results
     if (this.selectedRide && !this.rides.find(r => r.id === this.selectedRide?.id)) {
       this.selectedRide = this.rides.length > 0 ? this.rides[0] : null;
     }
@@ -266,12 +275,11 @@ export class UserRideHistory {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-    if (result) {
-      console.log('Rating:', result.rating, result.comment);
-
-      // TODO: backend poziv
-      // this.ridesService.rateRide(ride.id, result)
-    }
-  });
+      if (result) {
+        console.log('Rating:', result.rating, result.comment);
+        // TODO: backend poziv
+        // this.ridesService.rateRide(ride.id, result)
+      }
+    });
   }
 }
