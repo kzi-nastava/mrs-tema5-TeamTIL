@@ -229,4 +229,16 @@ public class RideService {
                 java.time.LocalDateTime.now().toString()
         );
     }
+
+    public List<double[]> getRouteForRide(Integer rideId) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+
+        return routeService.getRouteFromOSRM(
+                ride.getStartLocation().getLatitude(),
+                ride.getStartLocation().getLongitude(),
+                ride.getEndLocation().getLatitude(),
+                ride.getEndLocation().getLongitude()
+        );
+    }
 }

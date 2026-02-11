@@ -1,5 +1,7 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -82,5 +84,35 @@ public class RouteService {
 
     public Route save(Route route) {
         return routeRepository.save(route);
+    }
+
+    public List<double[]> getRouteFromOSRM(double startLat, double startLng, double endLat, double endLng) {
+        try {
+            String url = String.format(
+                    "http://router.project-osrm.org/route/v1/driving/%f,%f;%f,%f?overview=full&geometries=geojson",
+                    startLng, startLat, endLng, endLat
+            );
+
+            RestTemplate restTemplate = new RestTemplate();
+            String response = restTemplate.getForObject(url, String.class);
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response);
+
+            List<double[]> coordinatesList = new ArrayList<>();
+
+            JsonNode coords = root.path("routes").get(0).path("geometry").path("coordinates");
+            for (JsonNode point : coords) {
+                double lng = point.get(0).asDouble();
+                double lat = point.get(1).asDouble();
+                coordinatesList.add(new double[]{lat, lng});
+            }
+
+            return coordinatesList;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
+        }
     }
 }

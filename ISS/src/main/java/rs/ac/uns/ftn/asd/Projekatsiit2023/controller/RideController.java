@@ -197,12 +197,15 @@ public class RideController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found"));
 
         RideTrackingDTO response = new RideTrackingDTO(
+                ride.getStartLocation().getAddress(),
                 ride.getStartLocation().getLatitude(),
                 ride.getStartLocation().getLongitude(),
+                ride.getEndLocation().getAddress(),
                 ride.getEndLocation().getLatitude(),
                 ride.getEndLocation().getLongitude(),
                 ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName(),
                 ride.getDriver().getPhoneNumber(),
+                ride.getDriver().getVehicle().getType().toString(),
                 ride.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"))
         );
 

@@ -29,7 +29,7 @@ public class RouteController {
             return ResponseEntity.internalServerError().build();
         }
 
-        double basePrice = estimation.distanceKm * 120;
+        double basePrice = estimation.distanceKm * 120; // TODO: change based on price config
         double multiplier = switch (request.getVehicleType() == null ? "STANDARD" : request.getVehicleType().toUpperCase()) {
             case "STANDARD" -> 1.0;
             case "LUXURY" -> 1.5;
