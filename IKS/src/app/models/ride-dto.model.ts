@@ -54,3 +54,14 @@ export interface RideDetailsResponseDTO {
   panicSent: boolean;
   reportedIssues: string[];
 }
+
+export interface InconsistencyReportRequestDTO {
+  passengerEmail: string;
+  description: string;
+  attachmentBase64?: string;
+}
+
+export interface InconsistencyReportResponseDTO {
+  id: number;
+  message: string;
+}

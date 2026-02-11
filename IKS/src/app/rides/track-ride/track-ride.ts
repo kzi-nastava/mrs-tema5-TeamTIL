@@ -17,6 +17,9 @@ import { take } from 'rxjs/operators';
 import { RideTrackingService } from '../services/ride-tracking.service';
 import { ActivatedRoute } from '@angular/router';
 import { RideTrackingDTO } from '../../models/ride-tracking-dto.model';
+import { MatDialog } from '@angular/material/dialog';
+import { ReportDriver } from '../modals/report-driver/report-driver';
+
 
 @Component({
   selector: 'app-track-ride',
@@ -51,7 +54,7 @@ export class TrackRide {
   eta?: string;
   etaMin?: number; // minutes
 
-  constructor(private panicService: PanicService, private authService: AuthService, private rideTrackingService: RideTrackingService, private cdr: ChangeDetectorRef, private route: ActivatedRoute) { }
+  constructor(private panicService: PanicService, private authService: AuthService, private rideTrackingService: RideTrackingService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private dialog: MatDialog) { }
   
   ngOnInit(): void {
     const rideId = this.route.snapshot.paramMap.get('id');
@@ -108,8 +111,16 @@ export class TrackRide {
   }
 
   openReportDriver(ride: RideTrackingDTO) {
-    // add driver report endpoint later
-    console.log('Reporting driver:', ride.driverName);
+    const dialogRef = this.dialog.open(ReportDriver, {
+      width: '480px',
+      data: { rideId: this.rideId, passengerEmail: this.currentUser?.email }
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('Report submitted:', result);
+      }
+    });
   }
 
   onPanicClick() {
