@@ -83,4 +83,10 @@
     <string name="ride_history_heading">Ride History</string>
     <string name="ride_history_text_overview">Overview of all your completed and canceled rides</string>
     <string name="ride_details_heading">Ride Details</string>
+
+    <string-array name="vehicle_types">
+        <item>Standard</item>
+        <item>Luxury</item>
+        <item>Van</item>
+    </string-array>
 </resources>

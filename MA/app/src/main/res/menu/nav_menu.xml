@@ -4,6 +4,10 @@
     tools:showIn="navigation_view">
 
     <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_register_driver"
+            android:icon="@drawable/ic_person_placeholder"
+            android:title="Register Driver" />
         <item android:id="@+id/book_an_uber"
             android:title="@string/book_an_uber"
             android:icon="@drawable/ic_vehicle_placeholder"

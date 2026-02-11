@@ -52,6 +52,28 @@
                     android:host="localhost"
                     android:pathPrefix="/reset-password" />
             </intent-filter>
+
+            <!-- DODAJ OVO - Deep linking za driver aktivaciju - HTTPS (production) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="uberproject.app"
+                    android:pathPrefix="/activate-driver" />
+            </intent-filter>
+
+            <!-- DODAJ OVO - Deep linking za driver aktivaciju - HTTP (development/localhost) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="http"
+                    android:host="localhost"
+                    android:pathPrefix="/activate-driver" />
+            </intent-filter>
         </activity>
     </application>
 

@@ -46,5 +46,6 @@ export const routes: Routes = [
   { path: 'forgot-password', loadComponent: () => import('./forms/forgot-password/forgot-password').then(m => m.ForgotPassword) },
   { path: 'reset-password', loadComponent: () => import('./forms/reset-password/reset-password').then(m => m.ResetPassword) },
   { path: 'new-password', component: NewPasswordComponent },
+  { path: 'activate-driver', component: NewPasswordComponent },
   { path: '**', redirectTo: '' }
 ];

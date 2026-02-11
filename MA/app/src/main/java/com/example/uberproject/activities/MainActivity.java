@@ -23,14 +23,15 @@ import androidx.activity.OnBackPressedCallback;
 import com.bumptech.glide.Glide;
 import com.example.uberproject.R;
 import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
+import com.example.uberproject.fragments.forms.DriverRegisterFragment;
 import com.example.uberproject.fragments.forms.ProfileFragment;
 import com.example.uberproject.fragments.forms.LoginFragment;
 import com.example.uberproject.fragments.forms.RegisterFragment;
 import com.example.uberproject.fragments.forms.ResetPasswordFragment;
+import com.example.uberproject.fragments.forms.NewPasswordFragment;
 import com.example.uberproject.utils.AuthGuard;
 import com.example.uberproject.utils.TokenManager;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -48,9 +49,6 @@ public class MainActivity extends AppCompatActivity {
 
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
-
-        // Obrada Deep Link-a za reset lozinke
-        handleDeepLink(getIntent());
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -98,7 +96,26 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     loadFragment(new ProfileFragment());
                 }
-            } else if (itemId == R.id.nav_logout) {
+            } /*else if (itemId == R.id.nav_register_driver) {
+                if (!AuthGuard.isAdmin(this)) {
+                    Toast.makeText(this, "Only admins can access this page", Toast.LENGTH_SHORT).show();
+                } else {
+                    hideToolbar();
+                    loadFragment(new DriverRegisterFragment());
+                }
+            } */
+            else if (itemId == R.id.nav_register_driver) {
+                // PRIVREMENO - proveri ulogu
+                String currentRole = AuthGuard.getUserRole(this);
+                Toast.makeText(this, "Your role is: " + currentRole, Toast.LENGTH_LONG).show();
+
+                if (!AuthGuard.isAdmin(this)) {
+                    Toast.makeText(this, "Only admins can access this page", Toast.LENGTH_SHORT).show();
+                } else {
+                    hideToolbar();
+                    loadFragment(new DriverRegisterFragment());
+                }
+            }else if (itemId == R.id.nav_logout) {
                 AuthGuard.logout(this);
                 Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
                 invalidateOptionsMenu();
@@ -107,6 +124,9 @@ public class MainActivity extends AppCompatActivity {
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
+
+        // Handle deep link kada se aplikacija prvi put otvori
+        handleDeepLink(getIntent());
     }
 
     @Override
@@ -117,20 +137,16 @@ public class MainActivity extends AppCompatActivity {
 
         boolean isLoggedIn = AuthGuard.isUserLoggedIn(this);
 
-        // Sakrij login/register ako je ulogovan
         if (loginItem != null) {
             loginItem.setVisible(!isLoggedIn);
         }
         if (registerItem != null) {
             registerItem.setVisible(!isLoggedIn);
         }
-
-        // Prikaži/sakrij profile view
         if (profileItem != null) {
             profileItem.setVisible(isLoggedIn);
         }
 
-        // Učitaj profile podatke ako je ulogovan
         if (isLoggedIn && profileItem != null) {
             updateToolbarProfile(profileItem);
         }
@@ -149,13 +165,11 @@ public class MainActivity extends AppCompatActivity {
         String email = tokenManager.getUserEmail();
         String profilePictureUrl = tokenManager.getProfilePictureUrl();
 
-        // Postavi username (email bez @domena)
         if (email != null && tvUsername != null) {
             String username = email.split("@")[0];
             tvUsername.setText(username);
         }
 
-        // Učitaj sliku pomoću Glide
         if (ivProfileImage != null) {
             if (profilePictureUrl != null && !profilePictureUrl.isEmpty()) {
                 Glide.with(this)
@@ -244,49 +258,60 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Uri data = intent.getData();
-        String scheme = data.getScheme();
-        String host = data.getHost();
         String path = data.getPath();
 
-        // Provera da li je ovo reset-password link (http://localhost ili https://uberproject.app)
-        boolean isValidLink = false;
-
-        if ("http".equals(scheme) && "localhost".equals(host) && "/reset-password".equals(path)) {
-            isValidLink = true;  // http://localhost/reset-password
-        } else if ("https".equals(scheme) && "uberproject.app".equals(host) && "/reset-password".equals(path)) {
-            isValidLink = true;  // https://uberproject.app/reset-password
+        if (path == null) {
+            return;
         }
 
-        if (isValidLink) {
-            // Izvuci reset token iz query parametara
-            // URL format: http://localhost/reset-password?token=XYZ123
-            String resetToken = data.getQueryParameter("token");
+        // Handle driver activation - /activate-driver
+        if (path.contains("/activate-driver")) {
+            String token = data.getQueryParameter("token");
+            if (token != null && !token.isEmpty()) {
+                openNewPasswordFragment(token);
+            }
+        }
 
-            if (resetToken != null && !resetToken.isEmpty()) {
-                // Kreiraj Bundle sa reset tokenopm
-                Bundle bundle = new Bundle();
-                bundle.putString("resetToken", resetToken);
-
-                // Kreiraj ResetPasswordFragment sa tokenopm
-                ResetPasswordFragment resetPasswordFragment = new ResetPasswordFragment();
-                resetPasswordFragment.setArguments(bundle);
-
-                // Učitaj fragment
-                hideToolbar();
-                loadFragment(resetPasswordFragment);
+        // Handle reset password - /reset-password
+        if (path.contains("/reset-password")) {
+            String token = data.getQueryParameter("token");
+            if (token != null && !token.isEmpty()) {
+                openResetPasswordFragment(token);
             }
         }
     }
 
+    private void openNewPasswordFragment(String token) {
+        Bundle bundle = new Bundle();
+        bundle.putString("token", token);
+
+        NewPasswordFragment fragment = new NewPasswordFragment();
+        fragment.setArguments(bundle);
+
+        hideToolbar();
+        loadFragment(fragment);
+    }
+
+    private void openResetPasswordFragment(String token) {
+        Bundle bundle = new Bundle();
+        bundle.putString("resetToken", token);
+
+        ResetPasswordFragment fragment = new ResetPasswordFragment();
+        fragment.setArguments(bundle);
+
+        hideToolbar();
+        loadFragment(fragment);
+    }
+
     private void hideToolbar() {
         if (toolbar != null) {
-            toolbar.setVisibility(android.view.View.GONE);
+            toolbar.setVisibility(View.GONE);
         }
     }
 
     public void showToolbar() {
         if (toolbar != null) {
-            toolbar.setVisibility(android.view.View.VISIBLE);
+            toolbar.setVisibility(View.VISIBLE);
         }
     }
 
@@ -303,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
                             .load(photoUrlOrBase64)
                             .placeholder(R.drawable.ic_person_placeholder)
                             .circleCrop()
-                            .signature(new com.bumptech.glide.signature.ObjectKey(System.currentTimeMillis())) // FORSIRA OSVEŽAVANJE
+                            .signature(new com.bumptech.glide.signature.ObjectKey(System.currentTimeMillis()))
                             .into(ivProfileImage);
                 }
             }
