@@ -5,7 +5,18 @@ import android.content.Context;
 public class AuthGuard {
     public static boolean isUserLoggedIn(Context context) {
         TokenManager tokenManager = TokenManager.getInstance(context);
-        return tokenManager.hasToken();
+
+        // Proverava je li korisnik ima token
+        if (!tokenManager.hasToken()) {
+            return false;
+        }
+
+        // Proverava je li token istekao
+        if (tokenManager.isTokenExpired()) {
+            return false;
+        }
+
+        return true;
     }
 
     public static boolean isUserAuthenticated(Context context) {

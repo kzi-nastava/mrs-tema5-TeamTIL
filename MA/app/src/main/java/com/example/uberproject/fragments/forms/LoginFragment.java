@@ -101,8 +101,15 @@ public class LoginFragment extends Fragment {
                         String role = response.body().getUserType();
                         String userEmail = response.body().getEmail();
                         String profilePictureUrl = response.body().getProfilePictureUrl();
+                        long expiresIn = response.body().getExpiresIn();
 
-                        saveToken(token, role, userEmail, profilePictureUrl);
+                        // Koristi saveTokenWithExpiration ako je expiresIn definisan
+                        if (expiresIn > 0) {
+                            saveTokenWithExpiration(token, role, userEmail, profilePictureUrl, expiresIn);
+                        } else {
+                            saveToken(token, role, userEmail, profilePictureUrl);
+                        }
+
                         Toast.makeText(getContext(), "Login successful", Toast.LENGTH_SHORT).show();
                         navigateToProfileByRole();
                     } else {
@@ -121,6 +128,13 @@ public class LoginFragment extends Fragment {
     private void saveToken(String token, String role, String email, String profilePictureUrl) {
         TokenManager tokenManager = TokenManager.getInstance(requireContext());
         tokenManager.saveToken(token, role, email, profilePictureUrl);
+    }
+
+    private void saveTokenWithExpiration(String token, String role, String email, String profilePictureUrl, long expiresInSeconds) {
+        TokenManager tokenManager = TokenManager.getInstance(requireContext());
+        // Preračunaj trenutno vrijeme + expiresIn u milisekundama
+        long expirationTimeMillis = System.currentTimeMillis() + (expiresInSeconds * 1000);
+        tokenManager.saveTokenWithExpiration(token, role, email, profilePictureUrl, expirationTimeMillis);
     }
 
     private void navigateToProfileByRole() {
