@@ -27,9 +27,6 @@ public class Driver extends Account {
     private Vehicle vehicle;
 
     @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL)
-    private List<InconsistencyReport> reports = new ArrayList<>();
-
-    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL)
     private List<PanicNotification> panicNotifications;
 
     @OneToMany(mappedBy = "ratedDriver")
