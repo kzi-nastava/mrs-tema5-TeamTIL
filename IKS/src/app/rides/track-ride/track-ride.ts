@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -13,25 +13,10 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MapView } from '../../map/map';
 import { PanicService } from '../../services/panic.service';
 import { AuthService } from '../../services/auth.service';
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { RideLiveUpdateDTO } from '../../models/ride-live-update-dto.model';
-import { RideWebSocketService } from '../../services/ride-websocket.service';
-import { interval } from 'rxjs';
-
-interface Ride {
-  rideId: number;
-  from: string;
-  to: string;
-  startTime: string;
-  price: string;
-  driver: {
-    name: string;
-    phone: string;
-    vehicleType: string;
-  };
-  estimatedEndTime: string;
-  eta: string;
-}
+import { take } from 'rxjs/operators';
+import { RideTrackingService } from '../services/ride-tracking.service';
+import { ActivatedRoute } from '@angular/router';
+import { RideTrackingDTO } from '../../models/ride-tracking-dto.model';
 
 @Component({
   selector: 'app-track-ride',
@@ -54,111 +39,83 @@ interface Ride {
   styleUrl: './track-ride.css',
 })
 
-export class TrackRide implements AfterViewInit {
-  selectedRide: Ride = {
-    rideId: 1,
-    from: 'Strazilovska 3',
-    to: 'Preradoviceva 39',
-    startTime: '12:03',
-    estimatedEndTime: '12:34',
-    eta: '31 mins',
-    price: '1200',
-    driver: {
-      name: 'Boris Brkić',
-      phone: '+381 64 1234567',
-      vehicleType: 'STANDARD'
-    },
-  };
+export class TrackRide {
+  rideId?: number; // Hardcoded ride ID for demonstration
+
+  selectedRide?: RideTrackingDTO;
+
   @ViewChild(MapView) mapComponent?: MapView;
   currentUser: any = null;
   isLoggedIn: boolean = false;
-  liveUpdate$ = new BehaviorSubject<RideLiveUpdateDTO | null>(null);
+  currentPrice?: number;
+  eta?: string;
+  etaMin?: number; // minutes
 
-  constructor(private panicService: PanicService, private authService: AuthService, private rideWs: RideWebSocketService) { }
+  constructor(private panicService: PanicService, private authService: AuthService, private rideTrackingService: RideTrackingService, private cdr: ChangeDetectorRef, private route: ActivatedRoute) { }
   
   ngOnInit(): void {
+    const rideId = this.route.snapshot.paramMap.get('id');
+    this.rideId = Number(rideId);
+
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       this.isLoggedIn = !!user && !!user.email;
     });
-    
-    this.startFakeLiveRide();
-    //this.connectToRideWS();
+
+    this.rideTrackingService.getRideTracking(this.rideId)
+      .pipe(take(1))
+      .subscribe(tracking => {
+        this.selectedRide = tracking;
+        this.cdr.detectChanges();
+
+        this.mapComponent?.setPickupDestinationAndVehicleType(
+          tracking?.startAddress,
+          tracking?.endAddress,
+          tracking?.vehicleType
+        );
+
+        this.mapComponent?.trackRoute([tracking?.startLatitude || 0, tracking?.startLongitude || 0], [tracking?.endLatitude || 0, tracking?.endLongitude || 0]);
+
+        this.rideTrackingService.connectToRideTracking(this.rideId!);
+        this.rideTrackingService.liveRideInfo$.subscribe(data => {
+          const [ lat, lng, remainingDuration, price ] = data;
+          this.currentPrice = price;
+          this.etaMin = remainingDuration;
+          this.eta = this.calculateETA(remainingDuration);
+          this.mapComponent?.updateVehiclePosition([lat, lng]);
+          this.cdr.detectChanges();
+        });
+      });
   }
 
-  startFakeLiveRide() {
-    const path = [
-      [44.7866, 20.4489],
-      [44.7875, 20.4570],
-      [44.7900, 20.4600],
-      [44.7950, 20.4630],
-      [44.8080, 20.4651],
-    ];
+  calculateETA(remainingDuration: number): string {
+    const now = new Date();
 
-    let index = 0;
-    let distance = 0;
+    now.setMinutes(now.getMinutes() + remainingDuration);
 
-    interval(1000).subscribe(() => {
-      if (index >= path.length) return;
+    const formattedHours = now.getHours().toString().padStart(2, '0');
+    const formattedMinutes = now.getMinutes().toString().padStart(2, '0');
 
-      distance += 0.3;
-
-      this.liveUpdate$.next({
-        latitude: path[index][0],
-        longitude: path[index][1],
-        distanceTraveled: distance,
-        estimatedTimeSec: Math.max(0, 1800 - index * 240),
-        currentPrice: 400 + distance * 120
-      });
-
-      this.selectedRide.price = (400 + distance * 120).toFixed(0);
-      this.selectedRide.eta = `${Math.ceil((1800 - index * 240) / 60)} min`;
-
-      index++;
-    });
+    return `${formattedHours}:${formattedMinutes}`;
   }
 
-
-  connectToRideWS() {
-    this.rideWs.connect(this.selectedRide.rideId)
-      .subscribe(update => {
-        this.liveUpdate$.next(update);
-
-        this.selectedRide.price = update.currentPrice.toFixed(2);
-        this.selectedRide.eta = `${Math.ceil(update.estimatedTimeSec / 60)} min`;
-      });
+  shortenAddress(address? : string): string {
+    return address ? address.split(',')[0] : '';
   }
 
   ngOnDestroy(): void {
-    this.rideWs.disconnect();
+    this.rideTrackingService.disconnect();
   }
 
-  ngAfterViewInit(): void {
-    this.mapComponent?.showRoute(
-      [
-        [44.7866, 20.4489],
-        [44.7875, 20.4570],
-        [44.8080, 20.4651],
-      ],
-      this.selectedRide.eta
-    );
-
-    this.mapComponent?.setPickupDestinationAndVehicleType(
-      this.selectedRide.from,
-      this.selectedRide.to,
-      this.selectedRide.driver.vehicleType
-    );
-  }
-
-  openReportDriver(ride: Ride) {
+  openReportDriver(ride: RideTrackingDTO) {
     // add driver report endpoint later
-    console.log('Reporting driver:', ride.driver.name);
+    console.log('Reporting driver:', ride.driverName);
   }
 
   onPanicClick() {
     if (!this.selectedRide) return;
     const payload = {
-      rideId: this.selectedRide.rideId,
+      rideId: this.rideId,
       locationId: 1, // TODO: Replace with real locationId if available
       registeredUserId: null, // TODO: Set if user is registered user
       driverId: this.currentUser?.userType === 'DRIVER' ? this.currentUser?.email : null // Use email as identifier for now

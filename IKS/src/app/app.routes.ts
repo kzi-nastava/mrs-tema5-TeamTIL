@@ -37,6 +37,7 @@ export const routes: Routes = [
       { path: 'vehicle-registration', component: VehicleRegistrationComponent },
       { path: 'book', component: RideBooking },
       { path: 'track-ride', component: TrackRide },
+      { path: 'track-ride/:id', component: TrackRide }
       // Public routes can be added here (book, favorites, support, etc.)
     ]
   },

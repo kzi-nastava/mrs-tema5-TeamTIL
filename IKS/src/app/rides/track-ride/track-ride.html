@@ -2,12 +2,11 @@
   <main class="history-main map-mode">
     <div class="ride-route-header">
       <mat-icon class="route-pin">location_on</mat-icon>
-      <h1>{{ selectedRide.from }} → {{ selectedRide.to }}</h1>
+      <h1>{{ shortenAddress(selectedRide?.startAddress) }} → {{ shortenAddress(selectedRide?.endAddress) }}</h1>
     </div>
 
     <div class="ride-map-wrapper">
-      <app-map-view [liveUpdate]="liveUpdate$ | async">
-      </app-map-view>
+      <app-map-view></app-map-view>
 
       <div class="panic-btn-container">
         <button class="panic-btn" (click)="onPanicClick()">
@@ -38,8 +37,8 @@
               <i class="fas fa-user"></i>
             </div>
             <div class="driver-details">
-              <p class="driver-name">{{ selectedRide.driver.name }}</p>
-              <p class="driver-phone">{{ selectedRide.driver.phone }}</p>
+              <p class="driver-name">{{ selectedRide.driverName }}</p>
+              <p class="driver-phone">{{ selectedRide.driverPhone }}</p>
             </div>
           </div>
         </div>
@@ -52,14 +51,14 @@
         <div class="detail-item">
           <label>ETA</label>
           <p class="eta">
-            {{ selectedRide.estimatedEndTime }}
-            <span class="eta-muted">(in {{ selectedRide.eta }})</span>
+            {{ eta }}
+            <span class="eta-muted">(in {{ etaMin }} min)</span>
           </p>
         </div>
 
         <div class="detail-item">
           <label>Current price</label>
-          <p class="price-value">{{ selectedRide.price }} RSD</p>
+          <p class="price-value">{{ currentPrice }} RSD</p>
         </div>
       </div>
 

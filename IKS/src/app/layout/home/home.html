@@ -63,7 +63,7 @@
               }"
               >{{ userRide.status }}</span
             >
-            <button class="ride-action-btn">Open ride</button>
+            <button class="ride-action-btn" (click)="openRide()">Open ride</button>
             <button
               *ngIf="currentUser?.userType === 'DRIVER'"
               class="ride-end-btn"
