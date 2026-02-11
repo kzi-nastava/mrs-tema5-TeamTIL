@@ -56,7 +56,7 @@ public class RideSimulation {
                 ride.getStartLocation().getLatitude(), ride.getStartLocation().getLongitude(),
                 ride.getEndLocation().getLatitude(), ride.getEndLocation().getLongitude());
 
-        double basePrice = estimation.distanceKm * 120; // TODO: change based on price config
+        double basePrice = estimation.distanceKm() * 120; // TODO: change based on price config
         double multiplier = switch (ride.getDriver().getVehicle().getType() == null ? "STANDARD" : ride.getDriver().getVehicle().getType().toString().toUpperCase()) {
             case "LUXURY" -> 1.5;
             case "VAN" -> 1.3;
@@ -68,7 +68,7 @@ public class RideSimulation {
         this.currentSegment = 0;
         this.currentStep = 0;
         this.currentPosition = routeCoordinates.get(0);
-        this.remainingDuration = (int)Math.round(estimation.durationMin);
+        this.remainingDuration = (int)Math.round(estimation.durationMin());
         this.currentPrice = 0;
     }
 
