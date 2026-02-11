@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -8,6 +8,7 @@ import { GeocodingService } from '../../services/geocoding.service';
 import { RideService } from '../../rides/services/ride.service';
 import { AuthService } from '../../services/auth.service';
 import { PanicService } from '../../services/panic.service';
+import { Subscription } from 'rxjs';
 
 interface RideCard {
   id: number;
@@ -24,7 +25,7 @@ interface RideCard {
   templateUrl: './home.html',
   styleUrls: ['./home.css'],
 })
-export class Home implements OnInit {
+export class Home implements OnInit, OnDestroy {
   endRide() {
     if (!this.userRide) return;
 
@@ -170,6 +171,8 @@ export class Home implements OnInit {
   isLoggedIn = false;
   showCancelForm = false;
   cancelReason = '';
+  
+  private subscriptions: Subscription = new Subscription();
 
   constructor(
     private routeService: RouteService,
@@ -199,7 +202,7 @@ export class Home implements OnInit {
   }
 
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe(user => {
+    const userSub = this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       console.log('[DEBUG] currentUser', user);
       this.isLoggedIn = !!user && !!user.email;
@@ -207,39 +210,49 @@ export class Home implements OnInit {
         this.isLoggedIn && user && user.email &&
         (user.userType === 'DRIVER' || user.userType === 'REGISTERED_USER')
       ) {
-        // Prikaz za ulogovanog korisnika: kartica vožnje
+        // Dobija samo aktivne voznje (IN_PROGRESS, REQUESTED) - backend filtrira
         const rideObservable =
           user.userType === 'DRIVER'
-            ? this.rideService.getAssignedRides(user.email)
-            : this.rideService.getUserRides(user.email);
+            ? this.rideService.getActiveAssignedRides(user.email)
+            : this.rideService.getActiveUserRides(user.email);
 
-        rideObservable.subscribe(rides => {
-          console.log('[DEBUG] rides for user', rides);
-          let rideToShow = null;
-          const inProgress = rides.find((r: any) => r.status === 'IN_PROGRESS');
-          if (inProgress) {
-            rideToShow = inProgress;
-          } else {
-            const requestedRides = rides.filter((r: any) => r.status === 'REQUESTED');
-            if (requestedRides.length > 0) {
-              rideToShow = requestedRides.sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
-            }
+        const rideSub = rideObservable.subscribe({
+          next: (rides) => {
+            console.log('[DEBUG] active rides for user', rides);
+            this.processRides(rides);
+          },
+          error: (error) => {
+            console.error('[Home] Error fetching active rides:', error);
+            // Ako endpoint ne postoji, fallback na stari sa filtriranjem
+            let fallbackObservable =
+              user.userType === 'DRIVER'
+                ? this.rideService.getAssignedRides(user.email)
+                : this.rideService.getUserRides(user.email);
+            
+            const fallbackSub = fallbackObservable.subscribe({
+              next: (rides) => {
+                console.log('[DEBUG] all rides (fallback), filtering active...');
+                const activeRides = rides.filter((r: any) => {
+                  const status = r.status?.toUpperCase();
+                  return status === 'IN_PROGRESS' || status === 'ONGOING' || 
+                         status === 'REQUESTED' || status === 'PENDING' || status === 'ACCEPTED';
+                });
+                this.processRides(activeRides);
+              },
+              error: (fallbackError) => {
+                console.error('[Home] Error fetching rides (fallback failed):', fallbackError);
+                this.userRide = null;
+                this.showRideCard = true;
+                this.showForm = false;
+                this.cdr.detectChanges();
+              }
+            });
+            
+            this.subscriptions.add(fallbackSub);
           }
-          if (rideToShow) {
-            this.userRide = {
-              id: rideToShow.id,
-              startTime: rideToShow.startTime,
-              from: rideToShow.startLocation,
-              to: rideToShow.endLocation,
-              status: rideToShow.status === 'IN_PROGRESS' ? 'In progress' : 'Requested',
-            };
-          } else {
-            this.userRide = null;
-          }
-          this.showRideCard = true;
-          this.showForm = false;
-          this.cdr.detectChanges();
         });
+
+        this.subscriptions.add(rideSub);
       } else {
         // Prikaz za gosta: samo forma za procenu vožnje
         this.userRide = null;
@@ -248,6 +261,55 @@ export class Home implements OnInit {
         this.cdr.detectChanges();
       }
     });
+    
+    this.subscriptions.add(userSub);
+  }
+
+  private processRides(rides: any[]): void {
+    let rideToShow = null;
+    // Check for in-progress rides (support multiple status values)
+    const inProgress = rides.find((r: any) => 
+      r.status === 'IN_PROGRESS' || 
+      r.status === 'ONGOING' || 
+      r.status === 'In progress'
+    );
+    if (inProgress) {
+      rideToShow = inProgress;
+    } else {
+      // If no in-progress ride, look for requested/pending rides
+      const requestedRides = rides.filter((r: any) => 
+        r.status === 'REQUESTED' || 
+        r.status === 'PENDING' ||
+        r.status === 'Requested' ||
+        r.status === 'ACCEPTED'
+      );
+      if (requestedRides.length > 0) {
+        rideToShow = requestedRides.sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
+      }
+    }
+    if (rideToShow) {
+      // Map status values to display format
+      const isInProgress = 
+        rideToShow.status === 'IN_PROGRESS' || 
+        rideToShow.status === 'ONGOING' || 
+        rideToShow.status === 'In progress';
+      this.userRide = {
+        id: rideToShow.id,
+        startTime: rideToShow.startTime,
+        from: rideToShow.startLocation,
+        to: rideToShow.endLocation,
+        status: isInProgress ? 'In progress' : 'Requested',
+      };
+    } else {
+      this.userRide = null;
+    }
+    this.showRideCard = true;
+    this.showForm = false;
+    this.cdr.detectChanges();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   onInputChange() {
