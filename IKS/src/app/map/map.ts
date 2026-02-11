@@ -1,7 +1,9 @@
 import { Component, AfterViewInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { RouteService } from '../services/route.service';
+import { GeocodingService } from '../services/geocoding.service';
 import * as L from 'leaflet';
+import 'leaflet.marker.slideto';
 
 interface VehicleDTO {
   name: string;
@@ -25,15 +27,16 @@ export class MapView implements AfterViewInit {
   private routeLayer?: L.Polyline;
   private startMarker?: L.Marker;
   private endMarker?: L.Marker;
-
-  private vehicleMarkers: Map<string, L.Marker> = new Map();
-
-  constructor(private http: HttpClient) {}
+  private vehicleMarker?: L.Marker;
+  pickupLocation = '';
+  destination = '';
+  vehicleType = 'STANDARD';
 
   ngAfterViewInit(): void {
     this.initMap();
-    this.fetchVehicles();
   }
+
+  constructor(private geocodingService: GeocodingService, private routeService: RouteService) { }
 
   public showRoute(routeCoords: [number, number][], duration?: string) {
     if (!this.map) return;
@@ -93,20 +96,10 @@ export class MapView implements AfterViewInit {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
   }
-
-  private fetchVehicles(): void {
-    this.http.get<VehicleDTO[]>('http://localhost:8080/api/public/vehicles')
-      .subscribe({
-        next: (data) => {
-          this.updateVehicleMarkers(data);
-        },
-        error: (err) => console.error('Error fetching vehicles:', err)
-      });
-  }
   
-  private updateVehicleMarkers(vehicles: VehicleDTO[]): void {
+  public updateVehicleMarkers(vehicles: VehicleDTO[], vehicleMarkers: Map<string, L.Marker>): void {
     vehicles.forEach(vehicle => {
-      const existingMarker = this.vehicleMarkers.get(vehicle.licensePlate);
+      const existingMarker = vehicleMarkers.get(vehicle.licensePlate);
 
       if (existingMarker) {
         existingMarker.setLatLng([vehicle.latitude, vehicle.longitude]);
@@ -131,9 +124,115 @@ export class MapView implements AfterViewInit {
             </span>
           `);
 
-        this.vehicleMarkers.set(vehicle.licensePlate, marker);
+        vehicleMarkers.set(vehicle.licensePlate, marker);
       }
     });
   }
+
+  estimateRideTime() {
+    // Prvo geokodiraj pickup
+    this.geocodingService.geocode(this.pickupLocation).subscribe({
+      next: (pickupResults) => {
+        if (!pickupResults || pickupResults.length === 0) {
+          alert('Pickup address not found!');
+          return;
+        }
+        const pickupLat = parseFloat(pickupResults[0].lat);
+        const pickupLon = parseFloat(pickupResults[0].lon);
+        // Sada geokodiraj destination
+        this.geocodingService.geocode(this.destination).subscribe({
+          next: (destResults) => {
+            if (!destResults || destResults.length === 0) {
+              alert('Destination address not found!');
+              return;
+            }
+            const destinationLat = parseFloat(destResults[0].lat);
+            const destinationLon = parseFloat(destResults[0].lon);
+            // Sada šalji zahtev backendu
+            const req = {
+              pickupAddress: this.pickupLocation,
+              destinationAddress: this.destination,
+              vehicleType: this.vehicleType,
+              pickupLat,
+              pickupLon,
+              destinationLat,
+              destinationLon
+            };
+            
+            this.estimateRoute(req);
+          },
+          error: () => alert('Failed to geocode destination address!')
+        });
+      },
+      error: () => alert('Failed to geocode pickup address!')
+    });
+  }
+
+  estimateRoute(req : { pickupAddress: string; destinationAddress: string; vehicleType: string; pickupLat: number; pickupLon: number; destinationLat: number; destinationLon: number }) {
+    this.routeService.estimateRouteFull(req).subscribe(
+              (result) => {
+                // Očekuje se: { estimatedTime, estimatedDistance, estimatedPrice, vehicleType, route? }
+                // Prikaz na mapi i info korisniku
+                if (result.routeCoordinates) {
+                  // Convert [lon, lat] to [lat, lon] for Leaflet
+                  const leafletRoute = result.routeCoordinates.map(([lon, lat]: [number, number]) => [lat, lon]);
+                  this.showRoute(leafletRoute, result.estimatedTime);
+                } else if (result.route) {
+                  this.showRoute(result.route, result.estimatedTime);
+                } else {
+                  // Ako nema rute, nacrtaj liniju od pickup do destination
+                  this.showRoute([
+                    [req.pickupLat, req.pickupLon],
+                    [req.destinationLat, req.destinationLon]
+                  ], result.estimatedTime);
+                }
+              },
+              () => {
+                alert('Failed to estimate route.');
+              }
+            );
+  }
+
+  setPickupDestinationAndVehicleType(pickup?: string, destination?: string, vehicleType?  : string) {
+    this.pickupLocation = pickup || '';
+    this.destination = destination || '';
+    this.vehicleType = vehicleType || 'STANDARD';
+  }
+
+  updateVehiclePosition(latlng: [number, number]) {
+    if (!this.map) return;
+
+    if (!this.vehicleMarker) {
+      this.vehicleMarker = L.marker(latlng, { icon: this.activeIcon }).addTo(this.map);
+    } else {
+      (this.vehicleMarker as any).slideTo(latlng, {
+        duration: 200,
+        keepAtCenter: false
+      });
+    }
+  }
+
+  async trackRoute(start: [number, number], end: [number, number]) {
+    if (!this.map) return;
+
+    const [startLat, startLng] = start;
+    const [endLat, endLng] = end;
+    
+    const url = `http://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!data.routes || data.routes.length === 0) {
+      console.error("Route not found");
+      return;
+    }
+
+    const routeCoordinates: [number, number][] = data.routes[0].geometry.coordinates.map(
+      ([lng, lat]: [number, number]) => [lat, lng] // Leaflet koristi [lat, lng]
+    );
+
+    L.polyline(routeCoordinates, { color: 'blue', weight: 5 }).addTo(this.map);
+  }  
 }
 
