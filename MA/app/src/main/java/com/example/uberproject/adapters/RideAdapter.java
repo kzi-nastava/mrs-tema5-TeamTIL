@@ -44,6 +44,16 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         holder.tvStatus.setText(ride.getStatus());
         holder.tvDateTime.setText(ride.getDateTime());
 
+        // Postavi background u zavisnosti od statusa
+        if ("Canceled".equalsIgnoreCase(ride.getStatus())) {
+            holder.tvStatus.setBackgroundResource(R.drawable.bg_status_canceled);
+        } else if ("Finished".equalsIgnoreCase(ride.getStatus())) {
+            holder.tvStatus.setBackgroundResource(R.drawable.bg_status_completed);
+        } else {
+            // Default za druge statuse
+            holder.tvStatus.setBackgroundResource(R.drawable.bg_status_completed);
+        }
+
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onRideClick(ride);
