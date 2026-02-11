@@ -8,9 +8,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class InconsistencyReportResponseDTO {
-    private Long rideId;
-    private String passengerEmail;
-    private String location;
-    private String message;
+    private Integer rideId;
     private String statusMessage;
 }

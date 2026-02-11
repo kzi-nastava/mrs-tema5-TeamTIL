@@ -15,6 +15,7 @@ import { NewPasswordComponent } from './new-password/new-password';
 import { DriverRegistrationComponent } from './driver-registration/driver-registration';
 import { VehicleRegistrationComponent } from './vehicle-registration/vehicle-registration';
 import { RideBooking } from './ride-booking/ride-booking';
+import { TrackRide } from './rides/track-ride/track-ride';
 
 export const routes: Routes = [
   // Routes with layout (navbar + footer)
@@ -37,6 +38,8 @@ export const routes: Routes = [
       { path: 'driver-registration', component: DriverRegistrationComponent },
       { path: 'vehicle-registration', component: VehicleRegistrationComponent },
       { path: 'book', component: RideBooking },
+      { path: 'track-ride', component: TrackRide },
+      { path: 'track-ride/:id', component: TrackRide }
       // Public routes can be added here (book, favorites, support, etc.)
     ]
   },

@@ -23,6 +23,7 @@ import androidx.activity.OnBackPressedCallback;
 import com.bumptech.glide.Glide;
 import com.example.uberproject.R;
 import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
+import com.example.uberproject.fragments.user.UserRideHistoryFragment;
 import com.example.uberproject.fragments.forms.ProfileFragment;
 import com.example.uberproject.fragments.forms.LoginFragment;
 import com.example.uberproject.fragments.forms.RegisterFragment;
@@ -42,6 +43,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Provera je li token istekao
+        checkTokenExpiration();
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -73,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
 
         navigationView.setNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
+            String userRole = AuthGuard.getUserRole(this);
+
             // REGISTERED USER ITEMS
             if (itemId == R.id.book_an_uber) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
@@ -84,8 +90,17 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.ride_history) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
-                } else {
+                } else if ("REGISTERED_USER".equalsIgnoreCase(userRole)) {
+                    // Za registered user, otvori UserRideHistoryFragment
+                    loadFragment(new UserRideHistoryFragment());
+                } else if ("DRIVER".equalsIgnoreCase(userRole)) {
+                    // Za driver, otvori DriverRideHistoryFragment
                     loadFragment(new DriverRideHistoryFragment());
+                } else if ("ADMIN".equalsIgnoreCase(userRole) || "ADMINISTRATOR".equalsIgnoreCase(userRole)) {
+                    // Za admin, otvori DriverRideHistoryFragment (ili admin verziju ako postoji)
+                    loadFragment(new DriverRideHistoryFragment());
+                } else {
+                    loadFragment(new UserRideHistoryFragment());
                 }
             } else if (itemId == R.id.favorite_rides) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
@@ -158,6 +173,13 @@ public class MainActivity extends AppCompatActivity {
 
         // Postavi inicijalni prikaz menu items-a
         updateNavigationMenuVisibility(navigationView);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Provera je li token istekao svaki put kada se aplikacija vrati u foreground
+        checkTokenExpiration();
     }
 
     @Override
@@ -432,6 +454,20 @@ public class MainActivity extends AppCompatActivity {
         NavigationView navigationView = findViewById(R.id.nav_view);
         if (navigationView != null) {
             updateNavigationMenuVisibility(navigationView);
+        }
+    }
+
+    // Novo: Proverava je li token istekao
+    private void checkTokenExpiration() {
+        TokenManager tokenManager = TokenManager.getInstance(this);
+
+        // Proverava samo ako je korisnik ulogovan
+        if (AuthGuard.isUserLoggedIn(this)) {
+            if (tokenManager.isTokenExpired()) {
+                // Token je istekao - odjavi korisnika i prikaži poruku
+                Toast.makeText(this, "Your session has expired. Please login again.", Toast.LENGTH_LONG).show();
+                showLoginFragment();
+            }
         }
     }
 }

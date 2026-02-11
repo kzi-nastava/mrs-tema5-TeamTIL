@@ -6,6 +6,7 @@ public class LoginResponseDTO {
     private String email;
     private String message;
     private String profilePictureUrl;
+    private long expiresIn; // Novo: vrijeme trajanja tokena u sekundama
 
     public LoginResponseDTO() {}
     public LoginResponseDTO(String token, String userType, String email, String message, String profilePictureUrl) {
@@ -14,6 +15,15 @@ public class LoginResponseDTO {
         this.email = email;
         this.message = message;
         this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public LoginResponseDTO(String token, String userType, String email, String message, String profilePictureUrl, long expiresIn) {
+        this.token = token;
+        this.userType = userType;
+        this.email = email;
+        this.message = message;
+        this.profilePictureUrl = profilePictureUrl;
+        this.expiresIn = expiresIn;
     }
 
     public String getToken() {
@@ -30,5 +40,9 @@ public class LoginResponseDTO {
     }
     public String getProfilePictureUrl() {
         return profilePictureUrl;
+    }
+
+    public long getExpiresIn() {
+        return expiresIn;
     }
 }

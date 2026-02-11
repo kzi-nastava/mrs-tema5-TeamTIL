@@ -3,11 +3,13 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.DriverRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
@@ -23,12 +25,14 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.VehicleType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.*;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.service.InconsistencyReportService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.LocationService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RideService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
@@ -57,6 +61,8 @@ public class RideController {
     private LocationService locationService;
     @Autowired
     private RideService rideService;
+    @Autowired
+    private InconsistencyReportService inconsistencyReportService;
 
     @PutMapping("/{rideId}/cancel")
     @Transactional
@@ -183,24 +189,27 @@ public class RideController {
 
     // 2.6.2 Track ride location
     @GetMapping("/{rideId}/tracking")
-    public ResponseEntity<RideTrackingDTO> trackRide(@PathVariable Long rideId) {
+    public ResponseEntity<RideTrackingDTO> trackRide(@PathVariable Integer rideId) {
 
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
 
-        String[] locations = { "Main Street 1", "Bulevar Oslobođenja 5", "Trg Slobode 3" };
-        String vehicleLocation = locations[(int) (Math.random() * locations.length)];
-
-        // Procena vremena dolaska: 5-15 minuta
-        int minutes = 5 + (int) (Math.random() * 11);
-        String estimatedArrivalTime = minutes + " min";
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found"));
 
         RideTrackingDTO response = new RideTrackingDTO(
-                rideId,
-                vehicleLocation,
-                estimatedArrivalTime,
-                "IN_PROGRESS");
+                ride.getStartLocation().getAddress(),
+                ride.getStartLocation().getLatitude(),
+                ride.getStartLocation().getLongitude(),
+                ride.getEndLocation().getAddress(),
+                ride.getEndLocation().getLatitude(),
+                ride.getEndLocation().getLongitude(),
+                ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName(),
+                ride.getDriver().getPhoneNumber(),
+                ride.getDriver().getVehicle().getType().toString(),
+                ride.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"))
+        );
 
         return ResponseEntity.ok(response);
     }
@@ -208,15 +217,20 @@ public class RideController {
     // 2.6.2 Report inconsistency
     @PostMapping("/{rideId}/report")
     public ResponseEntity<InconsistencyReportResponseDTO> reportInconsistency(
-            @PathVariable Long rideId,
-            @RequestBody InconsistencyReportRequestDTO report) {
+            @PathVariable Integer rideId,
+            @RequestBody InconsistencyReportRequestDTO reportDTO) {
+
+        InconsistencyReport report = inconsistencyReportService.saveReportWithAttachment(
+                rideId,
+                reportDTO.getPassengerEmail(),
+                reportDTO.getDescription(),
+                reportDTO.getAttachmentBase64()
+        );
 
         InconsistencyReportResponseDTO response = new InconsistencyReportResponseDTO(
                 rideId,
-                report.getPassengerEmail(),
-                report.getLocation() != null ? report.getLocation() : "Unknown location",
-                report.getMessage(),
-                "Report submitted successfully");
+                "Inconsistency reported successfully"
+        );
 
         return ResponseEntity.ok(response);
     }

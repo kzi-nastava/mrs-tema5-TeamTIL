@@ -8,8 +8,14 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class RideTrackingDTO {
-    private Long rideId;
-    private String vehicleLocation;
-    private String estimatedArrivalTime;
-    private String status;
+    private String startAddress;
+    private double startLatitude;
+    private double startLongitude;
+    private String endAddress;
+    private double endLatitude;
+    private double endLongitude;
+    private String driverName;
+    private String driverPhone;
+    private String vehicleType;
+    private String startTime;
 }
