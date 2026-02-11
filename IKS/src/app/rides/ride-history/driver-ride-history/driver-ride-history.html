@@ -68,7 +68,7 @@
                 </div>
               </div>
               <div class="ride-meta">
-                <span class="price">{{ ride.price }} RSD</span>
+                <span class="price">{{ ride.price }}</span>
                 <span class="status" [class]="'status-' + ride.status.toLowerCase()">
                   {{ ride.status }}
                 </span>
@@ -107,7 +107,7 @@
 
         <div class="detail-item">
           <label>Total Price</label>
-          <p class="price-value">{{ selectedRide.price }} RSD</p>
+          <p class="price-value">{{ selectedRide.price }}</p>
         </div>
 
         <div class="detail-item">
@@ -129,7 +129,7 @@
             </div>
             <div class="passenger-details">
               <p class="passenger-name">{{ passenger.name }}</p>
-              <p class="passenger-phone">{{ passenger.phone }}</p>
+              <p class="passenger-phone">{{ formatPhoneNumber(passenger.phone) }}</p>
             </div>
           </div>
         </div>
@@ -153,6 +153,12 @@
             {{ selectedRide.panicActivated ? 'Activated' : 'Not Activated' }}
           </span>
         </div>
+      </div>
+
+      <div class="actions-section">
+        <button mat-raised-button color="primary" class="view-full-btn" (click)="viewFullRideDetails(selectedRide)">
+          View full ride details
+        </button>
       </div>
     }
   </aside>

@@ -124,33 +124,17 @@ public class LoginFragment extends Fragment {
     }
 
     private void navigateToProfileByRole() {
-        String userRole = AuthGuard.getUserRole(requireContext());
-        Fragment targetFragment = null;
+        Fragment targetFragment = new ProfileFragment();
 
-        switch (userRole.toUpperCase()) {
-            case "DRIVER":
-                targetFragment = new DriverProfileFragment();
-                break;
-            case "ADMIN":
-                targetFragment = new AdminProfileFragment();
-                break;
-            case "USER":
-            default:
-                targetFragment = new ProfileFragment();
-                break;
+        if (getActivity() instanceof MainActivity) {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            mainActivity.showToolbar();
+            mainActivity.invalidateOptionsMenu();
+            mainActivity.refreshNavigationMenu();
         }
 
-        if (targetFragment != null) {
-            if (getActivity() instanceof MainActivity) {
-                MainActivity mainActivity = (MainActivity) getActivity();
-                mainActivity.showToolbar();
-                // Osvezi toolbar menu da prikaze profile umesto login/register
-                mainActivity.invalidateOptionsMenu();
-            }
-
-            getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, targetFragment)
-                    .commit();
-        }
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, targetFragment)
+                .commit();
     }
 }

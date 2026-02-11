@@ -1,6 +1,7 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -60,7 +61,7 @@ export class DriverHistory {
   rides: Ride[] = [];
   selectedRide: Ride | null = null;
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private authService: AuthService) { }
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private authService: AuthService, private router: Router) { }
   
   ngOnInit(): void {
     this.loadRides();
@@ -82,6 +83,38 @@ export class DriverHistory {
 
   selectRide(ride: Ride) {
     this.selectedRide = ride;
+  }
+
+  viewFullRideDetails(ride: Ride) {
+    this.router.navigate(['/ride-details', ride.id]);
+  }
+
+  formatPhoneNumber(phone: string): string {
+    if (!phone || phone === '-') return phone;
+    
+    const digitsOnly = phone.replace(/\D/g, '');
+    const length = digitsOnly.length;
+    
+    if (length <= 3) return digitsOnly;
+    
+    const remainder = length % 3;
+    
+    if (remainder === 1) {
+      const groups: string[] = [];
+      let i = 0;
+      while (i < length - 4) {
+        groups.push(digitsOnly.slice(i, i + 3));
+        i += 3;
+      }
+      groups.push(digitsOnly.slice(i));
+      return groups.join(' ');
+    } else {
+      const groups: string[] = [];
+      for (let i = 0; i < length; i += 3) {
+        groups.push(digitsOnly.slice(i, i + 3));
+      }
+      return groups.join(' ');
+    }
   }
 
   setActiveFilter(option: string) {

@@ -24,8 +24,6 @@ import com.bumptech.glide.Glide;
 import com.example.uberproject.R;
 import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
 import com.example.uberproject.fragments.forms.ProfileFragment;
-import com.example.uberproject.fragments.forms.AdminProfileFragment;
-import com.example.uberproject.fragments.forms.DriverProfileFragment;
 import com.example.uberproject.fragments.forms.LoginFragment;
 import com.example.uberproject.fragments.forms.RegisterFragment;
 import com.example.uberproject.fragments.forms.ResetPasswordFragment;
@@ -75,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
         navigationView.setNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
+            // REGISTERED USER ITEMS
             if (itemId == R.id.book_an_uber) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
@@ -83,32 +82,82 @@ public class MainActivity extends AppCompatActivity {
                     loadFragment(new ProfileFragment());
                 }
             } else if (itemId == R.id.ride_history) {
-                if (!AuthGuard.isDriver(this)) {
-                    Toast.makeText(this, "Only drivers can access ride history", Toast.LENGTH_SHORT).show();
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
                 } else {
                     loadFragment(new DriverRideHistoryFragment());
                 }
             } else if (itemId == R.id.favorite_rides) {
-                if (!AuthGuard.isDriver(this)) {
-                    Toast.makeText(this, "Only drivers can access this page", Toast.LENGTH_SHORT).show();
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
                 } else {
-                    loadFragment(new DriverProfileFragment());
+                    loadFragment(new ProfileFragment());
                 }
             } else if (itemId == R.id.support) {
-                if (!AuthGuard.isAdmin(this)) {
-                    Toast.makeText(this, "Only admins can access this page", Toast.LENGTH_SHORT).show();
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
                 } else {
-                    loadFragment(new AdminProfileFragment());
+                    loadFragment(new ProfileFragment());
+                }
+            }
+            // DRIVER ITEMS
+            else if (itemId == R.id.my_vehicle) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new ProfileFragment());
+                }
+            } else if (itemId == R.id.driver_ride_history) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new DriverRideHistoryFragment());
+                }
+            } else if (itemId == R.id.my_rides) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new ProfileFragment());
+                }
+            } else if (itemId == R.id.driver_support) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new ProfileFragment());
+                }
+            }
+            // ADMIN ITEMS
+            else if (itemId == R.id.driver_registration_admin) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new ProfileFragment());
+                }
+            } else if (itemId == R.id.admin_ride_history) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new DriverRideHistoryFragment());
+                }
+            } else if (itemId == R.id.admin_support) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new ProfileFragment());
                 }
             } else if (itemId == R.id.nav_logout) {
                 AuthGuard.logout(this);
                 Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
                 invalidateOptionsMenu();
+                updateNavigationMenuVisibility(navigationView);
                 showLoginFragment();
             }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
+
+        // Postavi inicijalni prikaz menu items-a
+        updateNavigationMenuVisibility(navigationView);
     }
 
     @Override
@@ -138,6 +187,73 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onPrepareOptionsMenu(menu);
+    }
+
+    private void updateNavigationMenuVisibility(NavigationView navigationView) {
+        boolean isLoggedIn = AuthGuard.isUserLoggedIn(this);
+        String userRole = AuthGuard.getUserRole(this);
+
+        Menu menu = navigationView.getMenu();
+
+        // Prvo sakrij sve items
+        hideAllMenuItems(menu);
+
+        // Prikaži logout ako je ulogovan
+        MenuItem logoutItem = menu.findItem(R.id.nav_logout);
+        if (logoutItem != null) {
+            logoutItem.setVisible(isLoggedIn);
+        }
+
+        if (!isLoggedIn) {
+            // Ako korisnik nije ulogovan, prikaži samo REGISTERED_USER items
+            showMenuGroup(menu, "REGISTERED_USER");
+        } else if ("REGISTERED_USER".equalsIgnoreCase(userRole)) {
+            // Prikaži samo REGISTERED_USER grupu
+            showMenuGroup(menu, "REGISTERED_USER");
+        } else if ("DRIVER".equalsIgnoreCase(userRole)) {
+            // Prikaži samo DRIVER grupu
+            showMenuGroup(menu, "DRIVER");
+        } else if ("ADMIN".equalsIgnoreCase(userRole) || "ADMINISTRATOR".equalsIgnoreCase(userRole)) {
+            // Prikaži samo ADMIN grupu
+            showMenuGroup(menu, "ADMIN");
+        } else {
+            // Defaultna gruupa za neregistrovane korisnike
+            showMenuGroup(menu, "REGISTERED_USER");
+        }
+    }
+
+    private void hideAllMenuItems(Menu menu) {
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            if (item.getItemId() != R.id.nav_logout) {
+                item.setVisible(false);
+            }
+        }
+    }
+
+    private void showMenuGroup(Menu menu, String groupType) {
+        if ("REGISTERED_USER".equalsIgnoreCase(groupType)) {
+            showItem(menu, R.id.book_an_uber);
+            showItem(menu, R.id.ride_history);
+            showItem(menu, R.id.favorite_rides);
+            showItem(menu, R.id.support);
+        } else if ("DRIVER".equalsIgnoreCase(groupType)) {
+            showItem(menu, R.id.my_vehicle);
+            showItem(menu, R.id.driver_ride_history);
+            showItem(menu, R.id.my_rides);
+            showItem(menu, R.id.driver_support);
+        } else if ("ADMIN".equalsIgnoreCase(groupType)) {
+            showItem(menu, R.id.driver_registration_admin);
+            showItem(menu, R.id.admin_ride_history);
+            showItem(menu, R.id.admin_support);
+        }
+    }
+
+    private void showItem(Menu menu, int itemId) {
+        MenuItem item = menu.findItem(itemId);
+        if (item != null) {
+            item.setVisible(true);
+        }
     }
 
     private void updateToolbarProfile(MenuItem profileItem) {
@@ -289,6 +405,33 @@ public class MainActivity extends AppCompatActivity {
     public void showToolbar() {
         if (toolbar != null) {
             toolbar.setVisibility(android.view.View.VISIBLE);
+        }
+    }
+
+    public void refreshToolbarImage(String photoUrlOrBase64) {
+        if (toolbar != null && toolbar.getMenu() != null) {
+            MenuItem profileItem = toolbar.getMenu().findItem(R.id.nav_profile);
+            if (profileItem != null) {
+                View actionView = profileItem.getActionView();
+                if (actionView == null) return;
+
+                ImageView ivProfileImage = actionView.findViewById(R.id.ivProfileImage);
+                if (ivProfileImage != null) {
+                    Glide.with(this)
+                            .load(photoUrlOrBase64)
+                            .placeholder(R.drawable.ic_person_placeholder)
+                            .circleCrop()
+                            .signature(new com.bumptech.glide.signature.ObjectKey(System.currentTimeMillis())) // FORSIRA OSVEŽAVANJE
+                            .into(ivProfileImage);
+                }
+            }
+        }
+    }
+
+    public void refreshNavigationMenu() {
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        if (navigationView != null) {
+            updateNavigationMenuVisibility(navigationView);
         }
     }
 }

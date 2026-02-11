@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
 import { RideService } from '../services/ride.service';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -59,7 +59,7 @@ export class AssignedRides implements OnInit {
   activeTab: TabFilter = 'Today';
   
   rides: Ride[] = [];
-  constructor(private rideService: RideService, private authService: AuthService) {}
+  constructor(private rideService: RideService, private authService: AuthService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
@@ -122,6 +122,7 @@ export class AssignedRides implements OnInit {
                 passenger: { name: passengerName, phone: passengerPhone }
               };
             });
+            this.cdr.detectChanges();
           },
           error: (err) => console.error('Greška pri dohvatanju vožnji:', err)
         });

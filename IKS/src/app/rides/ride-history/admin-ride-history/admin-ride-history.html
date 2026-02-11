@@ -132,11 +132,16 @@
           <label>Driver</label>
           <div class="driver-info">
             <div class="driver-avatar">
-              <i class="fas fa-user"></i>
+              <img *ngIf="selectedRide.driver?.profilePictureUrl" 
+                   [src]="selectedRide.driver?.profilePictureUrl" 
+                   alt="Driver" 
+                   class="profile-image"
+                   (error)="onImageError($event)">
+              <i class="fas fa-user" [style.display]="selectedRide.driver?.profilePictureUrl ? 'none' : 'flex'"></i>
             </div>
             <div class="driver-details">
               <p class="driver-name">{{ selectedRide.driver?.name }}</p>
-              <p class="driver-phone">{{ selectedRide.driver?.phone }}</p>
+              <p class="driver-phone">{{ formatPhoneNumber(selectedRide.driver?.phone || '') }}</p>
             </div>
           </div>
         </div>
@@ -145,16 +150,21 @@
           <label>Passenger</label>
           <div class="passenger-info">
             <div class="passenger-avatar">
-              <i class="fas fa-user"></i>
+              <img *ngIf="selectedRide.passenger?.profilePictureUrl" 
+                   [src]="selectedRide.passenger?.profilePictureUrl" 
+                   alt="Passenger" 
+                   class="profile-image"
+                   (error)="onImageError($event)">
+              <i class="fas fa-user" [style.display]="selectedRide.passenger?.profilePictureUrl ? 'none' : 'flex'"></i>
             </div>
             <div class="passenger-details">
               <p class="passenger-name">{{ selectedRide.passenger?.name }}</p>
-              <p class="passenger-phone">{{ selectedRide.passenger?.phone }}</p>
+              <p class="passenger-phone">{{ formatPhoneNumber(selectedRide.passenger?.phone || '') }}</p>
             </div>
           </div>
         </div>
 
-        <button mat-raised-button color="primary" class="view-full-btn">View full ride details</button>
+        <button mat-raised-button color="primary" class="view-full-btn" (click)="viewFullRideDetails(selectedRide)">View full ride details</button>
       </div>
       }
     </aside>

@@ -63,9 +63,9 @@
               }"
               >{{ userRide.status }}</span
             >
-            <button class="ride-action-btn" (click)="openRide()">Open ride</button>
+            <button *ngIf="userRide.status === 'In progress'" class="ride-action-btn" (click)="openRide()">Open ride</button>
             <button
-              *ngIf="currentUser?.userType === 'DRIVER'"
+              *ngIf="currentUser?.userType === 'DRIVER' && userRide.status === 'In progress'"
               class="ride-end-btn"
               (click)="endRide()"
             >
@@ -79,14 +79,21 @@
               Stop ride
             </button>
             <button
-              *ngIf="userRide.status === 'Requested' && !showCancelForm"
+              *ngIf="userRide.status !== 'In progress' && currentUser?.userType === 'REGISTERED_USER'"
+              class="ride-cancel-btn"
+              (click)="quickCancelRide()"
+            >
+              Cancel ride
+            </button>
+            <button
+              *ngIf="userRide.status !== 'In progress' && currentUser?.userType === 'DRIVER' && !showCancelForm"
               class="ride-cancel-btn"
               (click)="showCancelForm = true"
             >
               Cancel ride
             </button>
           </div>
-          <!-- Inline cancellation reason form for DRIVER -->
+          <!-- Inline cancellation reason form for DRIVER only -->
           <div
             *ngIf="showCancelForm && currentUser?.userType === 'DRIVER'"
             class="cancel-card-form"

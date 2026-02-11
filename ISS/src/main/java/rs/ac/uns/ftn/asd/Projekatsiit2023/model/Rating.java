@@ -43,4 +43,8 @@ public class Rating {
     @OneToOne
     @JoinColumn(name = "ride_id")
     private Ride ride;
+
+    public double getOverallRating() {
+        return (vehicleRating + driverRating) / 2.0;
+    }
 }

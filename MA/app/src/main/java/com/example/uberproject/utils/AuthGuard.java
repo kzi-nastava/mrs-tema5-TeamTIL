@@ -41,11 +41,15 @@ public class AuthGuard {
     }
 
     public static boolean isAdmin(Context context) {
-        return hasAccessByRole(context, "ADMIN");
+        return hasAccessByRole(context, "ADMINISTRATOR") || hasAccessByRole(context, "ADMIN");
     }
 
     public static boolean isUser(Context context) {
-        return hasAccessByRole(context, "USER");
+        return hasAccessByRole(context, "REGISTERED_USER");
+    }
+
+    public static boolean isRegisteredUser(Context context) {
+        return hasAccessByRole(context, "REGISTERED_USER");
     }
 
     public static String getUserRole(Context context) {

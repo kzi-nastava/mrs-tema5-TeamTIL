@@ -34,16 +34,32 @@
             android:padding="20dp"
             app:layout_constraintTop_toBottomOf="@id/tvScreenTitle">
 
-            <ImageView
-                android:id="@+id/imgProfile"
+            <FrameLayout
+                android:id="@+id/profileImageContainer"
                 android:layout_width="70dp"
                 android:layout_height="70dp"
                 android:background="@drawable/circle_background"
-                android:padding="15dp"
-                android:src="@drawable/ic_person_placeholder"
+                android:clipToOutline="true"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:tint="@color/white" />
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/imgProfile"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_person_placeholder" />
+
+                <LinearLayout
+                    android:id="@+id/layoutChangePhoto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#80000000"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+                </LinearLayout>
+            </FrameLayout>
 
             <LinearLayout
                 android:id="@+id/userInfoLayout"
@@ -52,16 +68,16 @@
                 android:layout_marginStart="12dp"
                 android:layout_marginEnd="8dp"
                 android:orientation="vertical"
-                app:layout_constraintBottom_toBottomOf="@id/imgProfile"
+                app:layout_constraintBottom_toBottomOf="@id/profileImageContainer"
                 app:layout_constraintEnd_toStartOf="@+id/btnEditProfile"
-                app:layout_constraintStart_toEndOf="@id/imgProfile"
-                app:layout_constraintTop_toTopOf="@id/imgProfile">
+                app:layout_constraintStart_toEndOf="@id/profileImageContainer"
+                app:layout_constraintTop_toTopOf="@id/profileImageContainer">
 
                 <TextView
                     android:id="@+id/headerName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Petar Petrović"
+                    android:text=""
                     android:textColor="@color/white"
                     android:textSize="18sp"
                     android:textStyle="bold"
@@ -72,7 +88,7 @@
                     android:id="@+id/headerEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="petarpetrovic@gmail.com"
+                    android:text=""
                     android:textColor="#B0B0B0"
                     android:textSize="12sp"
                     android:singleLine="true"
@@ -90,9 +106,9 @@
                 android:textColor="@color/text_dark"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@id/imgProfile"
+                app:layout_constraintBottom_toBottomOf="@id/profileImageContainer"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/imgProfile" />
+                app:layout_constraintTop_toTopOf="@id/profileImageContainer" />
 
             <LinearLayout
                 android:id="@+id/tabsContainer"
@@ -102,8 +118,8 @@
                 android:background="@drawable/bg_tabs_outline"
                 android:orientation="horizontal"
                 android:padding="4dp"
-                android:weightSum="3"
-                app:layout_constraintTop_toBottomOf="@id/imgProfile">
+                android:weightSum="1"
+                app:layout_constraintTop_toBottomOf="@id/profileImageContainer">
 
                 <TextView
                     android:id="@+id/tabInfo"
@@ -115,24 +131,6 @@
                     android:text="@string/profile_info_title"
                     android:textColor="@color/black"
                     android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tabSecondary"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="@string/favorite_rides_title"
-                    android:textColor="@color/black" />
-
-                <TextView
-                    android:id="@+id/tabHistory"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="@string/ride_history_title"
-                    android:textColor="@color/black" />
             </LinearLayout>
 
             <FrameLayout

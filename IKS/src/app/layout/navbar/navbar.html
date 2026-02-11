@@ -5,9 +5,10 @@
   </div>
 
   <nav class="nav-links">
-    <a *ngFor="let link of navLinks" 
-       [routerLink]="link.route" 
-       routerLinkActive="active">
+    <a *ngFor="let link of navLinks"
+       [routerLink]="link.route"
+       routerLinkActive="active"
+       (click)="onNavLinkClick($event)">
       {{ link.label }}
     </a>
   </nav>

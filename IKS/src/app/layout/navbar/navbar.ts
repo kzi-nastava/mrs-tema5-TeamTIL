@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 interface NavLink {
@@ -32,7 +32,14 @@ export class NavbarComponent implements OnInit {
   userName: string = 'Username';
   profilePhoto: string | null = null;
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
+  // Handler for all navbar link clicks when not logged in
+  onNavLinkClick(event: Event) {
+    if (!this.isLoggedIn) {
+      event.preventDefault();
+      this.router.navigate(['/login']);
+    }
+  }
 
   ngOnInit() {
     this.authService.currentUser$.subscribe(user => {
@@ -76,7 +83,7 @@ export class NavbarComponent implements OnInit {
         case 'DRIVER':
           this.navLinks = [
             { label: 'My Vehicle', route: '/my-vehicle' },
-            { label: 'Ride History', route: '/driver-history' },
+            { label: 'Ride History', route: '/driver-ride-history' },
             { label: 'My rides', route: '/assigned-rides' },
             { label: 'Support', route: '/support' }
           ];
@@ -84,7 +91,7 @@ export class NavbarComponent implements OnInit {
           this.menuItems = [
             { label: 'View Profile', route: '/driver-profile', icon: 'fas fa-user' },
             { label: 'My Rides', route: '/assigned-rides', icon: 'fas fa-route' },
-            { label: 'Ride History', route: '/driver-history', icon: 'fas fa-calendar-alt' },
+            { label: 'Ride History', route: '/driver-ride-history', icon: 'fas fa-calendar-alt' },
             { label: 'My Vehicle', route: '/my-vehicle', icon: 'fas fa-car' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },
             { label: 'Change Password', route: '/change-password', icon: 'fas fa-key' },

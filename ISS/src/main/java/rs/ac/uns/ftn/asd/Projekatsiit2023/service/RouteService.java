@@ -22,15 +22,15 @@ public class RouteService {
 
     private final RouteRepository routeRepository;
 
+    @Value("${ors.api.key}")
+    private String orsApiKey;
+
+    private static final Logger logger = LoggerFactory.getLogger(RouteService.class);
+
     @Autowired
     public RouteService(RouteRepository routeRepository) {
         this.routeRepository = routeRepository;
     }
-
-    private static final Logger logger = LoggerFactory.getLogger(RouteService.class);
-
-    @Value("${ors.api.key}")
-    private String orsApiKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -70,16 +70,10 @@ public class RouteService {
         return null;
     }
 
-    public static class RouteEstimation {
-        public final double distanceKm;
-        public final double durationMin;
-        public final List<List<Double>> routeCoordinates; // [[lon, lat], [lon, lat], ...]
-
-        public RouteEstimation(double distanceKm, double durationMin, List<List<Double>> routeCoordinates) {
-            this.distanceKm = distanceKm;
-            this.durationMin = durationMin;
-            this.routeCoordinates = routeCoordinates;
-        }
+    /**
+     * @param routeCoordinates [[lon, lat], [lon, lat], ...]
+     */
+    public record RouteEstimation(double distanceKm, double durationMin, List<List<Double>> routeCoordinates) {
     }
 
     public Route save(Route route) {

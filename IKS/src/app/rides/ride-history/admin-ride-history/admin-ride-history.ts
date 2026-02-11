@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -25,8 +26,20 @@ interface Ride {
   date: string;
   duration?: string;
   distance?: string;
-  driver?: { name: string; phone: string };
-  passenger?: { name: string; phone: string };
+  driver?: { 
+    name: string; 
+    phone: string;
+    firstName?: string;
+    lastName?: string;
+    profilePictureUrl?: string;
+  };
+  passenger?: { 
+    name: string; 
+    phone: string;
+    firstName?: string;
+    lastName?: string;
+    profilePictureUrl?: string;
+  };
   hasPanic?: boolean;
 }
 
@@ -51,10 +64,22 @@ interface Ride {
   styleUrl: './admin-ride-history.css',
 })
 export class AdminRideHistory implements OnInit {
-      constructor(private rideService: RideService) {}
-    ngOnInit(): void {
+  filterOptions = ['All', 'Last 7 days', 'Last month', 'Completed only', 'Canceled only', 'PANIC'];
+  activeFilter = 'All';
+  dateFrom: Date | null = null;
+  dateTo: Date | null = null;
+  selectedStatus = '';
+
+  allRides: Ride[] = [];
+  rides: Ride[] = [];
+  selectedRide: Ride | null = null;
+
+  constructor(private rideService: RideService, private router: Router, private cdr: ChangeDetectorRef) {}
+  
+  ngOnInit(): void {
       this.rideService.getAdminRideHistory().subscribe({
         next: (ridesFromBackend) => {
+          console.log('Backend response:', ridesFromBackend);
           this.allRides = ridesFromBackend.map(ride => ({
             id: ride.id,
             date: ride.startTime?.split(',')[0]?.trim() || '-',
@@ -67,11 +92,28 @@ export class AdminRideHistory implements OnInit {
             duration: ride.duration ? `${Math.round(ride.duration)} min` : '-',
             distance: ride.distance ? `${ride.distance.toFixed(1)} km` : '-',
             hasPanic: ride.panicSent || false,
-            driver: { name: ride.driverEmail || '-', phone: '-' },
-            passenger: { name: ride.passengerEmail || '-', phone: '-' }
+            driver: { 
+              name: ride.driverFirstName && ride.driverLastName 
+                ? `${ride.driverFirstName} ${ride.driverLastName}` 
+                : ride.driverEmail || '-',
+              phone: ride.driverPhoneNumber || '-',
+              firstName: ride.driverFirstName,
+              lastName: ride.driverLastName,
+              profilePictureUrl: ride.driverProfilePictureUrl
+            },
+            passenger: { 
+              name: ride.passengerFirstName && ride.passengerLastName 
+                ? `${ride.passengerFirstName} ${ride.passengerLastName}` 
+                : ride.passengerEmail || '-',
+              phone: ride.passengerPhoneNumber || '-',
+              firstName: ride.passengerFirstName,
+              lastName: ride.passengerLastName,
+              profilePictureUrl: ride.passengerProfilePictureUrl
+            }
           }));
           this.rides = [...this.allRides];
           this.selectedRide = this.rides.length > 0 ? this.rides[0] : null;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error fetching admin ride history:', err);
@@ -93,6 +135,47 @@ export class AdminRideHistory implements OnInit {
       this.selectedRide = ride;
     }
 
+    viewFullRideDetails(ride: Ride) {
+      this.router.navigate(['/ride-details', ride.id]);
+    }
+
+    onImageError(event: Event) {
+      const imgElement = event.target as HTMLImageElement;
+      imgElement.style.display = 'none';
+      const iconElement = imgElement.nextElementSibling as HTMLElement;
+      if (iconElement) {
+        iconElement.style.display = 'flex';
+      }
+    }
+
+    formatPhoneNumber(phone: string): string {
+      if (!phone || phone === '-') return phone;
+      
+      const digitsOnly = phone.replace(/\D/g, '');
+      const length = digitsOnly.length;
+      
+      if (length <= 3) return digitsOnly;
+      
+      const remainder = length % 3;
+      
+      if (remainder === 1) {
+        const groups: string[] = [];
+        let i = 0;
+        while (i < length - 4) {
+          groups.push(digitsOnly.slice(i, i + 3));
+          i += 3;
+        }
+        groups.push(digitsOnly.slice(i));
+        return groups.join(' ');
+      } else {
+        const groups: string[] = [];
+        for (let i = 0; i < length; i += 3) {
+          groups.push(digitsOnly.slice(i, i + 3));
+        }
+        return groups.join(' ');
+      }
+    }
+
     resetFilters() {
       this.dateFrom = null;
       this.dateTo = null;
@@ -105,25 +188,22 @@ export class AdminRideHistory implements OnInit {
     }
 
     parseRideDate(dateString: string): Date {
-      const months: { [key: string]: number } = {
+      const shortMonths: { [key: string]: number } = {
+        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+      };
+      const longMonths: { [key: string]: number } = {
         'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4, 'June': 5,
         'July': 6, 'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11
       };
       const parts = dateString.split(' ');
       const day = parseInt(parts[0]);
-      const month = months[parts[1]];
+      const monthStr = parts[1];
+      // Proba skraćene mesece prvo, zatim puno ime
+      const month = shortMonths[monthStr] !== undefined ? shortMonths[monthStr] : longMonths[monthStr];
       const year = parseInt(parts[2]);
       return new Date(year, month, day);
     }
-  filterOptions = ['All', 'Last 7 days', 'Last month', 'Completed only', 'Cancelled only', 'PANIC'];
-  activeFilter = 'All';
-  dateFrom: Date | null = null;
-  dateTo: Date | null = null;
-  selectedStatus = '';
-
-  allRides: Ride[] = [];
-  rides: Ride[] = [];
-  selectedRide: Ride | null = null;
 
   setActiveFilter(option: string) {
     this.activeFilter = option;
@@ -139,8 +219,10 @@ export class AdminRideHistory implements OnInit {
       case 'Last 7 days':
         const sevenDaysAgo = new Date(today);
         sevenDaysAgo.setDate(today.getDate() - 7);
+        const endOfToday = new Date(today);
+        endOfToday.setHours(23, 59, 59, 999);
         this.dateFrom = sevenDaysAgo;
-        this.dateTo = today;
+        this.dateTo = endOfToday;
         this.selectedStatus = '';
         this.applyFilters();
         break;
@@ -148,8 +230,10 @@ export class AdminRideHistory implements OnInit {
       case 'Last month':
         const thirtyDaysAgo = new Date(today);
         thirtyDaysAgo.setDate(today.getDate() - 30);
+        const endOfTodayMonth = new Date(today);
+        endOfTodayMonth.setHours(23, 59, 59, 999);
         this.dateFrom = thirtyDaysAgo;
-        this.dateTo = today;
+        this.dateTo = endOfTodayMonth;
         this.selectedStatus = '';
         this.applyFilters();
         break;
@@ -159,7 +243,7 @@ export class AdminRideHistory implements OnInit {
         this.applyFilters();
         break;
         
-      case 'Cancelled only':
+      case 'Canceled only':
         this.selectedStatus = 'canceled';
         this.applyFilters();
         break;

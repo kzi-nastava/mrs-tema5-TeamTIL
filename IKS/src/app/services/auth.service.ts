@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { Observable, BehaviorSubject, tap, catchError, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   LoginRequest,
   LoginResponse,
   RegisterRequest,
   RegisterResponse,
-  CurrentUser
+  CurrentUser,
+  TokenValidationResponse
 } from '../models/auth.models';
 
 @Injectable({
@@ -19,7 +20,9 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<CurrentUser | null>(this.getCurrentUserFromStorage());
   public currentUser$ = this.currentUserSubject.asObservable();
   private userProfileSource = new BehaviorSubject<any>(null);
-userProfile$ = this.userProfileSource.asObservable();
+  userProfile$ = this.userProfileSource.asObservable();
+  private tokenCheckInterval: any;
+  private readonly TOKEN_CHECK_INTERVAL = 5 * 60 * 1000; // Provera svakih 5 minuta
 
   constructor(
     private http: HttpClient,
@@ -78,6 +81,8 @@ userProfile$ = this.userProfileSource.asObservable();
           localStorage.setItem('currentUser', JSON.stringify(user));
           localStorage.setItem('token', response.token); // Dodaj token posebno
           this.currentUserSubject.next(user);
+          // Pokreni automatsku proveru trajanja tokena
+          this.startTokenValidationCheck();
         })
       );
   }
@@ -87,14 +92,39 @@ userProfile$ = this.userProfileSource.asObservable();
   }
 
   logout(): void {
+    // Zaustavi proveru tokena
+    if (this.tokenCheckInterval) {
+      clearInterval(this.tokenCheckInterval);
+      this.tokenCheckInterval = null;
+    }
     localStorage.removeItem('currentUser');
     localStorage.removeItem('token'); // Ukloni token iz localStorage
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
   }
 
+  private startTokenValidationCheck(): void {
+    // Zaustavi prethodni interval ako postoji
+    if (this.tokenCheckInterval) {
+      clearInterval(this.tokenCheckInterval);
+    }
+    
+    // Pokreni periodičku proveru tokena
+    this.tokenCheckInterval = setInterval(() => {
+      console.log('[AuthService] Running periodic token validation check...');
+      this.validateToken().subscribe();
+    }, this.TOKEN_CHECK_INTERVAL);
+    
+    console.log('[AuthService] Token validation check started - checking every 5 minutes');
+  }
+
   isLoggedIn(): boolean {
-    return this.currentUserSubject.value !== null;
+    const isLogged = this.currentUserSubject.value !== null;
+    // Ako je korisnik ulogovan ali interval nije startovan, pokreni ga
+    if (isLogged && !this.tokenCheckInterval) {
+      this.startTokenValidationCheck();
+    }
+    return isLogged;
   }
 
   getToken(): string | null {
@@ -115,6 +145,31 @@ userProfile$ = this.userProfileSource.asObservable();
 
   getProfilePictureUrl(): string | null {
     return this.currentUserSubject.value?.profilePictureUrl || null;
+  }
+
+  validateToken(): Observable<TokenValidationResponse> {
+    const token = this.getToken();
+    if (!token) {
+      console.log('[AuthService] No token found');
+      return of({ valid: false, message: 'No token found' });
+    }
+
+    console.log('[AuthService] Validating token...');
+    return this.http.get<TokenValidationResponse>(`${this.apiUrl}/auth/validate`)
+      .pipe(
+        tap(response => {
+          console.log('[AuthService] Token validation response:', response);
+          if (!response.valid) {
+            console.log('[AuthService] Token is invalid, logging out...');
+            this.logout();
+          }
+        }),
+        catchError(error => {
+          console.error('[AuthService] Token validation failed:', error);
+          this.logout();
+          return of({ valid: false, message: 'Token validation failed' });
+        })
+      );
   }
 
   updateUserProfile(user: any) {

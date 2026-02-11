@@ -1,10 +1,13 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
@@ -33,8 +36,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.springframework.security.authorization.AuthorityAuthorizationManager.hasAnyRole;
+
 @RestController
 @RequestMapping("/api/rides")
+@Validated
 public class RideController {
 
     @Autowired
@@ -57,6 +63,7 @@ public class RideController {
 
     @PutMapping("/{rideId}/cancel")
     @Transactional
+    @PreAuthorize("hasAnyRole('REGISTERED_USER', 'DRIVER')")
     public ResponseEntity<RideCancelResponseDTO> cancelRide(
             @PathVariable Integer rideId,
             @RequestBody(required = false) RideCancelRequestDTO request) {
@@ -65,94 +72,86 @@ public class RideController {
             return ResponseEntity.badRequest().build();
         }
 
-        // Pronađi vožnju iz baze
-        Ride ride = rideRepository.findById(rideId)
-                .orElseThrow(() -> new RuntimeException("Ride not found"));
-
-        // Postavi razlog otkazivanja
         String reason = (request != null && request.getCancellationReason() != null)
                 ? request.getCancellationReason()
-                : "User cancelled";
+                : null;
 
-        // Ažuriraj status i razlog
-        ride.setRideStatus(RideStatus.CANCELED);
-        ride.setCancellationReason(reason);
-
-        // Sačuvaj promene u bazi
-        rideRepository.save(ride);
-
-        RideCancelResponseDTO response = new RideCancelResponseDTO(
-                rideId,
-                "CANCELLED",
-                reason,
-                "Ride cancelled successfully");
-
-        return ResponseEntity.ok(response);
+        try {
+            RideCancelResponseDTO response = rideService.cancelRide(rideId, reason);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(
+                    new RideCancelResponseDTO(
+                            rideId,
+                            "CANCEL_FAILED",
+                            reason != null ? reason : "",
+                            e.getMessage(),
+                            null
+                    )
+            );
+        }
     }
 
     @PutMapping("/{rideId}/stop")
     @Transactional
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<RideStopResponseDTO> stopRide(
             @PathVariable Integer rideId,
-            @RequestBody RideStopRequestDTO request) {
+            @Valid @RequestBody RideStopRequestDTO request) {
 
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
-
-        Ride ride = rideRepository.findById(rideId)
-                .orElseThrow(() -> new RuntimeException("Ride not found"));
-        Route route = ride.getRoute();
-
-        VehicleType vehicleType = ride.getDriver().getVehicle().getType();
-        double finalPrice = rideService.calculateFinalPrice(
-                vehicleType,
-                ride.getStartLocation(),
-                request.getActualEndLocation()
-        );
-
-        Location endLocation = request.getActualEndLocation();
-        endLocation.setRoute(route);
-
-        endLocation = locationService.findOrSaveLocation(endLocation, route);
-
-        if (endLocation != null) {
-            route.getLocations().add(endLocation);
+        try {
+            RideStopResponseDTO response = rideService.stopRide(
+                    rideId,
+                    request.getActualEndLocation(),
+                    request.getActualEndTime()
+            );
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(
+                    new RideStopResponseDTO(
+                            rideId,
+                            "STOP_FAILED",
+                            request.getActualEndLocation() != null ? request.getActualEndLocation().getAddress() : "",
+                            null,
+                            null,
+                            e.getMessage()
+                    )
+            );
         }
-        routeService.save(route);
-
-        ride.setRideStatus(RideStatus.FINISHED);
-        ride.setEndLocation(endLocation);
-        ride.setEndTime(request.getActualEndTime());
-        ride.setTotalPrice(finalPrice);
-        ride.setRoute(route);
-
-        rideRepository.save(ride);
-
-        RideStopResponseDTO response = new RideStopResponseDTO(
-                rideId,
-                "COMPLETED",
-                endLocation.getAddress(),
-                Math.round(finalPrice * 100.0) / 100.0,
-                "duration",
-                "Ride completed successfully"
-        );
-
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/admin/history")
-    public ResponseEntity<List<AdminRideResponseDTO>> getAllRidesHistory(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String driverEmail,
-            @RequestParam(required = false) String passengerEmail,
-            @RequestParam(required = false) String startLocation,
-            @RequestParam(required = false) String endLocation,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        List<AdminRideResponseDTO> ridesHistory = rideService.getAllRidesWithPanicInfoForAdmin();
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    public ResponseEntity<List<RideHistoryResponseDTO>> getAllRidesHistory(
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        LocalDateTime dateFromParsed = dateFrom != null ? LocalDateTime.parse(dateFrom) : null;
+        LocalDateTime dateToParsed = dateTo != null ? LocalDateTime.parse(dateTo) : null;
+
+        List<RideHistoryResponseDTO> ridesHistory = rideService.getAdminRideHistory(dateFromParsed, dateToParsed, sortBy, sortDirection);
+
+        return ResponseEntity.ok(ridesHistory);
+    }
+
+    @GetMapping("/{passengerEmail}/history")
+    @PreAuthorize("hasRole('REGISTERED_USER')")
+    public ResponseEntity<List<RideHistoryResponseDTO>> getUserRidesHistory(
+            @PathVariable String passengerEmail,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        LocalDateTime dateFromParsed = dateFrom != null ? LocalDateTime.parse(dateFrom) : null;
+        LocalDateTime dateToParsed = dateTo != null ? LocalDateTime.parse(dateTo) : null;
+
+        List<RideHistoryResponseDTO> ridesHistory = rideService.getUserRideHistory(passengerEmail, dateFromParsed, dateToParsed, sortBy, sortDirection);
 
         return ResponseEntity.ok(ridesHistory);
     }
@@ -346,6 +345,7 @@ public class RideController {
     }
 
     @GetMapping("/assigned")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<List<AssignedRideDTO>> getAssignedRides(
             @RequestParam String driverEmail,
             @RequestParam(required = false) String status
@@ -370,6 +370,7 @@ public class RideController {
     }
 
     @GetMapping("/user/{email}")
+    @PreAuthorize("hasRole('REGISTERED_USER') and #email == authentication.name")
     public List<AssignedRideDTO> getRidesForUser(
             @PathVariable String email,
             @RequestParam(required = false) String status
@@ -391,4 +392,14 @@ public class RideController {
                 .toList();
     }
 
+    @GetMapping("/{rideId}/details")
+    @PreAuthorize("hasAnyRole('REGISTERED_USER', 'DRIVER', 'ADMINISTRATOR')")
+    public ResponseEntity<RideDetailsResponseDTO> getRideDetails(@PathVariable Integer rideId) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+
+        RideDetailsResponseDTO response = rideService.mapRideToDetailsDTO(ride);
+        return ResponseEntity.ok(response);
+    }
 }
+
