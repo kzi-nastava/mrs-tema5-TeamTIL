@@ -2,7 +2,6 @@ import { Component, ViewChild, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { MapView } from '../../map/map';
 import { RideService } from '../../rides/services/ride.service';
 import { AuthService } from '../../services/auth.service';
