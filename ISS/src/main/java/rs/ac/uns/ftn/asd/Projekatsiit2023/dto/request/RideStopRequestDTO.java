@@ -14,10 +14,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RideStopRequestDTO {
-    @NotNull
-    private Integer rideId;
-    @NotNull
+    @NotNull(message = "End location cannot be null")
     private Location actualEndLocation;
-    @NotNull
+    @NotNull(message = "End time cannot be null")
     private LocalDateTime actualEndTime;
 }
