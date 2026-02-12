@@ -13,14 +13,12 @@
         android:orientation="vertical"
         android:padding="16dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <!-- TOP TEXT -->
         <TextView
             android:id="@+id/ride_history_heading"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="@font/montserrat_semibold_font"
-            android:text="@string/ride_history_heading"
+            android:text="All Rides"
             android:textColor="@color/text_white"
             android:textSize="32sp" />
 
@@ -31,9 +29,19 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:fontFamily="@font/montserrat_regular_font"
-            android:text="@string/ride_history_text_overview"
+            android:text="View and manage all rides in the system"
             android:textColor="@color/text_gray"
             android:textSize="13sp" />
+
+        <!-- LOADING INDICATOR -->
+        <ProgressBar
+            android:id="@+id/loadingProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone" />
 
         <!-- FILTERS + CHIP GROUP CONTAINER -->
         <LinearLayout
@@ -56,15 +64,16 @@
                 app:tint="@color/text_gray"
                 android:clickable="true"
                 android:focusable="true"/>
+                android:focusable="true"/>
 
             <!-- FILTERS -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:weightSum="14">
+                android:weightSum="9">
 
-                <!-- Polje 1 - Dropdown sa kalendar ikonom -->
+                <!-- From Date Field -->
                 <LinearLayout
                     android:id="@+id/fromLayout"
                     android:layout_width="0dp"
@@ -77,7 +86,6 @@
                     android:orientation="horizontal"
                     android:padding="4dp">
 
-                    <!-- Kalendar ikona -->
                     <ImageView
                         android:layout_width="16dp"
                         android:layout_height="16dp"
@@ -85,8 +93,8 @@
                         android:src="@drawable/ic_calendar"
                         android:contentDescription="From date"
                         app:tint="@color/text_gray" />
+                        app:tint="@color/text_gray" />
 
-                    <!-- Dropdown polje -->
                     <AutoCompleteTextView
                         android:id="@+id/etFromDate"
                         android:layout_width="0dp"
@@ -107,21 +115,19 @@
                         android:textSize="11sp" />
                 </LinearLayout>
 
-
-                <!-- Polje 2 - Dropdown sa kalendar ikonom -->
+                <!-- To Date Field -->
                 <LinearLayout
                     android:id="@+id/toLayout"
                     android:layout_width="0dp"
                     android:layout_height="40dp"
                     android:layout_marginEnd="6dp"
-                    android:layout_weight="4"
+                    android:layout_weight="3"
                     android:background="@drawable/bg_purple_tint"
                     android:clipToPadding="false"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="4dp">
 
-                    <!-- Kalendar ikona -->
                     <ImageView
                         android:layout_width="16dp"
                         android:layout_height="16dp"
@@ -130,7 +136,6 @@
                         android:contentDescription="To date"
                         app:tint="@color/text_gray" />
 
-                    <!-- Dropdown polje -->
                     <AutoCompleteTextView
                         android:id="@+id/etToDate"
                         android:layout_width="0dp"
@@ -151,27 +156,7 @@
                         android:textSize="11sp" />
                 </LinearLayout>
 
-                <!-- Polje 3 - Dropdown bez ikone -->
-                <AutoCompleteTextView
-                    android:id="@+id/etStatus"
-                    android:layout_width="0dp"
-                    android:layout_height="40dp"
-                    android:layout_marginEnd="6dp"
-                    android:layout_weight="2"
-                    android:drawableEnd="@drawable/ic_dropdown_arrow"
-                    android:drawableTint="@color/text_gray"
-                    android:background="@drawable/bg_purple_tint"
-                    android:focusable="false"
-                    android:clickable="true"
-                    android:fontFamily="@font/montserrat_regular_font"
-                    android:hint="Status"
-                    android:minHeight="26dp"
-                    android:padding="4dp"
-                    android:paddingStart="10dp"
-                    android:textColor="@color/text_white"
-                    android:textColorHint="@color/text_gray"
-                    android:textSize="11sp" />
-                <!-- Polje 4 - Button -->
+                <!-- Apply Filters Button -->
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnApplyFilters"
                     android:layout_width="0dp"
@@ -223,6 +208,58 @@
                     app:chipMinHeight="21dp"
                     app:chipStrokeColor="@color/chip_stroke_selector"/>
 
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipCompletedOnly"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_light_font"
+                    android:text="Finished only"
+                    android:textColor="@color/chip_text_selector"
+                    app:chipBackgroundColor="@color/chip_background_selector"
+                    android:textSize="13sp"
+                    app:chipCornerRadius="10sp"
+                    app:chipMinHeight="21dp"
+                    app:chipStrokeColor="@color/chip_stroke_selector"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipCanceledOnly"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_light_font"
+                    android:text="Canceled only"
+                    android:textColor="@color/chip_text_selector"
+                    app:chipBackgroundColor="@color/chip_background_selector"
+                    android:textSize="13sp"
+                    app:chipCornerRadius="10sp"
+                    app:chipMinHeight="21dp"
+                    app:chipStrokeColor="@color/chip_stroke_selector"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipPanicOnly"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_light_font"
+                    android:text="🚨 Panic Only"
+                    android:textColor="@color/chip_text_selector"
+                    app:chipBackgroundColor="@color/chip_background_selector"
+                    android:textSize="13sp"
+                    app:chipCornerRadius="10sp"
+                    app:chipMinHeight="21dp"
+                    app:chipStrokeColor="@color/chip_stroke_selector"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_light_font"
+                    android:text="All"
+                    android:textColor="@color/chip_text_selector"
+                    app:chipBackgroundColor="@color/chip_background_selector"
+                    android:textSize="13sp"
+                    app:chipCornerRadius="10sp"
+                    app:chipMinHeight="21dp"
+                    app:chipStrokeColor="@color/chip_stroke_selector"/>
+
             </com.google.android.material.chip.ChipGroup>
 
         </LinearLayout>
@@ -237,3 +274,4 @@
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+

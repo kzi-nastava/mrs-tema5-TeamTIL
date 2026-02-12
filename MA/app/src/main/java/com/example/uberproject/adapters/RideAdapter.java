@@ -3,6 +3,7 @@ package com.example.uberproject.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -54,6 +55,13 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
             holder.tvStatus.setBackgroundResource(R.drawable.bg_status_completed);
         }
 
+        // Prikaži panic badge ako je panic poslat
+        if (ride.getPanicSent() != null && ride.getPanicSent()) {
+            holder.tvPanicBadge.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvPanicBadge.setVisibility(View.GONE);
+        }
+
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onRideClick(ride);
@@ -101,7 +109,7 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
     }
 
     public static class RideViewHolder extends RecyclerView.ViewHolder {
-        TextView tvRoute, tvPrice, tvStatus, tvDateTime;
+        TextView tvRoute, tvPrice, tvStatus, tvDateTime, tvPanicBadge;
 
         public RideViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -109,6 +117,7 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
             tvPrice = itemView.findViewById(R.id.tvPrice);
             tvStatus = itemView.findViewById(R.id.tvStatus);
             tvDateTime = itemView.findViewById(R.id.tvTime);
+            tvPanicBadge = itemView.findViewById(R.id.tvPanicBadge);
         }
     }
 }

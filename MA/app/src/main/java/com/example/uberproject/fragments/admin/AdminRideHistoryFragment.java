@@ -1,4 +1,4 @@
-package com.example.uberproject.fragments.user;
+package com.example.uberproject.fragments.admin;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
@@ -40,28 +40,29 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class UserRideHistoryFragment extends Fragment {
+public class AdminRideHistoryFragment extends Fragment {
 
-    private AutoCompleteTextView etFromDate, etToDate, etStatus;
+    private AutoCompleteTextView etFromDate, etToDate;
     private AppCompatButton btnApplyFilters;
     private RecyclerView ridesRecyclerView;
     private RideAdapter rideAdapter;
     private List<Ride> allRides;
     private List<RideHistoryResponseDTO> rideHistoryData;
-    private Chip chipLast7Days, chipLastMonth, chipCompletedOnly, chipCanceledOnly, chipAll;
-    private static final String TAG = "UserRideHistoryFragment";
+    private Chip chipLast7Days, chipLastMonth, chipCompletedOnly, chipCanceledOnly, chipPanicOnly, chipAll;
+    private android.widget.ProgressBar loadingProgressBar;
+    private static final String TAG = "AdminRideHistoryFragment";
 
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_user_ride_history, container, false);
+        View view = inflater.inflate(R.layout.fragment_admin_ride_history, container, false);
+
+        loadingProgressBar = view.findViewById(R.id.loadingProgressBar);
 
         etFromDate = view.findViewById(R.id.etFromDate);
         etToDate = view.findViewById(R.id.etToDate);
         setupDatePickers();
-        etStatus = view.findViewById(R.id.etStatus);
-        setupStatusDropdown();
 
         LinearLayout fromLayout = view.findViewById(R.id.fromLayout);
         fromLayout.setOnClickListener(v -> etFromDate.performClick());
@@ -82,6 +83,7 @@ public class UserRideHistoryFragment extends Fragment {
         chipLastMonth = view.findViewById(R.id.chipLastMonth);
         chipCompletedOnly = view.findViewById(R.id.chipCompletedOnly);
         chipCanceledOnly = view.findViewById(R.id.chipCanceledOnly);
+        chipPanicOnly = view.findViewById(R.id.chipPanicOnly);
         chipAll = view.findViewById(R.id.chipAll);
         setChipListeners();
 
@@ -94,8 +96,8 @@ public class UserRideHistoryFragment extends Fragment {
 
         rideAdapter = new RideAdapter(allRides, ride -> {
 
-            UserRideDetailsFragment fragment =
-                    UserRideDetailsFragment.newInstance(ride);
+            AdminRideDetailsFragment fragment =
+                    AdminRideDetailsFragment.newInstance(ride);
 
             requireActivity()
                     .getSupportFragmentManager()
@@ -114,27 +116,27 @@ public class UserRideHistoryFragment extends Fragment {
     }
 
     private void loadRideHistory() {
-        TokenManager tokenManager = TokenManager.getInstance(requireContext());
-        String userEmail = tokenManager.getUserEmail();
+        Log.d(TAG, "=== ADMIN RIDE HISTORY LOAD START ===");
 
-        Log.d(TAG, "=== RIDE HISTORY LOAD START ===");
-        Log.d(TAG, "User email: " + userEmail);
-
-        if (userEmail == null || userEmail.isEmpty()) {
-            Toast.makeText(getContext(), "User email not found", Toast.LENGTH_SHORT).show();
-            Log.e(TAG, "User email is null or empty");
-            return;
+        // Prikaži loading indicator
+        if (loadingProgressBar != null) {
+            loadingProgressBar.setVisibility(View.VISIBLE);
         }
 
         RideApi rideApi = RetrofitClient.getInstance(requireContext()).create(RideApi.class);
-        Call<List<RideHistoryResponseDTO>> call = rideApi.getUserRideHistory(userEmail);
+        Call<List<RideHistoryResponseDTO>> call = rideApi.getAdminRideHistory();
 
-        Log.d(TAG, "API Call created for: " + userEmail);
+        Log.d(TAG, "API Call created for admin ride history");
 
         call.enqueue(new Callback<List<RideHistoryResponseDTO>>() {
             @Override
             public void onResponse(Call<List<RideHistoryResponseDTO>> call, Response<List<RideHistoryResponseDTO>> response) {
-                Log.d(TAG, "=== RIDE HISTORY API RESPONSE ===");
+                // Sakrij loading indicator
+                if (loadingProgressBar != null) {
+                    loadingProgressBar.setVisibility(View.GONE);
+                }
+
+                Log.d(TAG, "=== ADMIN RIDE HISTORY API RESPONSE ===");
                 Log.d(TAG, "Status code: " + response.code());
                 Log.d(TAG, "Response URL: " + call.request().url());
 
@@ -143,7 +145,7 @@ public class UserRideHistoryFragment extends Fragment {
                     Log.d(TAG, "Loaded " + rideHistoryData.size() + " rides from API");
 
                     for (RideHistoryResponseDTO ride : rideHistoryData) {
-                        Log.d(TAG, "Ride: " + ride.getStartLocation() + " -> " + ride.getEndLocation() + " | Status: " + ride.getStatus());
+                        Log.d(TAG, "Ride: " + ride.getStartLocation() + " -> " + ride.getEndLocation() + " | Status: " + ride.getStatus() + " | Panic: " + ride.getPanicSent());
                     }
 
                     // Konvertuj RideHistoryResponseDTO u Ride model
@@ -159,6 +161,11 @@ public class UserRideHistoryFragment extends Fragment {
 
             @Override
             public void onFailure(Call<List<RideHistoryResponseDTO>> call, Throwable t) {
+                // Sakrij loading indicator
+                if (loadingProgressBar != null) {
+                    loadingProgressBar.setVisibility(View.GONE);
+                }
+
                 Log.e(TAG, "Network error: " + t.getMessage(), t);
                 Log.e(TAG, "Request URL: " + call.request().url());
                 Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
@@ -206,6 +213,7 @@ public class UserRideHistoryFragment extends Fragment {
             chipLastMonth.setSelected(false);
             chipCompletedOnly.setSelected(false);
             chipCanceledOnly.setSelected(false);
+            chipPanicOnly.setSelected(false);
             chipAll.setSelected(false);
 
             // Označi trenutni kao selected
@@ -218,7 +226,6 @@ public class UserRideHistoryFragment extends Fragment {
             // Reset date filtere
             etFromDate.setText("");
             etToDate.setText("");
-            etStatus.setText("");
 
             // Primeni filter u zavisnosti od klika
             if (v == chipLast7Days) {
@@ -234,11 +241,12 @@ public class UserRideHistoryFragment extends Fragment {
                 etToDate.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(to));
                 applyFilters();
             } else if (v == chipCompletedOnly) {
-                etStatus.setText("Finished");
-                applyFilters();
+                filterByStatus("Finished");
             } else if (v == chipCanceledOnly) {
-                etStatus.setText("Canceled");
-                applyFilters();
+                filterByStatus("Canceled");
+            } else if (v == chipPanicOnly) {
+                // Filter samo voznje sa panicSent == true
+                filterByPanic();
             } else if (v == chipAll) {
                 // Prikaži sve bez filtera
                 rideAdapter.setRides(allRides);
@@ -249,23 +257,46 @@ public class UserRideHistoryFragment extends Fragment {
         chipLastMonth.setOnClickListener(chipClickListener);
         chipCompletedOnly.setOnClickListener(chipClickListener);
         chipCanceledOnly.setOnClickListener(chipClickListener);
+        chipPanicOnly.setOnClickListener(chipClickListener);
         chipAll.setOnClickListener(chipClickListener);
     }
 
     private void resetFilters() {
         etFromDate.setText("");
         etToDate.setText("");
-        etStatus.setText("");
         rideAdapter.setRides(allRides);
         chipLast7Days.setSelected(false);
         chipLastMonth.setSelected(false);
+        chipCompletedOnly.setSelected(false);
+        chipCanceledOnly.setSelected(false);
+        chipPanicOnly.setSelected(false);
+        chipAll.setSelected(false);
     }
 
+
+    private void filterByPanic() {
+        List<Ride> panicRides = new ArrayList<>();
+        for (Ride ride : allRides) {
+            if (ride.getPanicSent() != null && ride.getPanicSent()) {
+                panicRides.add(ride);
+            }
+        }
+        rideAdapter.setRides(panicRides);
+    }
+
+    private void filterByStatus(String status) {
+        List<Ride> statusRides = new ArrayList<>();
+        for (Ride ride : allRides) {
+            if (ride.getStatus().equalsIgnoreCase(status)) {
+                statusRides.add(ride);
+            }
+        }
+        rideAdapter.setRides(statusRides);
+    }
 
     private void applyFilters() {
         String fromDateStr = etFromDate.getText().toString().trim();
         String toDateStr = etToDate.getText().toString().trim();
-        String statusStr = etStatus.getText().toString().trim();
 
         Date fromDate = fromDateStr.isEmpty() ? null : parsePickerDate(fromDateStr);
         Date toDate = toDateStr.isEmpty() ? null : parsePickerDate(toDateStr);
@@ -275,14 +306,8 @@ public class UserRideHistoryFragment extends Fragment {
         for (Ride ride : allRides) {
             boolean match = true;
 
-            String statusFlag = "PASS";
             String fromDateFlag = "PASS";
             String toDateFlag = "PASS";
-
-            if (!statusStr.isEmpty() && !ride.getStatus().equalsIgnoreCase(statusStr)) {
-                match = false;
-                statusFlag = "FAIL";
-            }
 
             Date rideStartDate = parseRideDate(ride.getDateTime());
             if (rideStartDate != null) {
@@ -301,7 +326,7 @@ public class UserRideHistoryFragment extends Fragment {
             }
 
             System.out.println("Ride: " + ride.getFrom() + " → " + ride.getTo());
-            System.out.println("Status flag: " + statusFlag + ", From flag: " + fromDateFlag + ", To flag: " + toDateFlag);
+            System.out.println("From flag: " + fromDateFlag + ", To flag: " + toDateFlag);
             System.out.println("-----");
 
             if (match) {
@@ -313,21 +338,6 @@ public class UserRideHistoryFragment extends Fragment {
     }
 
 
-    private void setupStatusDropdown() {
-        String[] statusOptions = {"Finished", "Canceled"};
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_dropdown_item_1line,
-                statusOptions
-        );
-
-        etStatus.setAdapter(adapter);
-
-        etStatus.setOnClickListener(v -> etStatus.showDropDown());
-
-        etStatus.setKeyListener(null);
-    }
 
     private void setupDatePickers() {
         etFromDate.setOnClickListener(v -> {
@@ -410,3 +420,5 @@ public class UserRideHistoryFragment extends Fragment {
     }
 
 }
+
+

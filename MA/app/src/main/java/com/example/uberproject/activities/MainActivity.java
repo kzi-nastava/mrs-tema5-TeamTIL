@@ -22,6 +22,7 @@ import androidx.activity.OnBackPressedCallback;
 
 import com.bumptech.glide.Glide;
 import com.example.uberproject.R;
+import com.example.uberproject.fragments.admin.AdminRideHistoryFragment;
 import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
 import com.example.uberproject.fragments.user.UserRideHistoryFragment;
 import com.example.uberproject.fragments.forms.ProfileFragment;
@@ -31,7 +32,6 @@ import com.example.uberproject.fragments.forms.ResetPasswordFragment;
 import com.example.uberproject.utils.AuthGuard;
 import com.example.uberproject.utils.TokenManager;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -97,8 +97,8 @@ public class MainActivity extends AppCompatActivity {
                     // Za driver, otvori DriverRideHistoryFragment
                     loadFragment(new DriverRideHistoryFragment());
                 } else if ("ADMIN".equalsIgnoreCase(userRole) || "ADMINISTRATOR".equalsIgnoreCase(userRole)) {
-                    // Za admin, otvori DriverRideHistoryFragment (ili admin verziju ako postoji)
-                    loadFragment(new DriverRideHistoryFragment());
+                    // Za admin, otvori AdminRideHistoryFragment
+                    loadFragment(new AdminRideHistoryFragment());
                 } else {
                     loadFragment(new UserRideHistoryFragment());
                 }
@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
                 } else {
-                    loadFragment(new DriverRideHistoryFragment());
+                    loadFragment(new AdminRideHistoryFragment());
                 }
             } else if (itemId == R.id.admin_support) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
@@ -212,6 +212,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateNavigationMenuVisibility(NavigationView navigationView) {
+        // Prvo proveravamo da li je token istekao
+        if (AuthGuard.isUserLoggedIn(this)) {
+            TokenManager tokenManager = TokenManager.getInstance(this);
+            if (tokenManager.isTokenExpired()) {
+                // Ako je token istekao, logout automatski
+                AuthGuard.logout(this);
+            }
+        }
+
         boolean isLoggedIn = AuthGuard.isUserLoggedIn(this);
         String userRole = AuthGuard.getUserRole(this);
 
@@ -464,8 +473,14 @@ public class MainActivity extends AppCompatActivity {
         // Proverava samo ako je korisnik ulogovan
         if (AuthGuard.isUserLoggedIn(this)) {
             if (tokenManager.isTokenExpired()) {
-                // Token je istekao - odjavi korisnika i prikaži poruku
+                // Token je istekao - odjavi korisnika
                 Toast.makeText(this, "Your session has expired. Please login again.", Toast.LENGTH_LONG).show();
+                AuthGuard.logout(this);
+                invalidateOptionsMenu();
+                NavigationView navigationView = findViewById(R.id.nav_view);
+                if (navigationView != null) {
+                    updateNavigationMenuVisibility(navigationView);
+                }
                 showLoginFragment();
             }
         }

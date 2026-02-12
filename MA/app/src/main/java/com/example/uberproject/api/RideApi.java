@@ -10,6 +10,9 @@ import java.util.List;
 public interface RideApi {
     @GET("rides/{userEmail}/history")
     Call<List<RideHistoryResponseDTO>> getUserRideHistory(@Path("userEmail") String userEmail);
+
+    @GET("rides/admin/history")
+    Call<List<RideHistoryResponseDTO>> getAdminRideHistory();
 }
 
 

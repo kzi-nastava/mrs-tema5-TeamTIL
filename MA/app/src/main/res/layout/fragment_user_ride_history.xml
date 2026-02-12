@@ -52,6 +52,7 @@
                 android:src="@drawable/ic_clear"
                 android:paddingBottom="6dp"
                 android:layout_marginBottom="3dp"
+                android:contentDescription="Reset filters"
                 app:tint="@color/text_gray"
                 android:clickable="true"
                 android:focusable="true"/>
@@ -61,7 +62,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:weightSum="13">
+                android:weightSum="9">
 
                 <!-- From Date Field -->
                 <LinearLayout
@@ -81,12 +82,14 @@
                         android:layout_height="16dp"
                         android:layout_marginEnd="3dp"
                         android:src="@drawable/ic_calendar"
+                        android:contentDescription="From date"
                         app:tint="@color/text_gray" />
 
                     <AutoCompleteTextView
                         android:id="@+id/etFromDate"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:paddingStart="2dp"
                         android:background="?attr/selectableItemBackground"
                         android:drawableEnd="@drawable/ic_dropdown_arrow"
@@ -94,12 +97,12 @@
                         android:focusable="false"
                         android:clickable="true"
                         android:inputType="textMultiLine"
-                        android:maxLines="1"
+                        android:maxLines="2"
                         android:fontFamily="@font/montserrat_regular_font"
                         android:hint="From"
                         android:textColor="@color/text_white"
                         android:textColorHint="@color/text_gray"
-                        android:textSize="13sp" />
+                        android:textSize="11sp" />
                 </LinearLayout>
 
                 <!-- To Date Field -->
@@ -120,12 +123,14 @@
                         android:layout_height="16dp"
                         android:layout_marginEnd="3dp"
                         android:src="@drawable/ic_calendar"
+                        android:contentDescription="To date"
                         app:tint="@color/text_gray" />
 
                     <AutoCompleteTextView
                         android:id="@+id/etToDate"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:paddingStart="2dp"
                         android:background="?attr/selectableItemBackground"
                         android:drawableEnd="@drawable/ic_dropdown_arrow"
@@ -133,34 +138,13 @@
                         android:focusable="false"
                         android:clickable="true"
                         android:inputType="textMultiLine"
-                        android:maxLines="1"
+                        android:maxLines="2"
                         android:fontFamily="@font/montserrat_regular_font"
                         android:hint="To"
                         android:textColor="@color/text_white"
                         android:textColorHint="@color/text_gray"
-                        android:textSize="13sp" />
+                        android:textSize="11sp" />
                 </LinearLayout>
-
-                <!-- Status Field -->
-                <AutoCompleteTextView
-                    android:id="@+id/etStatus"
-                    android:layout_width="0dp"
-                    android:layout_height="40dp"
-                    android:layout_marginEnd="6dp"
-                    android:layout_weight="4"
-                    android:drawableEnd="@drawable/ic_dropdown_arrow"
-                    android:drawableTint="@color/text_gray"
-                    android:background="@drawable/bg_purple_tint"
-                    android:focusable="false"
-                    android:clickable="true"
-                    android:fontFamily="@font/montserrat_regular_font"
-                    android:hint="Status"
-                    android:minHeight="26dp"
-                    android:padding="4dp"
-                    android:paddingStart="10dp"
-                    android:textColor="@color/text_white"
-                    android:textColorHint="@color/text_gray"
-                    android:textSize="13sp" />
 
                 <!-- Apply Filters Button -->
                 <androidx.appcompat.widget.AppCompatButton
