@@ -1,13 +1,22 @@
-import { Component, ViewChild, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { MapView } from '../../map/map';
-import { RouteService } from '../../services/route.service';
-import { GeocodingService } from '../../services/geocoding.service';
 import { RideService } from '../../rides/services/ride.service';
 import { AuthService } from '../../services/auth.service';
 import { PanicService } from '../../services/panic.service';
+import { HttpClient } from '@angular/common/http';
+
+interface VehicleDTO {
+  name: string;
+  type: string;
+  licensePlate: string;
+  available: boolean;
+  latitude: number;
+  longitude: number;
+}
+import { Subscription } from 'rxjs';
 
 interface RideCard {
   id: number;
@@ -25,6 +34,18 @@ interface RideCard {
   styleUrls: ['./home.css'],
 })
 export class Home implements OnInit {
+  private vehicleMarkers: Map<string, L.Marker> = new Map();
+
+  private fetchVehicles(): void {
+    this.http.get<VehicleDTO[]>('http://localhost:8080/api/public/vehicles')
+      .subscribe({
+        next: (data) => {
+          this.mapComponent?.updateVehicleMarkers(data, this.vehicleMarkers);
+        },
+        error: (err) => console.error('Error fetching vehicles:', err)
+      });
+  }
+
   endRide() {
     if (!this.userRide) return;
 
@@ -170,14 +191,15 @@ export class Home implements OnInit {
   isLoggedIn = false;
   showCancelForm = false;
   cancelReason = '';
+  
+  private subscriptions: Subscription = new Subscription();
 
   constructor(
-    private routeService: RouteService,
-    private geocodingService: GeocodingService,
     private rideService: RideService,
     private authService: AuthService,
     private panicService: PanicService,
     private cdr: ChangeDetectorRef,
+    private http: HttpClient,
     private router: Router
   ) {}
   onPanicClick() {
@@ -199,7 +221,8 @@ export class Home implements OnInit {
   }
 
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe(user => {
+    this.fetchVehicles();
+    const userSub = this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       console.log('[DEBUG] currentUser', user);
       this.isLoggedIn = !!user && !!user.email;
@@ -207,39 +230,49 @@ export class Home implements OnInit {
         this.isLoggedIn && user && user.email &&
         (user.userType === 'DRIVER' || user.userType === 'REGISTERED_USER')
       ) {
-        // Prikaz za ulogovanog korisnika: kartica vožnje
+        // Dobija samo aktivne voznje (IN_PROGRESS, REQUESTED) - backend filtrira
         const rideObservable =
           user.userType === 'DRIVER'
-            ? this.rideService.getAssignedRides(user.email)
-            : this.rideService.getUserRides(user.email);
+            ? this.rideService.getActiveAssignedRides(user.email)
+            : this.rideService.getActiveUserRides(user.email);
 
-        rideObservable.subscribe(rides => {
-          console.log('[DEBUG] rides for user', rides);
-          let rideToShow = null;
-          const inProgress = rides.find((r: any) => r.status === 'IN_PROGRESS');
-          if (inProgress) {
-            rideToShow = inProgress;
-          } else {
-            const requestedRides = rides.filter((r: any) => r.status === 'REQUESTED');
-            if (requestedRides.length > 0) {
-              rideToShow = requestedRides.sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
-            }
+        const rideSub = rideObservable.subscribe({
+          next: (rides) => {
+            console.log('[DEBUG] active rides for user', rides);
+            this.processRides(rides);
+          },
+          error: (error) => {
+            console.error('[Home] Error fetching active rides:', error);
+            // Ako endpoint ne postoji, fallback na stari sa filtriranjem
+            let fallbackObservable =
+              user.userType === 'DRIVER'
+                ? this.rideService.getAssignedRides(user.email)
+                : this.rideService.getUserRides(user.email);
+            
+            const fallbackSub = fallbackObservable.subscribe({
+              next: (rides) => {
+                console.log('[DEBUG] all rides (fallback), filtering active...');
+                const activeRides = rides.filter((r: any) => {
+                  const status = r.status?.toUpperCase();
+                  return status === 'IN_PROGRESS' || status === 'ONGOING' || 
+                         status === 'REQUESTED' || status === 'PENDING' || status === 'ACCEPTED';
+                });
+                this.processRides(activeRides);
+              },
+              error: (fallbackError) => {
+                console.error('[Home] Error fetching rides (fallback failed):', fallbackError);
+                this.userRide = null;
+                this.showRideCard = true;
+                this.showForm = false;
+                this.cdr.detectChanges();
+              }
+            });
+            
+            this.subscriptions.add(fallbackSub);
           }
-          if (rideToShow) {
-            this.userRide = {
-              id: rideToShow.id,
-              startTime: rideToShow.startTime,
-              from: rideToShow.startLocation,
-              to: rideToShow.endLocation,
-              status: rideToShow.status === 'IN_PROGRESS' ? 'In progress' : 'Requested',
-            };
-          } else {
-            this.userRide = null;
-          }
-          this.showRideCard = true;
-          this.showForm = false;
-          this.cdr.detectChanges();
         });
+
+        this.subscriptions.add(rideSub);
       } else {
         // Prikaz za gosta: samo forma za procenu vožnje
         this.userRide = null;
@@ -248,6 +281,55 @@ export class Home implements OnInit {
         this.cdr.detectChanges();
       }
     });
+    
+    this.subscriptions.add(userSub);
+  }
+
+  private processRides(rides: any[]): void {
+    let rideToShow = null;
+    // Check for in-progress rides (support multiple status values)
+    const inProgress = rides.find((r: any) => 
+      r.status === 'IN_PROGRESS' || 
+      r.status === 'ONGOING' || 
+      r.status === 'In progress'
+    );
+    if (inProgress) {
+      rideToShow = inProgress;
+    } else {
+      // If no in-progress ride, look for requested/pending rides
+      const requestedRides = rides.filter((r: any) => 
+        r.status === 'REQUESTED' || 
+        r.status === 'PENDING' ||
+        r.status === 'Requested' ||
+        r.status === 'ACCEPTED'
+      );
+      if (requestedRides.length > 0) {
+        rideToShow = requestedRides.sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
+      }
+    }
+    if (rideToShow) {
+      // Map status values to display format
+      const isInProgress = 
+        rideToShow.status === 'IN_PROGRESS' || 
+        rideToShow.status === 'ONGOING' || 
+        rideToShow.status === 'In progress';
+      this.userRide = {
+        id: rideToShow.id,
+        startTime: rideToShow.startTime,
+        from: rideToShow.startLocation,
+        to: rideToShow.endLocation,
+        status: isInProgress ? 'In progress' : 'Requested',
+      };
+    } else {
+      this.userRide = null;
+    }
+    this.showRideCard = true;
+    this.showForm = false;
+    this.cdr.detectChanges();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   onInputChange() {
@@ -256,73 +338,20 @@ export class Home implements OnInit {
 
   estimateRideTime() {
     this.showForm = false;
-    // Prvo geokodiraj pickup
-    this.geocodingService.geocode(this.pickupLocation).subscribe({
-      next: (pickupResults) => {
-        if (!pickupResults || pickupResults.length === 0) {
-          alert('Pickup address not found!');
-          return;
-        }
-        const pickupLat = parseFloat(pickupResults[0].lat);
-        const pickupLon = parseFloat(pickupResults[0].lon);
-        // Sada geokodiraj destination
-        this.geocodingService.geocode(this.destination).subscribe({
-          next: (destResults) => {
-            if (!destResults || destResults.length === 0) {
-              alert('Destination address not found!');
-              return;
-            }
-            const destinationLat = parseFloat(destResults[0].lat);
-            const destinationLon = parseFloat(destResults[0].lon);
-            // Sada šalji zahtev backendu
-            const req = {
-              pickupAddress: this.pickupLocation,
-              destinationAddress: this.destination,
-              vehicleType: this.vehicleType,
-              pickupLat,
-              pickupLon,
-              destinationLat,
-              destinationLon
-            };
-            this.routeService.estimateRouteFull(req).subscribe(
-              (result) => {
-                // Očekuje se: { estimatedTime, estimatedDistance, estimatedPrice, vehicleType, route? }
-                // Prikaz na mapi i info korisniku
-                if (this.mapComponent) {
-                  if (result.routeCoordinates) {
-                    // Convert [lon, lat] to [lat, lon] for Leaflet
-                    const leafletRoute = result.routeCoordinates.map(([lon, lat]: [number, number]) => [lat, lon]);
-                    this.mapComponent.showRoute(leafletRoute, result.estimatedTime);
-                  } else if (result.route) {
-                    this.mapComponent.showRoute(result.route, result.estimatedTime);
-                  } else {
-                    // Ako nema rute, nacrtaj liniju od pickup do destination
-                    this.mapComponent.showRoute([
-                      [pickupLat, pickupLon],
-                      [destinationLat, destinationLon]
-                    ], result.estimatedTime);
-                  }
-                }
-                // info o ceni se više ne prikazuje
-              },
-              () => {
-                alert('Failed to estimate route.');
-              }
-            );
-          },
-          error: () => alert('Failed to geocode destination address!')
-        });
-      },
-      error: () => alert('Failed to geocode pickup address!')
-    });
+    this.mapComponent?.setPickupDestinationAndVehicleType(
+      this.pickupLocation,
+      this.destination,
+      this.vehicleType
+    );
+    this.mapComponent?.estimateRideTime();
   }
 
   onMapClick() {
     this.showForm = true;
   }
 
-  openRideDetails() {
+  openRide() {
     if (!this.userRide) return;
-    this.router.navigate(['/ride-details', this.userRide.id]);
+    this.router.navigate(['/track-ride', this.userRide.id]);
   }
 }

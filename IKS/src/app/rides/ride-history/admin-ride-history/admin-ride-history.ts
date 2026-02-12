@@ -64,7 +64,7 @@ interface Ride {
   styleUrl: './admin-ride-history.css',
 })
 export class AdminRideHistory implements OnInit {
-  filterOptions = ['All', 'Last 7 days', 'Last month', 'Completed only', 'Cancelled only', 'PANIC'];
+  filterOptions = ['All', 'Last 7 days', 'Last month', 'Completed only', 'Canceled only', 'PANIC'];
   activeFilter = 'All';
   dateFrom: Date | null = null;
   dateTo: Date | null = null;
@@ -188,13 +188,19 @@ export class AdminRideHistory implements OnInit {
     }
 
     parseRideDate(dateString: string): Date {
-      const months: { [key: string]: number } = {
+      const shortMonths: { [key: string]: number } = {
+        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+      };
+      const longMonths: { [key: string]: number } = {
         'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4, 'June': 5,
         'July': 6, 'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11
       };
       const parts = dateString.split(' ');
       const day = parseInt(parts[0]);
-      const month = months[parts[1]];
+      const monthStr = parts[1];
+      // Proba skraćene mesece prvo, zatim puno ime
+      const month = shortMonths[monthStr] !== undefined ? shortMonths[monthStr] : longMonths[monthStr];
       const year = parseInt(parts[2]);
       return new Date(year, month, day);
     }
@@ -213,8 +219,10 @@ export class AdminRideHistory implements OnInit {
       case 'Last 7 days':
         const sevenDaysAgo = new Date(today);
         sevenDaysAgo.setDate(today.getDate() - 7);
+        const endOfToday = new Date(today);
+        endOfToday.setHours(23, 59, 59, 999);
         this.dateFrom = sevenDaysAgo;
-        this.dateTo = today;
+        this.dateTo = endOfToday;
         this.selectedStatus = '';
         this.applyFilters();
         break;
@@ -222,8 +230,10 @@ export class AdminRideHistory implements OnInit {
       case 'Last month':
         const thirtyDaysAgo = new Date(today);
         thirtyDaysAgo.setDate(today.getDate() - 30);
+        const endOfTodayMonth = new Date(today);
+        endOfTodayMonth.setHours(23, 59, 59, 999);
         this.dateFrom = thirtyDaysAgo;
-        this.dateTo = today;
+        this.dateTo = endOfTodayMonth;
         this.selectedStatus = '';
         this.applyFilters();
         break;
@@ -233,7 +243,7 @@ export class AdminRideHistory implements OnInit {
         this.applyFilters();
         break;
         
-      case 'Cancelled only':
+      case 'Canceled only':
         this.selectedStatus = 'canceled';
         this.applyFilters();
         break;

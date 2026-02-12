@@ -17,12 +17,23 @@ export class RideService {
     return this.http.put(`${this.apiUrl}/${rideId}/stop`, stopRequest);
   }
 
+  // Fallback - sve voznje vozača (za history stranice i fallback logiku)
   getAssignedRides(driverEmail: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/driver/history?driverEmail=${driverEmail}`);
+  }
+
+  // Koristi /assigned endpoint koji već vraća samo aktivne voznje (IN_PROGRESS, REQUESTED)
+  getActiveAssignedRides(driverEmail: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/assigned?driverEmail=${driverEmail}`);
   }
 
-  // Nova metoda za korisnika
+  // Fallback - sve voznje korisnika (za history stranice i fallback logiku)
   getUserRides(userEmail: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${userEmail}/history`);
+  }
+
+  // Koristi /user/{email} endpoint koji već vraća samo aktivne voznje (IN_PROGRESS, REQUESTED)
+  getActiveUserRides(userEmail: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/user/${userEmail}`);
   }
 

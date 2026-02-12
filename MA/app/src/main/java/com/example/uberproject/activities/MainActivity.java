@@ -22,8 +22,10 @@ import androidx.activity.OnBackPressedCallback;
 
 import com.bumptech.glide.Glide;
 import com.example.uberproject.R;
+import com.example.uberproject.fragments.admin.AdminRideHistoryFragment;
 import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
 import com.example.uberproject.fragments.forms.DriverRegisterFragment;
+import com.example.uberproject.fragments.user.UserRideHistoryFragment;
 import com.example.uberproject.fragments.forms.ProfileFragment;
 import com.example.uberproject.fragments.forms.LoginFragment;
 import com.example.uberproject.fragments.forms.RegisterFragment;
@@ -43,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Provera je li token istekao
+        checkTokenExpiration();
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -71,6 +76,9 @@ public class MainActivity extends AppCompatActivity {
 
         navigationView.setNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
+            String userRole = AuthGuard.getUserRole(this);
+
+            // REGISTERED USER ITEMS
             if (itemId == R.id.book_an_uber) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
@@ -79,20 +87,75 @@ public class MainActivity extends AppCompatActivity {
                     loadFragment(new ProfileFragment());
                 }
             } else if (itemId == R.id.ride_history) {
-                if (!AuthGuard.isDriver(this)) {
-                    Toast.makeText(this, "Only drivers can access ride history", Toast.LENGTH_SHORT).show();
-                } else {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else if ("REGISTERED_USER".equalsIgnoreCase(userRole)) {
+                    // Za registered user, otvori UserRideHistoryFragment
+                    loadFragment(new UserRideHistoryFragment());
+                } else if ("DRIVER".equalsIgnoreCase(userRole)) {
+                    // Za driver, otvori DriverRideHistoryFragment
                     loadFragment(new DriverRideHistoryFragment());
+                } else if ("ADMIN".equalsIgnoreCase(userRole) || "ADMINISTRATOR".equalsIgnoreCase(userRole)) {
+                    // Za admin, otvori AdminRideHistoryFragment
+                    loadFragment(new AdminRideHistoryFragment());
+                } else {
+                    loadFragment(new UserRideHistoryFragment());
                 }
             } else if (itemId == R.id.favorite_rides) {
-                if (!AuthGuard.isDriver(this)) {
-                    Toast.makeText(this, "Only drivers can access this page", Toast.LENGTH_SHORT).show();
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
                 } else {
                     loadFragment(new ProfileFragment());
                 }
             } else if (itemId == R.id.support) {
-                if (!AuthGuard.isAdmin(this)) {
-                    Toast.makeText(this, "Only admins can access this page", Toast.LENGTH_SHORT).show();
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new ProfileFragment());
+                }
+            }
+            // DRIVER ITEMS
+            else if (itemId == R.id.my_vehicle) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new ProfileFragment());
+                }
+            } else if (itemId == R.id.driver_ride_history) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new DriverRideHistoryFragment());
+                }
+            } else if (itemId == R.id.my_rides) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new ProfileFragment());
+                }
+            } else if (itemId == R.id.driver_support) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new ProfileFragment());
+                }
+            }
+            // ADMIN ITEMS
+            else if (itemId == R.id.driver_registration_admin) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new ProfileFragment());
+                }
+            } else if (itemId == R.id.admin_ride_history) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new AdminRideHistoryFragment());
+                }
+            } else if (itemId == R.id.admin_support) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
                 } else {
                     loadFragment(new ProfileFragment());
                 }
@@ -108,6 +171,7 @@ public class MainActivity extends AppCompatActivity {
                 AuthGuard.logout(this);
                 Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
                 invalidateOptionsMenu();
+                updateNavigationMenuVisibility(navigationView);
                 showLoginFragment();
             }
             drawerLayout.closeDrawer(GravityCompat.START);
@@ -116,6 +180,15 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle deep link kada se aplikacija prvi put otvori
         handleDeepLink(getIntent());
+        // Postavi inicijalni prikaz menu items-a
+        updateNavigationMenuVisibility(navigationView);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Provera je li token istekao svaki put kada se aplikacija vrati u foreground
+        checkTokenExpiration();
     }
 
     @Override
@@ -141,6 +214,82 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onPrepareOptionsMenu(menu);
+    }
+
+    private void updateNavigationMenuVisibility(NavigationView navigationView) {
+        // Prvo proveravamo da li je token istekao
+        if (AuthGuard.isUserLoggedIn(this)) {
+            TokenManager tokenManager = TokenManager.getInstance(this);
+            if (tokenManager.isTokenExpired()) {
+                // Ako je token istekao, logout automatski
+                AuthGuard.logout(this);
+            }
+        }
+
+        boolean isLoggedIn = AuthGuard.isUserLoggedIn(this);
+        String userRole = AuthGuard.getUserRole(this);
+
+        Menu menu = navigationView.getMenu();
+
+        // Prvo sakrij sve items
+        hideAllMenuItems(menu);
+
+        // Prikaži logout ako je ulogovan
+        MenuItem logoutItem = menu.findItem(R.id.nav_logout);
+        if (logoutItem != null) {
+            logoutItem.setVisible(isLoggedIn);
+        }
+
+        if (!isLoggedIn) {
+            // Ako korisnik nije ulogovan, prikaži samo REGISTERED_USER items
+            showMenuGroup(menu, "REGISTERED_USER");
+        } else if ("REGISTERED_USER".equalsIgnoreCase(userRole)) {
+            // Prikaži samo REGISTERED_USER grupu
+            showMenuGroup(menu, "REGISTERED_USER");
+        } else if ("DRIVER".equalsIgnoreCase(userRole)) {
+            // Prikaži samo DRIVER grupu
+            showMenuGroup(menu, "DRIVER");
+        } else if ("ADMIN".equalsIgnoreCase(userRole) || "ADMINISTRATOR".equalsIgnoreCase(userRole)) {
+            // Prikaži samo ADMIN grupu
+            showMenuGroup(menu, "ADMIN");
+        } else {
+            // Defaultna gruupa za neregistrovane korisnike
+            showMenuGroup(menu, "REGISTERED_USER");
+        }
+    }
+
+    private void hideAllMenuItems(Menu menu) {
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            if (item.getItemId() != R.id.nav_logout) {
+                item.setVisible(false);
+            }
+        }
+    }
+
+    private void showMenuGroup(Menu menu, String groupType) {
+        if ("REGISTERED_USER".equalsIgnoreCase(groupType)) {
+            showItem(menu, R.id.book_an_uber);
+            showItem(menu, R.id.ride_history);
+            showItem(menu, R.id.favorite_rides);
+            showItem(menu, R.id.support);
+        } else if ("DRIVER".equalsIgnoreCase(groupType)) {
+            showItem(menu, R.id.my_vehicle);
+            showItem(menu, R.id.driver_ride_history);
+            showItem(menu, R.id.my_rides);
+            showItem(menu, R.id.driver_support);
+        } else if ("ADMIN".equalsIgnoreCase(groupType)) {
+            showItem(menu, R.id.driver_registration_admin);
+            showItem(menu, R.id.admin_ride_history);
+            showItem(menu, R.id.admin_support);
+        }
+    }
+
+    private void showItem(Menu menu, int itemId) {
+        MenuItem item = menu.findItem(itemId);
+        if (item != null) {
+            item.setVisible(true);
+        }
     }
 
     private void updateToolbarProfile(MenuItem profileItem) {
@@ -320,6 +469,33 @@ public class MainActivity extends AppCompatActivity {
                             .signature(new com.bumptech.glide.signature.ObjectKey(System.currentTimeMillis()))
                             .into(ivProfileImage);
                 }
+            }
+        }
+    }
+
+    public void refreshNavigationMenu() {
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        if (navigationView != null) {
+            updateNavigationMenuVisibility(navigationView);
+        }
+    }
+
+    // Novo: Proverava je li token istekao
+    private void checkTokenExpiration() {
+        TokenManager tokenManager = TokenManager.getInstance(this);
+
+        // Proverava samo ako je korisnik ulogovan
+        if (AuthGuard.isUserLoggedIn(this)) {
+            if (tokenManager.isTokenExpired()) {
+                // Token je istekao - odjavi korisnika
+                Toast.makeText(this, "Your session has expired. Please login again.", Toast.LENGTH_LONG).show();
+                AuthGuard.logout(this);
+                invalidateOptionsMenu();
+                NavigationView navigationView = findViewById(R.id.nav_view);
+                if (navigationView != null) {
+                    updateNavigationMenuVisibility(navigationView);
+                }
+                showLoginFragment();
             }
         }
     }

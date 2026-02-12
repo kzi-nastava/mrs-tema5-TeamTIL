@@ -3,11 +3,13 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.DriverRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
@@ -23,12 +25,14 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.VehicleType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.*;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.service.InconsistencyReportService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.LocationService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RideService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
@@ -57,6 +61,8 @@ public class RideController {
     private LocationService locationService;
     @Autowired
     private RideService rideService;
+    @Autowired
+    private InconsistencyReportService inconsistencyReportService;
 
     @PutMapping("/{rideId}/cancel")
     @Transactional
@@ -69,30 +75,24 @@ public class RideController {
             return ResponseEntity.badRequest().build();
         }
 
-        Ride ride = rideRepository.findById(rideId)
-                .orElseThrow(() -> new RuntimeException("Ride not found"));
-
         String reason = (request != null && request.getCancellationReason() != null)
                 ? request.getCancellationReason()
-                : "User cancelled";
+                : null;
 
-        if (reason.equals("User cancelled")) {ride.setCanceledBy(UserType.REGISTERED_USER);}
-        else {ride.setCanceledBy(UserType.DRIVER);}
-
-        ride.setRideStatus(RideStatus.CANCELED);
-        ride.setCancellationReason(reason);
-
-        rideRepository.save(ride);
-
-        RideCancelResponseDTO response = new RideCancelResponseDTO(
-                rideId,
-                "CANCELLED",
-                reason,
-                "Ride cancelled successfully",
-                ride.getCanceledBy().name()
-        );
-
-        return ResponseEntity.ok(response);
+        try {
+            RideCancelResponseDTO response = rideService.cancelRide(rideId, reason);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(
+                    new RideCancelResponseDTO(
+                            rideId,
+                            "CANCEL_FAILED",
+                            reason != null ? reason : "",
+                            e.getMessage(),
+                            null
+                    )
+            );
+        }
     }
 
     @PutMapping("/{rideId}/stop")
@@ -105,62 +105,56 @@ public class RideController {
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
-
-        Ride ride = rideRepository.findById(rideId)
-                .orElseThrow(() -> new RuntimeException("Ride not found"));
-        Route route = ride.getRoute();
-
-        VehicleType vehicleType = ride.getDriver().getVehicle().getType();
-        double finalPrice = rideService.calculateFinalPrice(
-                vehicleType,
-                ride.getStartLocation(),
-                request.getActualEndLocation()
-        );
-
-        Location endLocation = request.getActualEndLocation();
-        endLocation.setRoute(route);
-
-        endLocation = locationService.findOrSaveLocation(endLocation, route);
-
-        if (endLocation != null) {
-            route.getLocations().add(endLocation);
+        try {
+            RideStopResponseDTO response = rideService.stopRide(
+                    rideId,
+                    request.getActualEndLocation(),
+                    request.getActualEndTime()
+            );
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(
+                    new RideStopResponseDTO(
+                            rideId,
+                            "STOP_FAILED",
+                            request.getActualEndLocation() != null ? request.getActualEndLocation().getAddress() : "",
+                            null,
+                            null,
+                            e.getMessage()
+                    )
+            );
         }
-        routeService.save(route);
-
-        ride.setRideStatus(RideStatus.FINISHED);
-        ride.setEndLocation(endLocation);
-        ride.setEndTime(request.getActualEndTime());
-        ride.setTotalPrice(finalPrice);
-        ride.setRoute(route);
-
-        rideRepository.save(ride);
-
-        assert endLocation != null;
-        RideStopResponseDTO response = new RideStopResponseDTO(
-                rideId,
-                "COMPLETED",
-                endLocation.getAddress(),
-                Math.round(finalPrice * 100.0) / 100.0,
-                "duration",
-                "Ride completed successfully"
-        );
-
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/admin/history")
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<List<RideHistoryResponseDTO>> getAllRidesHistory(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String driverEmail,
-            @RequestParam(required = false) String passengerEmail,
-            @RequestParam(required = false) String startLocation,
-            @RequestParam(required = false) String endLocation,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        List<RideHistoryResponseDTO> ridesHistory = rideService.getAllRidesWithPanicInfoForAdmin();
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        LocalDateTime dateFromParsed = dateFrom != null ? LocalDateTime.parse(dateFrom) : null;
+        LocalDateTime dateToParsed = dateTo != null ? LocalDateTime.parse(dateTo) : null;
+
+        List<RideHistoryResponseDTO> ridesHistory = rideService.getAdminRideHistory(dateFromParsed, dateToParsed, sortBy, sortDirection);
+
+        return ResponseEntity.ok(ridesHistory);
+    }
+
+    @GetMapping("/{passengerEmail}/history")
+    @PreAuthorize("hasRole('REGISTERED_USER')")
+    public ResponseEntity<List<RideHistoryResponseDTO>> getUserRidesHistory(
+            @PathVariable String passengerEmail,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        LocalDateTime dateFromParsed = dateFrom != null ? LocalDateTime.parse(dateFrom) : null;
+        LocalDateTime dateToParsed = dateTo != null ? LocalDateTime.parse(dateTo) : null;
+
+        List<RideHistoryResponseDTO> ridesHistory = rideService.getUserRideHistory(passengerEmail, dateFromParsed, dateToParsed, sortBy, sortDirection);
 
         return ResponseEntity.ok(ridesHistory);
     }
@@ -195,24 +189,27 @@ public class RideController {
 
     // 2.6.2 Track ride location
     @GetMapping("/{rideId}/tracking")
-    public ResponseEntity<RideTrackingDTO> trackRide(@PathVariable Long rideId) {
+    public ResponseEntity<RideTrackingDTO> trackRide(@PathVariable Integer rideId) {
 
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
 
-        String[] locations = { "Main Street 1", "Bulevar Oslobođenja 5", "Trg Slobode 3" };
-        String vehicleLocation = locations[(int) (Math.random() * locations.length)];
-
-        // Procena vremena dolaska: 5-15 minuta
-        int minutes = 5 + (int) (Math.random() * 11);
-        String estimatedArrivalTime = minutes + " min";
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found"));
 
         RideTrackingDTO response = new RideTrackingDTO(
-                rideId,
-                vehicleLocation,
-                estimatedArrivalTime,
-                "IN_PROGRESS");
+                ride.getStartLocation().getAddress(),
+                ride.getStartLocation().getLatitude(),
+                ride.getStartLocation().getLongitude(),
+                ride.getEndLocation().getAddress(),
+                ride.getEndLocation().getLatitude(),
+                ride.getEndLocation().getLongitude(),
+                ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName(),
+                ride.getDriver().getPhoneNumber(),
+                ride.getDriver().getVehicle().getType().toString(),
+                ride.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"))
+        );
 
         return ResponseEntity.ok(response);
     }
@@ -220,15 +217,20 @@ public class RideController {
     // 2.6.2 Report inconsistency
     @PostMapping("/{rideId}/report")
     public ResponseEntity<InconsistencyReportResponseDTO> reportInconsistency(
-            @PathVariable Long rideId,
-            @RequestBody InconsistencyReportRequestDTO report) {
+            @PathVariable Integer rideId,
+            @RequestBody InconsistencyReportRequestDTO reportDTO) {
+
+        InconsistencyReport report = inconsistencyReportService.saveReportWithAttachment(
+                rideId,
+                reportDTO.getPassengerEmail(),
+                reportDTO.getDescription(),
+                reportDTO.getAttachmentBase64()
+        );
 
         InconsistencyReportResponseDTO response = new InconsistencyReportResponseDTO(
                 rideId,
-                report.getPassengerEmail(),
-                report.getLocation() != null ? report.getLocation() : "Unknown location",
-                report.getMessage(),
-                "Report submitted successfully");
+                "Inconsistency reported successfully"
+        );
 
         return ResponseEntity.ok(response);
     }
@@ -408,3 +410,4 @@ public class RideController {
         return ResponseEntity.ok(response);
     }
 }
+

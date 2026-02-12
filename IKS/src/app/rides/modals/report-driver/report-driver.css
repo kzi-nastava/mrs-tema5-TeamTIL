@@ -1,0 +1,85 @@
+.modal-container {
+    padding: 32px;
+}
+
+/* Title */
+.modal-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: #141414;
+    margin-bottom: 24px;
+}
+
+.modal-title.centered {
+    text-align: center;
+}
+
+/* Feedback */
+.feedback {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+    margin-bottom: 24px;
+}
+
+.feedback-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #141414;
+}
+
+.feedback-input {
+    min-height: 130px;
+    padding: 10px;
+    border: 1px solid #cfcfcf;
+    border-radius: 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+
+    &::placeholder {
+        color: #9b9b9b;
+    }
+}
+
+/* Attachment */
+.attachment {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.attachment-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: #141414;
+}
+
+.upload-btn {
+    width: fit-content;
+    height: 32px;
+    background-color: #9b9b9b;
+    color: #ffffff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+}
+
+.upload-icon {
+    font-size: 16px;
+}
+
+/* Submit */
+.submit-btn {
+    height: 30px;
+    background-color: #ffc107;
+    color: #141414;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+}

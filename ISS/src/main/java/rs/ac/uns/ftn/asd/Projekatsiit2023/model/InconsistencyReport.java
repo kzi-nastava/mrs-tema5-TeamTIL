@@ -20,16 +20,15 @@ public class InconsistencyReport {
     @Column(name = "description", nullable = false)
     private String description;
 
+    @Column(name = "attachment_url")
+    private String attachmentUrl;
+
     @Column(name = "time_reported", nullable = false)
     private LocalTime timeReported;
 
     @ManyToOne
     @JoinColumn(name = "reported_by_id")
     private RegisteredUser reportedBy;
-
-    @ManyToOne
-    @JoinColumn(name = "driver_id")
-    private Driver driver;
 
     @ManyToOne
     @JoinColumn(name = "ride_id")

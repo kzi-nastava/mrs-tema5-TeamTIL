@@ -1,0 +1,50 @@
+<mat-dialog-content class="modal-container">
+  <!-- Title -->
+  <h2 class="modal-title centered">
+    Driver Inconsistency Report
+  </h2>
+
+  <!-- Feedback section -->
+  <div class="feedback">
+    <label class="feedback-label">
+      Please describe the issue you experienced during the ride
+    </label>
+
+    <textarea
+      matInput
+      class="feedback-input"
+      placeholder="E.g. inappropriate behavior, unsafe driving, route deviation…"
+      [(ngModel)]="description">
+    </textarea>
+  </div>
+
+  <!-- Attachment section -->
+  <div class="attachment">
+    <label class="attachment-label">
+      Optional attachment
+    </label>
+
+    <button mat-raised-button class="upload-btn" (click)="onUploadClick()">
+      <mat-icon class="upload-icon">upload</mat-icon>
+      Upload image / document
+    </button>
+
+    <input
+      type="file"
+      #fileInput
+      hidden
+      (change)="onFileSelected($event)"
+      accept=".png,.jpg,.jpeg,.pdf"
+    />
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button
+    mat-raised-button
+    class="submit-btn"
+    (click)="submitReport()"
+    [disabled]="!description">
+    Submit Report
+  </button>
+</mat-dialog-actions>

@@ -7,7 +7,6 @@ import lombok.Setter;
 @Setter
 public class InconsistencyReportRequestDTO {
     private String passengerEmail;
-    private String location;
-    private String message;
-    private String timestamp;
+    private String description;
+    private String attachmentBase64;
 }

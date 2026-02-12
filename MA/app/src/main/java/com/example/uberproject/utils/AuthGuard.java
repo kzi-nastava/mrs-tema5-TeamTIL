@@ -5,7 +5,18 @@ import android.content.Context;
 public class AuthGuard {
     public static boolean isUserLoggedIn(Context context) {
         TokenManager tokenManager = TokenManager.getInstance(context);
-        return tokenManager.hasToken();
+
+        // Proverava je li korisnik ima token
+        if (!tokenManager.hasToken()) {
+            return false;
+        }
+
+        // Proverava je li token istekao
+        if (tokenManager.isTokenExpired()) {
+            return false;
+        }
+
+        return true;
     }
 
     public static boolean isUserAuthenticated(Context context) {
@@ -41,11 +52,15 @@ public class AuthGuard {
     }
 
     public static boolean isAdmin(Context context) {
-        return hasAccessByRole(context, "ADMINISTRATOR");
+        return hasAccessByRole(context, "ADMINISTRATOR") || hasAccessByRole(context, "ADMIN");
     }
 
     public static boolean isUser(Context context) {
-        return hasAccessByRole(context, "USER");
+        return hasAccessByRole(context, "REGISTERED_USER");
+    }
+
+    public static boolean isRegisteredUser(Context context) {
+        return hasAccessByRole(context, "REGISTERED_USER");
     }
 
     public static String getUserRole(Context context) {
