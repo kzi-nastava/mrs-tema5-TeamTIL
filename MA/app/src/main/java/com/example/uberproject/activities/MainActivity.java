@@ -96,26 +96,15 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     loadFragment(new ProfileFragment());
                 }
-            } /*else if (itemId == R.id.nav_register_driver) {
+            } else if (itemId == R.id.nav_register_driver) {
                 if (!AuthGuard.isAdmin(this)) {
                     Toast.makeText(this, "Only admins can access this page", Toast.LENGTH_SHORT).show();
                 } else {
                     hideToolbar();
                     loadFragment(new DriverRegisterFragment());
                 }
-            } */
-            else if (itemId == R.id.nav_register_driver) {
-                // PRIVREMENO - proveri ulogu
-                String currentRole = AuthGuard.getUserRole(this);
-                Toast.makeText(this, "Your role is: " + currentRole, Toast.LENGTH_LONG).show();
-
-                if (!AuthGuard.isAdmin(this)) {
-                    Toast.makeText(this, "Only admins can access this page", Toast.LENGTH_SHORT).show();
-                } else {
-                    hideToolbar();
-                    loadFragment(new DriverRegisterFragment());
-                }
-            }else if (itemId == R.id.nav_logout) {
+            }
+            else if (itemId == R.id.nav_logout) {
                 AuthGuard.logout(this);
                 Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
                 invalidateOptionsMenu();
@@ -264,8 +253,8 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Handle driver activation - /activate-driver
-        if (path.contains("/activate-driver")) {
+        // Handle driver activation - /new-password
+        if (path.contains("/new-password")) {
             String token = data.getQueryParameter("token");
             if (token != null && !token.isEmpty()) {
                 openNewPasswordFragment(token);

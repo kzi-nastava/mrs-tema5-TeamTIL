@@ -38,7 +38,6 @@ public class NewPasswordFragment extends Fragment {
         etConfirmPassword = view.findViewById(R.id.etConfirmPassword);
         btnActivate = view.findViewById(R.id.btnActivate);
 
-        // Uzmi token iz bundle-a
         if (getArguments() != null) {
             activationToken = getArguments().getString("token");
         }
@@ -99,15 +98,12 @@ public class NewPasswordFragment extends Fragment {
                 if (response.isSuccessful()) {
                     Toast.makeText(getContext(), "Account activated successfully! You can now log in.", Toast.LENGTH_LONG).show();
                     // Vrati se na login
-                    getParentFragmentManager().popBackStack();
-                } else {
+                    getActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragment_container, new LoginFragment())
+                            .commit();
 
-                    try {
-                        String errorBody = response.errorBody().string();
-                        Log.e("BACKEND_ERROR", errorBody);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                } else {
                     Toast.makeText(getContext(), "Activation failed. Token may be invalid or expired.", Toast.LENGTH_SHORT).show();
                 }
             }

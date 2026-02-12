@@ -64,7 +64,7 @@ public class DriverRegisterFragment extends Fragment {
                             byte[] byteArray = byteArrayOutputStream.toByteArray();
                             base64ProfileImage = "data:image/jpeg;base64," + Base64.encodeToString(byteArray, Base64.NO_WRAP);
 
-                            // Prikaži sliku
+                            // Prikazi sliku
                             ivProfilePhoto.setImageBitmap(bitmap);
                             btnRemovePhoto.setEnabled(true);
                             btnRemovePhoto.setAlpha(1.0f);
@@ -81,7 +81,6 @@ public class DriverRegisterFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_driver_register, container, false);
 
-        // Initialize views
         etName = view.findViewById(R.id.etName);
         etSurname = view.findViewById(R.id.etSurname);
         etEmail = view.findViewById(R.id.etEmail);
@@ -99,7 +98,6 @@ public class DriverRegisterFragment extends Fragment {
         cbPetFriendly = view.findViewById(R.id.cbPetFriendly);
         btnSubmitDriver = view.findViewById(R.id.btnSubmitDriver);
 
-        // Setup vehicle type spinner
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 requireContext(),
                 R.array.vehicle_types,
@@ -195,6 +193,7 @@ public class DriverRegisterFragment extends Fragment {
                 if (response.isSuccessful()) {
                     Toast.makeText(getContext(), "Driver registered successfully! Activation email sent.", Toast.LENGTH_LONG).show();
                     clearForm();
+                    getView().scrollTo(0, 0);
                 } else {
                     Toast.makeText(getContext(), "Registration failed. Please try again.", Toast.LENGTH_SHORT).show();
                 }
@@ -215,7 +214,7 @@ public class DriverRegisterFragment extends Fragment {
         etAddress.setText("");
         etVehicleModel.setText("");
         etLicensePlate.setText("");
-        etSeatCount.setText("4");
+        etSeatCount.setText("1");
         spinnerVehicleType.setSelection(0);
         cbBabyFriendly.setChecked(false);
         cbPetFriendly.setChecked(false);

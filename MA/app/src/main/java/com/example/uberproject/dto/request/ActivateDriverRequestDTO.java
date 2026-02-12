@@ -4,7 +4,6 @@ public class ActivateDriverRequestDTO {
     private String token;
     private String newPassword;
 
-    // Konstruktori
     public ActivateDriverRequestDTO() {
     }
 
@@ -13,7 +12,6 @@ public class ActivateDriverRequestDTO {
         this.newPassword = newPassword;
     }
 
-    // Getters
     public String getToken() {
         return token;
     }
@@ -22,7 +20,6 @@ public class ActivateDriverRequestDTO {
         return newPassword;
     }
 
-    // Setters
     public void setToken(String token) {
         this.token = token;
     }

@@ -9,13 +9,12 @@ public class DriverRegistrationRequestDTO {
     private String profilePictureUrl;
 
     private String vehicleModel;
-    private String vehicleType; // "STANDARD", "LUXURY", "VAN"
+    private String vehicleType;
     private String licensePlate;
     private Integer passengerCapacity;
     private Boolean babyFriendly;
     private Boolean petFriendly;
 
-    // Konstruktori
     public DriverRegistrationRequestDTO() {
     }
 
@@ -37,7 +36,6 @@ public class DriverRegistrationRequestDTO {
         this.petFriendly = petFriendly;
     }
 
-    // Getters
     public String getFirstName() {
         return firstName;
     }
@@ -86,7 +84,6 @@ public class DriverRegistrationRequestDTO {
         return petFriendly;
     }
 
-    // Setters
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
