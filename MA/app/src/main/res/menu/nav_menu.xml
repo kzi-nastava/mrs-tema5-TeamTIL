@@ -3,6 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_register_driver"
+            android:icon="@drawable/ic_person_placeholder"
+            android:title="Register Driver" />
     <!-- REGISTERED USER MENU ITEMS -->
     <group android:checkableBehavior="single"
         android:id="@+id/menu_registered_user">
