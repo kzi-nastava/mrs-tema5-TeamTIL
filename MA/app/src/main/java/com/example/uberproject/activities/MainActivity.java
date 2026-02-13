@@ -141,11 +141,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             // ADMIN ITEMS
-            else if (itemId == R.id.driver_registration_admin) {
+            else if (itemId == R.id.nav_register_driver) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
                 } else {
-                    loadFragment(new ProfileFragment());
+                    hideToolbar();
+                    loadFragment(new DriverRegisterFragment());
                 }
             } else if (itemId == R.id.admin_ride_history) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
@@ -159,15 +160,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     loadFragment(new ProfileFragment());
                 }
-            } else if (itemId == R.id.nav_register_driver) {
-                if (!AuthGuard.isAdmin(this)) {
-                    Toast.makeText(this, "Only admins can access this page", Toast.LENGTH_SHORT).show();
-                } else {
-                    hideToolbar();
-                    loadFragment(new DriverRegisterFragment());
-                }
-            }
-            else if (itemId == R.id.nav_logout) {
+            } else if (itemId == R.id.nav_logout) {
                 AuthGuard.logout(this);
                 Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
                 invalidateOptionsMenu();
@@ -279,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
             showItem(menu, R.id.my_rides);
             showItem(menu, R.id.driver_support);
         } else if ("ADMIN".equalsIgnoreCase(groupType)) {
-            showItem(menu, R.id.driver_registration_admin);
+            showItem(menu, R.id.nav_register_driver);
             showItem(menu, R.id.admin_ride_history);
             showItem(menu, R.id.admin_support);
         }
