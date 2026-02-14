@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RideRequestDTO {
-    private List<LocationDTO> locations; // Lista lokacija sa koordinatama
+    private List<LocationDTO> locations;
     private List<String> passengerEmails;
     private String vehicleType;
     private Boolean babyFriendly;

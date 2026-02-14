@@ -1,5 +1,11 @@
+export interface LocationDTO {
+  address: string;
+  latitude: number;
+  longitude: number;
+}
+
 export interface RideRequestDTO {
-  locations: string[];
+  locations: LocationDTO[];
   passengerEmails: string[];
   vehicleType: string;
   babyFriendly: boolean;

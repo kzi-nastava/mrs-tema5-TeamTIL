@@ -4,8 +4,10 @@ import { MapView } from '../map/map';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HttpClientModule } from '@angular/common/http';
-import { RideService } from '../services/ride.service';
+import { RideService } from '../rides/services/ride.service';
 import { RideCreatedResponseDTO, RideRequestDTO } from '../models/ride-dto.model';
+import { GeocodingService } from '../services/geocoding.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-ride-booking',
@@ -22,105 +24,106 @@ export class RideBooking implements OnInit {
   
   showFavorites: boolean = false;
   
-  // lista mejlova za putnike
   passengers: string[] = [];
   newPassengerEmail: string = '';
 
-  // tip vozila i dodaci
   selectedVehicleType: string = 'STANDARD';
   babyFriendly: boolean = false;
   petFriendly: boolean = false;
 
-  // kalendar podaci
   viewDate: Date = new Date(); 
   selectedDate: Date = new Date(); 
   daysInMonth: (number | null)[] = [];
   monthNames = ["January", "February", "March", "April", "May", "June", 
                 "July", "August", "September", "October", "November", "December"];
 
-  // vreme podaci
   hourValue: number = 12;
   minuteValue: number = 0;
 
-  // Injektujemo servis
-  constructor(private rideService: RideService) {}
+  constructor(private rideService: RideService, private geocodingService: GeocodingService) {}
 
   ngOnInit() {
     this.generateCalendar();
   }
 
-  // --- GLAVNA FUNKCIJA ZA SLANJE ---
   requestRide() {
-  // Validacija
-  if (!this.startLocation || !this.startLocation.trim()) {
-    alert("Please enter start location!");
-    return;
-  }
-  
-  if (!this.endLocation || !this.endLocation.trim()) {
-    alert("Please enter end location!");
-    return;
-  }
+    if (!this.startLocation || !this.startLocation.trim()) {
+      alert("Please enter start location!");
+      return;
+    }
+    
+    if (!this.endLocation || !this.endLocation.trim()) {
+      alert("Please enter end location!");
+      return;
+    }
 
-  // Spajamo lokacije: [Start, ...Stanice (neprazne), Kraj]
-  const allLocations = [
-    this.startLocation.trim(),
-    ...this.intermediateStops
-      .filter(s => s && s.trim() !== '')
-      .map(s => s.trim()),
-    this.endLocation.trim()
-  ];
+    const allAddresses = [
+      this.startLocation.trim(),
+      ...this.intermediateStops
+        .filter(s => s && s.trim() !== '')
+        .map(s => s.trim()),
+      this.endLocation.trim()
+    ];
 
-  // Validacija mejlova
-  const validEmails = this.passengers.filter(email => 
-    email && email.includes('@')
-  );
+    const validEmails = this.passengers.filter(email => 
+      email && email.includes('@')
+    );
 
-  // Priprema datuma
-  const scheduledDateTime = new Date(this.selectedDate);
-  scheduledDateTime.setHours(this.hourValue);
-  scheduledDateTime.setMinutes(this.minuteValue);
+    const scheduledDateTime = new Date(this.selectedDate);
+    scheduledDateTime.setHours(this.hourValue);
+    scheduledDateTime.setMinutes(this.minuteValue);
 
-  // Provera da li je datum u budućnosti
-  const now = new Date();
-  if (scheduledDateTime <= now) {
-    alert("Scheduled time must be in the future!");
-    return;
-  }
+    const now = new Date();
+    if (scheduledDateTime <= now) {
+      alert("Scheduled time must be in the future!");
+      return;
+    }
 
-  // Provera max 5h unapred
-  const fiveHoursFromNow = new Date(now.getTime() + 5 * 60 * 60 * 1000);
-  if (scheduledDateTime > fiveHoursFromNow) {
-    alert("You can only schedule rides up to 5 hours in advance!");
-    return;
-  }
+    const fiveHoursFromNow = new Date(now.getTime() + 5 * 60 * 60 * 1000);
+    if (scheduledDateTime > fiveHoursFromNow) {
+      alert("You can only schedule rides up to 5 hours in advance!");
+      return;
+    }
 
-  // Konverzija u ISO string (lokalno vreme)
-  const offset = scheduledDateTime.getTimezoneOffset();
-  const localDate = new Date(scheduledDateTime.getTime() - (offset * 60 * 1000));
-  const isoString = localDate.toISOString().split('.')[0];
+    const offset = scheduledDateTime.getTimezoneOffset();
+    const localDate = new Date(scheduledDateTime.getTime() - (offset * 60 * 1000));
+    const isoString = localDate.toISOString().split('.')[0];
 
-  const request: RideRequestDTO = {
-    locations: allLocations,
-    passengerEmails: validEmails,
-    vehicleType: this.selectedVehicleType,
-    babyFriendly: this.babyFriendly,
-    petFriendly: this.petFriendly,
-    scheduledTime: isoString
-  };
+    const geocodeObservables = allAddresses.map(address => 
+      this.geocodingService.geocode(address)
+    );
 
-  console.log('Sending request:', request);
+    forkJoin(geocodeObservables).subscribe({
+      next: (results) => {
+        for (let i = 0; i < results.length; i++) {
+          if (!results[i] || results[i].length === 0) {
+            alert(`❌ Could not find location: ${allAddresses[i]}`);
+            return;
+          }
+        }
 
-  this.rideService.createRide(request).subscribe({
-    next: (response: RideCreatedResponseDTO) => {
-      console.log('Ride created:', response);
-      
-      // Formatiranje poruke sa detaljima
-      const message = `
+        const locations = results.map((result, index) => ({
+          address: allAddresses[index],
+          latitude: parseFloat(result[0].lat), 
+          longitude: parseFloat(result[0].lon)
+        }));
+
+        const request: RideRequestDTO = {
+          locations: locations,
+          passengerEmails: validEmails,
+          vehicleType: this.selectedVehicleType,
+          babyFriendly: this.babyFriendly,
+          petFriendly: this.petFriendly,
+          scheduledTime: isoString
+        };
+
+        this.rideService.createRide(request).subscribe({
+          next: (response: RideCreatedResponseDTO) => {
+            const message = `
 ✅ Ride successfully ordered!
 
-📍 Route: ${allLocations[0]} → ${allLocations[allLocations.length - 1]}
-${allLocations.length > 2 ? '   Stops: ' + allLocations.slice(1, -1).join(', ') : ''}
+📍 Route: ${allAddresses[0]} → ${allAddresses[allAddresses.length - 1]}
+${allAddresses.length > 2 ? '   Stops: ' + allAddresses.slice(1, -1).join(', ') : ''}
 
 👤 Driver: ${response.driverName}
 🚗 Vehicle: ${response.vehicleInfo}
@@ -132,44 +135,47 @@ ${allLocations.length > 2 ? '   Stops: ' + allLocations.slice(1, -1).join(', ') 
 🏁 Estimated arrival: ${response.estimatedEndTime}
 
 ${validEmails.length > 0 ? '👥 Passengers: ' + validEmails.join(', ') : ''}
-      `.trim();
-      
-      alert(message);
-
-      // Reset forme
-      this.resetForm();
-    },
-    error: (err) => {
-      console.error('Error:', err);
-      
-      let errorMessage = 'Failed to order ride.';
-      if (err.error && err.error.error) {
-        errorMessage = err.error.error;
-      } else if (err.error && typeof err.error === 'string') {
-        errorMessage = err.error;
-      } else if (err.message) {
-        errorMessage = err.message;
+            `.trim();
+            
+            alert(message);
+            this.resetForm();
+          },
+          error: (err) => {
+            console.error('Error creating ride:', err);
+            
+            let errorMessage = 'Failed to order ride.';
+            if (err.error && err.error.error) {
+              errorMessage = err.error.error;
+            } else if (err.error && typeof err.error === 'string') {
+              errorMessage = err.error;
+            } else if (err.message) {
+              errorMessage = err.message;
+            }
+            
+            alert('❌ ' + errorMessage);
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Geocoding error:', err);
+        alert('❌ Could not find one or more locations. Please check the addresses.');
       }
-      
-      alert('❌ ' + errorMessage);
-    }
-  });
-}
+    });
+  }
 
-// Dodaj helper metodu za resetovanje forme
-resetForm() {
-  this.startLocation = '';
-  this.endLocation = '';
-  this.intermediateStops = [''];
-  this.passengers = [];
-  this.newPassengerEmail = '';
-  this.selectedVehicleType = 'STANDARD';
-  this.babyFriendly = false;
-  this.petFriendly = false;
-  this.selectedDate = new Date();
-  this.hourValue = 12;
-  this.minuteValue = 0;
-}
+  resetForm() {
+    this.startLocation = '';
+    this.endLocation = '';
+    this.intermediateStops = [''];
+    this.passengers = [];
+    this.newPassengerEmail = '';
+    this.selectedVehicleType = 'STANDARD';
+    this.babyFriendly = false;
+    this.petFriendly = false;
+    this.selectedDate = new Date();
+    this.hourValue = 12;
+    this.minuteValue = 0;
+  }
 
   addPassenger() {
     const email = this.newPassengerEmail.trim();
