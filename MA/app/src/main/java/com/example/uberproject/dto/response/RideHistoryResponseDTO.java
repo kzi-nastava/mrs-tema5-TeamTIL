@@ -1,7 +1,5 @@
 package com.example.uberproject.dto.response;
 
-import com.google.gson.annotations.SerializedName;
-
 public class RideHistoryResponseDTO {
     private Integer id;
     private String passengerEmail;

@@ -83,6 +83,17 @@
     <string name="ride_history_heading">Ride History</string>
     <string name="ride_history_text_overview">Overview of all your completed and canceled rides</string>
     <string name="ride_details_heading">Ride Details</string>
+    <string name="reset_filters">Reset filters</string>
+    <string name="from_date">From date</string>
+    <string name="from">From</string>
+    <string name="to_date">To date</string>
+    <string name="to">To</string>
+    <string name="apply_nfilters">Apply\nFilters</string>
+    <string name="last_7_days">Last 7 days</string>
+    <string name="last_month">Last month</string>
+    <string name="finished_only">Finished only</string>
+    <string name="canceled_only">Canceled only</string>
+    <string name="all">All</string>
 
     <string-array name="vehicle_types">
         <item>Standard</item>

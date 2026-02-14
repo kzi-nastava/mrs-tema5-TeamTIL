@@ -1,6 +1,6 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import  { RideService } from '../../services/ride.service';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -61,7 +61,7 @@ export class DriverHistory {
   rides: Ride[] = [];
   selectedRide: Ride | null = null;
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private authService: AuthService, private router: Router) { }
+  constructor(private rideService: RideService, private cdr: ChangeDetectorRef, private authService: AuthService, private router: Router) { }
   
   ngOnInit(): void {
     this.loadRides();
@@ -69,16 +69,20 @@ export class DriverHistory {
 
   loadRides() {
     const driverEmail = this.authService.getEmail();
-    this.http.get<Ride[]>(`http://localhost:8080/api/rides/driver/history?driverEmail=${driverEmail}`)
-      .subscribe({
-        next: (data) => {
-          this.allRides = data;
-          this.rides = [...this.allRides];
-          this.selectedRide = this.rides[0] ?? null;
-          this.cdr.detectChanges();
-        },
-        error: (err) => console.error('Error fetching rides:', err)
-      });
+    if (!driverEmail) {
+      console.error('Driver email not available');
+      return;
+    }
+    this.rideService.getDriverRideHistory(driverEmail).subscribe({
+      next: (data) => {
+        this.allRides = data;
+        this.allRides = data;
+        this.rides = [...this.allRides];
+        this.selectedRide = this.rides.length > 0 ? this.rides[0] : null;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error fetching rides:', err)
+    });
   }
 
   selectRide(ride: Ride) {

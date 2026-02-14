@@ -180,10 +180,13 @@ public class RideService {
         }).collect(Collectors.toList());
     }
 
-    public DriverRideDTO mapRideToDriverRideDTO(Ride ride) {
-        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm");
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter TIME_FORMAT =
+            DateTimeFormatter.ofPattern("HH:mm");
 
+    private static final DateTimeFormatter DATE_FORMAT =
+            DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.ENGLISH);
+
+    public DriverRideDTO mapRideToDriverRideDTO(Ride ride) {
         List<DriverRideDTO.PassengerDTO> passengers = new ArrayList<>();
         if (ride.getPassenger() != null) {
             passengers.add(new DriverRideDTO.PassengerDTO(
@@ -192,13 +195,12 @@ public class RideService {
             ));
         }
         if (ride.getCoPassengers() != null) {
-            ride.getCoPassengers().forEach(p -> {
-                assert ride.getPassenger() != null;
-                passengers.add(new DriverRideDTO.PassengerDTO(
-                        ride.getPassenger().getFirstName() + " " + ride.getPassenger().getLastName(),
-                        p.getPhoneNumber()
-                ));
-            });
+            ride.getCoPassengers().forEach(p ->
+                    passengers.add(new DriverRideDTO.PassengerDTO(
+                            p.getFirstName() + " " + p.getLastName(),
+                            p.getPhoneNumber()
+                    ))
+            );
         }
 
         String canceledBy = null;
@@ -208,18 +210,18 @@ public class RideService {
 
         return new DriverRideDTO(
                 ride.getId(),
-                ride.getStartTime().format(dateFormat),
-                ride.getStartTime().format(timeFormat),
-                ride.getEndTime() != null ? ride.getEndTime().format(timeFormat) : null,
+                passengers,
                 ride.getStartLocation().getAddress(),
                 ride.getEndLocation().getAddress(),
-                String.format("%,.0f RSD", ride.getTotalPrice()), // "1,480 RSD"
                 ride.getRideStatus() == RideStatus.FINISHED ? "Completed" : "Canceled",
                 canceledBy,
-                !ride.getPanicNotifications().isEmpty(),
-                ride.getDurationMinutes() + " min ",
+                ride.getStartTime().format(DATE_FORMAT),
+                ride.getStartTime().format(TIME_FORMAT),
+                ride.getEndTime() != null ? ride.getEndTime().format(TIME_FORMAT) : null,
+                String.format("%,.0f RSD", ride.getTotalPrice()), // "1,480 RSD"
+                ride.getDurationMinutes() + " min",
                 ride.getDistanceKm() + " km",
-                passengers
+                !ride.getPanicNotifications().isEmpty()
         );
     }
 
@@ -505,6 +507,24 @@ public class RideService {
                 durationMinutes + " min",
                 "Ride finished successfully"
         );
+    }
+
+    public List<DriverRideDTO> getDriverRideHistory(String driverEmail, LocalDateTime dateFrom, LocalDateTime dateTo) {
+        List<RideStatus> statuses = List.of(RideStatus.FINISHED, RideStatus.CANCELED);
+        List<Ride> rides = rideRepository.findByDriver_EmailAndRideStatusIn(driverEmail, statuses);
+
+        return rides.stream()
+                .filter(ride -> {
+                    LocalDateTime rideDate = ride.getStartTime();
+
+                    boolean afterFrom = dateFrom == null || !rideDate.isBefore(dateFrom);
+                    boolean beforeTo  = dateTo == null || !rideDate.isAfter(dateTo);
+
+                    return afterFrom && beforeTo;
+                })
+                .sorted((r1, r2) -> r2.getStartTime().compareTo(r1.getStartTime()))
+                .map(this::mapRideToDriverRideDTO)
+                .toList();
     }
 
     public List<RideHistoryResponseDTO> getUserRideHistory(String userEmail, LocalDateTime dateFrom, LocalDateTime dateTo, String sortBy, String sortDirection) {

@@ -42,7 +42,7 @@ import retrofit2.Response;
 
 public class UserRideHistoryFragment extends Fragment {
 
-    private AutoCompleteTextView etFromDate, etToDate, etStatus;
+    private AutoCompleteTextView etFromDate, etToDate;
     private AppCompatButton btnApplyFilters;
     private RecyclerView ridesRecyclerView;
     private RideAdapter rideAdapter;
@@ -60,8 +60,6 @@ public class UserRideHistoryFragment extends Fragment {
         etFromDate = view.findViewById(R.id.etFromDate);
         etToDate = view.findViewById(R.id.etToDate);
         setupDatePickers();
-        etStatus = view.findViewById(R.id.etStatus);
-        setupStatusDropdown();
 
         LinearLayout fromLayout = view.findViewById(R.id.fromLayout);
         fromLayout.setOnClickListener(v -> etFromDate.performClick());
@@ -218,7 +216,6 @@ public class UserRideHistoryFragment extends Fragment {
             // Reset date filtere
             etFromDate.setText("");
             etToDate.setText("");
-            etStatus.setText("");
 
             // Primeni filter u zavisnosti od klika
             if (v == chipLast7Days) {
@@ -234,10 +231,8 @@ public class UserRideHistoryFragment extends Fragment {
                 etToDate.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(to));
                 applyFilters();
             } else if (v == chipCompletedOnly) {
-                etStatus.setText("Finished");
                 applyFilters();
             } else if (v == chipCanceledOnly) {
-                etStatus.setText("Canceled");
                 applyFilters();
             } else if (v == chipAll) {
                 // Prikaži sve bez filtera
@@ -255,17 +250,18 @@ public class UserRideHistoryFragment extends Fragment {
     private void resetFilters() {
         etFromDate.setText("");
         etToDate.setText("");
-        etStatus.setText("");
         rideAdapter.setRides(allRides);
         chipLast7Days.setSelected(false);
         chipLastMonth.setSelected(false);
+        chipCompletedOnly.setSelected(false);
+        chipCanceledOnly.setSelected(false);
+        chipAll.setSelected(false);
     }
 
 
     private void applyFilters() {
         String fromDateStr = etFromDate.getText().toString().trim();
         String toDateStr = etToDate.getText().toString().trim();
-        String statusStr = etStatus.getText().toString().trim();
 
         Date fromDate = fromDateStr.isEmpty() ? null : parsePickerDate(fromDateStr);
         Date toDate = toDateStr.isEmpty() ? null : parsePickerDate(toDateStr);
@@ -275,34 +271,27 @@ public class UserRideHistoryFragment extends Fragment {
         for (Ride ride : allRides) {
             boolean match = true;
 
-            String statusFlag = "PASS";
-            String fromDateFlag = "PASS";
-            String toDateFlag = "PASS";
-
-            if (!statusStr.isEmpty() && !ride.getStatus().equalsIgnoreCase(statusStr)) {
-                match = false;
-                statusFlag = "FAIL";
-            }
-
             Date rideStartDate = parseRideDate(ride.getDateTime());
             if (rideStartDate != null) {
                 if (fromDate != null && rideStartDate.before(fromDate)) {
                     match = false;
-                    fromDateFlag = "FAIL";
                 }
                 if (toDate != null && rideStartDate.after(toDate)) {
                     match = false;
-                    toDateFlag = "FAIL";
                 }
             } else {
                 match = false;
-                fromDateFlag = "NULL";
-                toDateFlag = "NULL";
             }
 
-            System.out.println("Ride: " + ride.getFrom() + " → " + ride.getTo());
-            System.out.println("Status flag: " + statusFlag + ", From flag: " + fromDateFlag + ", To flag: " + toDateFlag);
-            System.out.println("-----");
+            String rideStatus = ride.getStatus();
+
+            if (chipCompletedOnly.isSelected() && !"Completed".equalsIgnoreCase(rideStatus)) {
+                match = false;
+            }
+
+            if (chipCanceledOnly.isSelected() && !"Canceled".equalsIgnoreCase(rideStatus)) {
+                match = false;
+            }
 
             if (match) {
                 filteredRides.add(ride);
@@ -310,23 +299,6 @@ public class UserRideHistoryFragment extends Fragment {
         }
 
         rideAdapter.setRides(filteredRides);
-    }
-
-
-    private void setupStatusDropdown() {
-        String[] statusOptions = {"Finished", "Canceled"};
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_dropdown_item_1line,
-                statusOptions
-        );
-
-        etStatus.setAdapter(adapter);
-
-        etStatus.setOnClickListener(v -> etStatus.showDropDown());
-
-        etStatus.setKeyListener(null);
     }
 
     private void setupDatePickers() {

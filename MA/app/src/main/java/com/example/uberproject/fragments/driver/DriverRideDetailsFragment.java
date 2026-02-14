@@ -13,13 +13,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.uberproject.R;
-import com.example.uberproject.model.Ride;
+import com.example.uberproject.dto.response.DriverRideHistoryResponseDTO;
 
 public class DriverRideDetailsFragment extends Fragment {
 
     private static final String ARG_RIDE = "arg_ride";
 
-    private Ride ride;
+    private DriverRideHistoryResponseDTO rideDTO;
     private LinearLayout passengersContainer;
     private LinearLayout issuesContainer;
     private TextView addressText;
@@ -30,10 +30,10 @@ public class DriverRideDetailsFragment extends Fragment {
     private TextView tvPrice;
     private Button btnStatus;
 
-    public static DriverRideDetailsFragment newInstance(Ride ride) {
+    public static DriverRideDetailsFragment newInstance(DriverRideHistoryResponseDTO rideDTO) {
         DriverRideDetailsFragment fragment = new DriverRideDetailsFragment();
         Bundle args = new Bundle();
-        args.putSerializable(ARG_RIDE, ride);
+        args.putSerializable(ARG_RIDE, rideDTO);
         fragment.setArguments(args);
         return fragment;
     }
@@ -48,7 +48,7 @@ public class DriverRideDetailsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_driver_ride_history_details, container, false);
 
         if (getArguments() != null) {
-            ride = (Ride) getArguments().getSerializable(ARG_RIDE);
+            rideDTO = (DriverRideHistoryResponseDTO) getArguments().getSerializable(ARG_RIDE);
         }
 
         passengersContainer = view.findViewById(R.id.passengersContainer);
@@ -67,34 +67,33 @@ public class DriverRideDetailsFragment extends Fragment {
     }
 
     private void populateRideData(LayoutInflater inflater) {
-        if (ride == null) return;
+        if (rideDTO == null) return;
 
-        addressText.setText(
-                ride.getFrom() + " → " + ride.getTo()
-        );
+        String from = rideDTO.getFrom().split(",")[0];
+        String to = rideDTO.getTo().split(",")[0];
+        addressText.setText(String.format("%s → %s", from, to));
 
-        // MOCK PASSENGERS
-        addPassenger(inflater, "Petar Petrović", "+381 64 123 456");
-        addPassenger(inflater, "Marko Marković", "+381 65 987 654");
+        if (rideDTO.getPassengers() != null) {
+            for (DriverRideHistoryResponseDTO.PassengerDTO p : rideDTO.getPassengers()) {
+                addPassenger(inflater, p.getName(), p.getPhone());
+            }
+        }
 
-        // MOCK ISSUES
+        // TODO MOCK ISSUES
         addIssue(inflater, "Passenger was late");
         addIssue(inflater, "Dropoff location changed");
 
-        tvStartTime.setText("14 Mar 2025, 15:32");
-        tvEndTime.setText("16:02");
+        tvStartTime.setText(String.format("%s, %s", rideDTO.getDate(), rideDTO.getStartTime()));
+        tvEndTime.setText(rideDTO.getEndTime());
+        tvDuration.setText(rideDTO.getDuration());
+        tvDistance.setText(rideDTO.getDistance());
+        tvPrice.setText(rideDTO.getPrice());
 
-        tvDuration.setText("30min");
-        tvDistance.setText("11.6km");
-
-        tvPrice.setText(ride.getPrice());
-
-        btnStatus.setText(ride.getStatus());
-
-        if ("Completed".equalsIgnoreCase(ride.getStatus())) {
+        btnStatus.setText(rideDTO.getStatus());
+        if ("Completed".equalsIgnoreCase(rideDTO.getStatus())) {
             btnStatus.setBackgroundTintList(
                     getResources().getColorStateList(R.color.button_green, null));
-        } else if ("Canceled".equalsIgnoreCase(ride.getStatus())) {
+        } else if ("Canceled".equalsIgnoreCase(rideDTO.getStatus())) {
             btnStatus.setBackgroundTintList(
                     getResources().getColorStateList(R.color.button_red, null));
         }
