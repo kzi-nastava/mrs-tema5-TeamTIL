@@ -236,11 +236,39 @@ app-map {
   cursor: pointer;
 }
 
+.minus-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.minus-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.time-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
 .time-sep {
   font-size: 1.5rem;
   color: #FFD524;
   font-weight: bold;
-  margin-bottom: 35px;
+  align-self: center; 
 }
 
 /* --- FAVORITI --- */

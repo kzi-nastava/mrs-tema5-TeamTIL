@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MapView } from '../map/map';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -40,7 +40,7 @@ export class RideBooking implements OnInit {
   hourValue: number = 12;
   minuteValue: number = 0;
 
-  constructor(private rideService: RideService, private geocodingService: GeocodingService) {}
+  constructor(private rideService: RideService, private geocodingService: GeocodingService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.generateCalendar();
@@ -138,7 +138,8 @@ ${validEmails.length > 0 ? '👥 Passengers: ' + validEmails.join(', ') : ''}
             `.trim();
             
             alert(message);
-            this.resetForm();
+this.resetForm();
+this.cdr.detectChanges();
           },
           error: (err) => {
             console.error('Error creating ride:', err);
@@ -191,6 +192,13 @@ ${validEmails.length > 0 ? '👥 Passengers: ' + validEmails.join(', ') : ''}
 
   incrementHour() { this.hourValue = (this.hourValue + 1) % 24; }
   incrementMinute() { this.minuteValue = (this.minuteValue + 1) % 60; }
+
+  decrementHour() { this.hourValue = this.hourValue === 0 ? 23 : this.hourValue - 1; }
+  decrementMinute() { this.minuteValue = this.minuteValue === 0 ? 59 : this.minuteValue - 1; }
+
+trackByIndex(index: number): number {
+  return index;
+}
   formatTime(val: number): string { return val.toString().padStart(2, '0'); }
 
   generateCalendar() {

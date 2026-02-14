@@ -16,7 +16,7 @@
           <input type="text" [(ngModel)]="startLocation" placeholder="Add starting location">
         </div>
 
-        <div class="input-group" *ngFor="let stop of intermediateStops; let i = index">
+       <div class="input-group" *ngFor="let stop of intermediateStops; let i = index; trackBy: trackByIndex">
           <span class="dot outline">S{{i + 1}}</span>
           <input type="text" [(ngModel)]="intermediateStops[i]" placeholder="Add stop">
           <button class="remove-stop" (click)="removeStop(i)">&times;</button>
@@ -57,16 +57,18 @@
         <div class="time-section">
           <label class="section-label">Enter time</label>
           <div class="stepper-time-picker">
-            <div class="time-unit">
-              <span class="time-val">{{formatTime(hourValue)}}</span>
-              <button class="plus-btn" (click)="incrementHour()">+</button>
-            </div>
-            <span class="time-sep">:</span>
-            <div class="time-unit">
-              <span class="time-val">{{formatTime(minuteValue)}}</span>
-              <button class="plus-btn" (click)="incrementMinute()">+</button>
-            </div>
-          </div>
+  <div class="time-unit">
+    <button class="minus-btn" (click)="decrementHour()">−</button>
+    <span class="time-val">{{formatTime(hourValue)}}</span>
+    <button class="plus-btn" (click)="incrementHour()">+</button>
+  </div>
+  <span class="time-sep">:</span>
+  <div class="time-unit">
+    <button class="minus-btn" (click)="decrementMinute()">−</button>
+    <span class="time-val">{{formatTime(minuteValue)}}</span>
+    <button class="plus-btn" (click)="incrementMinute()">+</button>
+  </div>
+</div>
         </div>
       </div>
 
