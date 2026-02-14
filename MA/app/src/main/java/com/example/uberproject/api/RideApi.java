@@ -1,5 +1,6 @@
 package com.example.uberproject.api;
 
+import com.example.uberproject.dto.response.DriverRideHistoryResponseDTO;
 import com.example.uberproject.dto.response.RideHistoryResponseDTO;
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -13,6 +14,9 @@ public interface RideApi {
 
     @GET("rides/admin/history")
     Call<List<RideHistoryResponseDTO>> getAdminRideHistory();
+
+    @GET("rides/driver/{driverEmail}/history")
+    Call<List<DriverRideHistoryResponseDTO>> getDriverRideHistory(@Path("driverEmail") String driverEmail);
 }
 
 
