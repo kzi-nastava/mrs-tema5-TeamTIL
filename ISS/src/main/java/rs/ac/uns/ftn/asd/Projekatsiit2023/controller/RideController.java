@@ -29,6 +29,8 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.service.InconsistencyReportService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.LocationService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RideService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import java.util.Map;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -159,15 +161,54 @@ public class RideController {
         return ResponseEntity.ok(ridesHistory);
     }
 
+    /*// 2.4.1 Ordering a ride
+    @PostMapping
+   // @PreAuthorize("hasRole('REGISTERED_USER')")
+    public ResponseEntity<?> createRide(
+            @RequestBody RideRequestDTO request,
+            @AuthenticationPrincipal RegisteredUser currentUser) {
+        try {
+            String userEmail = currentUser != null ? currentUser.getEmail() : null;
+
+            if (userEmail == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("User not authenticated");
+            }
+
+            RideCreatedResponseDTO response = rideService.createNewRide(request, userEmail);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
+        }
+    }*/
+
     // 2.4.1 Ordering a ride
     @PostMapping
     public ResponseEntity<?> createRide(@RequestBody RideRequestDTO request) {
         try {
-            // Pozivamo servis da obradi logiku i sacuva u bazu
-            RideHistoryDTO response = rideService.createNewRide(request);
+            // Hardkoduj email za testiranje - MORA postojati u bazi!
+            String userEmail = "user@tiltaxi.com";
+
+            System.out.println("=== CREATE RIDE CALLED ===");
+            System.out.println("User email: " + userEmail);
+            System.out.println("Request: " + request);
+
+            RideCreatedResponseDTO response = rideService.createNewRide(request, userEmail);
             return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error creating ride: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
 

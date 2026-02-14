@@ -1,5 +1,6 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.service;
 
+import org.slf4j.ILoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,10 +17,9 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RideStatus;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.VehicleType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.*;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.PanicNotificationRepository;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.PriceConfigRepository;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RegisteredUserRepository;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RideRepository;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -43,8 +43,11 @@ public class RideService {
     private PriceConfigRepository priceConfigRepository;
     @Autowired
     private PanicNotificationRepository panicNotificationRepository;
+    @Autowired
+    private DriverRepository driverRepository;
 
     private final RideRepository rideRepository;
+    private static final Logger logger = LoggerFactory.getLogger(RideService.class);
 
     public RideService(RideRepository rideRepository) {
         this.rideRepository = rideRepository;
@@ -237,21 +240,268 @@ public class RideService {
         return estimation != null ? estimation.distanceKm() : 0.0;
     }
 
-    @Transactional
-    public RideHistoryDTO createNewRide(RideRequestDTO request) {
+    /*@Transactional
+    public RideCreatedResponseDTO createNewRide(RideRequestDTO request, String currentUserEmail) {
+        // 1. VALIDACIJA
+        if (request.getLocations() == null || request.getLocations().size() < 2) {
+            throw new RuntimeException("At least start and end location are required");
+        }
+
+        // 2. PRONADJI PASSENGER-A (trenutno ulogovanog korisnika)
+        RegisteredUser passenger = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("Passenger not found: " + currentUserEmail));
+
+        // 3. GEOCODE SVE LOKACIJE
+        List<GeocodingService.GeocodeResult> geocodedLocations = new ArrayList<>();
+        for (String address : request.getLocations()) {
+            geocodedLocations.add(geocodingService.geocode(address));
+        }
+
+        GeocodingService.GeocodeResult start = geocodedLocations.get(0);
+        GeocodingService.GeocodeResult end = geocodedLocations.get(geocodedLocations.size() - 1);
+
+        // 4. KREIRAJ RUTU
+        Route route = new Route();
+        route.setLocations(new ArrayList<>());
+        route = routeService.save(route); // Save first to get ID
+
+        // Dodaj sve lokacije u rutu (sa redosledom)
+        int order = 0;
+        for (GeocodingService.GeocodeResult geocoded : geocodedLocations) {
+            Location location = new Location();
+            location.setAddress(geocoded.address);
+            location.setLatitude(geocoded.latitude);
+            location.setLongitude(geocoded.longitude);
+            location.setRoute(route);
+            location.setOrder(order++);
+
+            Location savedLocation = locationService.saveLocation(location);
+            route.getLocations().add(savedLocation);
+        }
+
+        // 5. ESTIMACIJA RUTE (start -> end za procenu)
+        RouteService.RouteEstimation estimation = routeService.estimateRoute(
+                start.latitude, start.longitude,
+                end.latitude, end.longitude
+        );
+
+        if (estimation == null) {
+            throw new RuntimeException("Could not estimate route");
+        }
+
+        route.setDistance(estimation.distanceKm());
+        route.setEstimatedTime((long) (estimation.durationMin() * 60)); // convert to seconds
+        route = routeService.save(route);
+
+        // 6. PARSE VEHICLE TYPE
+        VehicleType vehicleType;
+        try {
+            vehicleType = VehicleType.valueOf(request.getVehicleType().toUpperCase());
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid vehicle type: " + request.getVehicleType());
+        }
+
+        // 7. IZRAČUNAJ CENU
+        double price = calculateFinalPrice(vehicleType, route.getLocations().get(0),
+                route.getLocations().get(route.getLocations().size() - 1));
+
+        // 8. PRONADJI DOSTUPNOG VOZAČA
+        Driver assignedDriver = findBestAvailableDriver(
+                start.latitude, start.longitude,
+                vehicleType,
+                request.getBabyFriendly() != null ? request.getBabyFriendly() : false,
+                request.getPetFriendly() != null ? request.getPetFriendly() : false,
+                request.getScheduledTime()
+        );
+
+        if (assignedDriver == null) {
+            throw new RuntimeException("No available drivers at the moment");
+        }
+
+        // 9. PARSE SCHEDULED TIME
+        LocalDateTime scheduledTime = LocalDateTime.now();
+        if (request.getScheduledTime() != null && !request.getScheduledTime().isEmpty()) {
+            try {
+                scheduledTime = LocalDateTime.parse(request.getScheduledTime());
+            } catch (Exception e) {
+                logger.error("Error parsing scheduled time: {}", e.getMessage());
+            }
+        }
+
+        // 10. KREIRAJ RIDE
         Ride ride = new Ride();
+        ride.setPassenger(passenger);
+        ride.setDriver(assignedDriver);
+        ride.setRoute(route);
+        ride.setStartLocation(route.getLocations().get(0));
+        ride.setEndLocation(route.getLocations().get(route.getLocations().size() - 1));
+        ride.setRideStatus(RideStatus.REQUESTED);
+        ride.setScheduledTime(scheduledTime);
+        ride.setStartTime(scheduledTime);
+        ride.setTotalPrice(price);
+        ride.setCoPassengers(new ArrayList<>());
 
-        ride.setRideStatus(RideStatus.REQUESTED); // Ili ACCEPTED zavisno od tvoje logike
+        // 11. DODAJ CO-PASSENGERS
+        if (request.getPassengerEmails() != null && !request.getPassengerEmails().isEmpty()) {
+            for (String email : request.getPassengerEmails()) {
+                userRepository.findByEmail(email).ifPresent(coPassenger -> {
+                    ride.getCoPassengers().add(coPassenger);
+                });
+            }
+        }
 
-        return new RideHistoryDTO(
-                101,
-                request.getPassengerEmails().isEmpty() ? "guest@example.com" : request.getPassengerEmails().get(0),
-                "pending@driver.com",
-                request.getLocations().get(0),
-                request.getLocations().get(request.getLocations().size() - 1),
+        // 12. SAČUVAJ RIDE
+        Ride savedRide = rideRepository.save(ride);
+
+        // 13. KREIRAJ RESPONSE
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
+        String estimatedEndTime = scheduledTime.plusMinutes((long) estimation.durationMin()).format(formatter);
+
+        return new RideCreatedResponseDTO(
+                savedRide.getId(),
                 "REQUESTED",
-                1200.0,
-                java.time.LocalDateTime.now().toString()
+                price,
+                assignedDriver.getFirstName() + " " + assignedDriver.getLastName(),
+                assignedDriver.getEmail(),
+                assignedDriver.getVehicle().getModel() + " (" + assignedDriver.getVehicle().getType() + ")",
+                "Ride successfully created and assigned to driver",
+                scheduledTime.format(formatter),
+                estimatedEndTime,
+                estimation.distanceKm(),
+                estimation.durationMin()
+        );
+    }*/
+
+    @Transactional
+    public RideCreatedResponseDTO createNewRide(RideRequestDTO request, String currentUserEmail) {
+        // 1. VALIDACIJA
+        if (request.getLocations() == null || request.getLocations().size() < 2) {
+            throw new RuntimeException("At least start and end location are required");
+        }
+
+        // 2. PRONADJI PASSENGER-A
+        RegisteredUser passenger = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("Passenger not found: " + currentUserEmail));
+
+        // 3. UZMI START I END (koordinate su već tu!)
+        RideRequestDTO.LocationDTO start = request.getLocations().get(0);
+        RideRequestDTO.LocationDTO end = request.getLocations().get(request.getLocations().size() - 1);
+
+        logger.info("Creating ride: {} -> {}", start.getAddress(), end.getAddress());
+        logger.info("Start coords: ({}, {})", start.getLatitude(), start.getLongitude());
+        logger.info("End coords: ({}, {})", end.getLatitude(), end.getLongitude());
+
+        // 4. ESTIMACIJA RUTE
+        RouteService.RouteEstimation estimation = routeService.estimateRoute(
+                start.getLatitude(), start.getLongitude(),
+                end.getLatitude(), end.getLongitude()
+        );
+
+        if (estimation == null) {
+            throw new RuntimeException("Could not estimate route");
+        }
+
+        // 5. KREIRAJ RUTU
+        Route route = new Route();
+        route.setDistance(estimation.distanceKm());
+        route.setEstimatedTime((long) (estimation.durationMin() * 60));
+        route.setLocations(new ArrayList<>());
+        route = routeService.save(route);
+
+        // 6. DODAJ LOKACIJE U RUTU
+        int order = 0;
+        for (RideRequestDTO.LocationDTO locDTO : request.getLocations()) {
+            Location location = new Location();
+            location.setAddress(locDTO.getAddress());
+            location.setLatitude(locDTO.getLatitude());
+            location.setLongitude(locDTO.getLongitude());
+            location.setRoute(route);
+            location.setOrder(order++);
+
+            Location savedLocation = locationService.saveLocation(location);
+            route.getLocations().add(savedLocation);
+        }
+
+        // 7. PARSE VEHICLE TYPE
+        VehicleType vehicleType;
+        try {
+            vehicleType = VehicleType.valueOf(request.getVehicleType().toUpperCase());
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid vehicle type: " + request.getVehicleType());
+        }
+
+        // 8. IZRAČUNAJ CENU
+        double price = calculateFinalPrice(vehicleType, route.getLocations().get(0),
+                route.getLocations().get(route.getLocations().size() - 1));
+
+        // 9. PRONADJI VOZAČA
+        Driver assignedDriver = findBestAvailableDriver(
+                start.getLatitude(), start.getLongitude(),
+                vehicleType,
+                request.getBabyFriendly() != null ? request.getBabyFriendly() : false,
+                request.getPetFriendly() != null ? request.getPetFriendly() : false,
+                request.getScheduledTime()
+        );
+
+        if (assignedDriver == null) {
+            throw new RuntimeException("No available drivers at the moment");
+        }
+
+        logger.info("Assigned driver: {} ({})", assignedDriver.getEmail(), assignedDriver.getId());
+
+        // 10. PARSE SCHEDULED TIME
+        LocalDateTime scheduledTime = LocalDateTime.now();
+        if (request.getScheduledTime() != null && !request.getScheduledTime().isEmpty()) {
+            try {
+                scheduledTime = LocalDateTime.parse(request.getScheduledTime());
+            } catch (Exception e) {
+                logger.error("Error parsing scheduled time: {}", e.getMessage());
+            }
+        }
+
+        // 11. KREIRAJ RIDE
+        Ride ride = new Ride();
+        ride.setPassenger(passenger);
+        ride.setDriver(assignedDriver);
+        ride.setRoute(route);
+        ride.setStartLocation(route.getLocations().get(0));
+        ride.setEndLocation(route.getLocations().get(route.getLocations().size() - 1));
+        ride.setRideStatus(RideStatus.REQUESTED);
+        ride.setScheduledTime(scheduledTime);
+        ride.setStartTime(scheduledTime);
+        ride.setTotalPrice(price);
+        ride.setCoPassengers(new ArrayList<>());
+
+        // 12. DODAJ CO-PASSENGERS
+        if (request.getPassengerEmails() != null && !request.getPassengerEmails().isEmpty()) {
+            for (String email : request.getPassengerEmails()) {
+                userRepository.findByEmail(email).ifPresent(coPassenger -> {
+                    ride.getCoPassengers().add(coPassenger);
+                });
+            }
+        }
+
+        // 13. SAČUVAJ RIDE
+        Ride savedRide = rideRepository.save(ride);
+
+        logger.info("Ride created successfully: ID={}", savedRide.getId());
+
+        // 14. KREIRAJ RESPONSE
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
+        String estimatedEndTime = scheduledTime.plusMinutes((long) estimation.durationMin()).format(formatter);
+
+        return new RideCreatedResponseDTO(
+                savedRide.getId(),
+                "REQUESTED",
+                price,
+                assignedDriver.getFirstName() + " " + assignedDriver.getLastName(),
+                assignedDriver.getEmail(),
+                assignedDriver.getVehicle().getModel() + " (" + assignedDriver.getVehicle().getType() + ")",
+                "Ride successfully created and assigned to driver",
+                scheduledTime.format(formatter),
+                estimatedEndTime,
+                estimation.distanceKm(),
+                estimation.durationMin()
         );
     }
 
@@ -575,5 +825,301 @@ public class RideService {
                 ride.getEndLocation().getLatitude(),
                 ride.getEndLocation().getLongitude()
         );
+    }
+
+    /**
+     * Pronalazi najboljeg dostupnog vozača koristeći heuristiku bodovanja
+     */
+    /*private Driver findBestAvailableDriver(
+            double startLat, double startLon,
+            VehicleType vehicleType,
+            boolean needsBabyFriendly,
+            boolean needsPetFriendly,
+            String scheduledTimeStr
+    ) {
+        LocalDateTime scheduledTime = LocalDateTime.now();
+        if (scheduledTimeStr != null && !scheduledTimeStr.isEmpty()) {
+            try {
+                scheduledTime = LocalDateTime.parse(scheduledTimeStr);
+            } catch (Exception e) {
+                logger.warn("Could not parse scheduled time, using current time");
+            }
+        }
+
+        List<Driver> allDrivers = driverRepository.findAll();
+        Driver bestDriver = null;
+        double bestScore = -1;
+
+        for (Driver driver : allDrivers) {
+            double score = calculateDriverScore(driver, startLat, startLon, vehicleType,
+                    needsBabyFriendly, needsPetFriendly, scheduledTime);
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestDriver = driver;
+            }
+        }
+
+        return bestDriver;
+    }*/
+
+    private Driver findBestAvailableDriver(
+            double startLat, double startLon,
+            VehicleType vehicleType,
+            boolean needsBabyFriendly,
+            boolean needsPetFriendly,
+            String scheduledTimeStr
+    ) {
+        LocalDateTime scheduledTime = LocalDateTime.now();
+        if (scheduledTimeStr != null && !scheduledTimeStr.isEmpty()) {
+            try {
+                scheduledTime = LocalDateTime.parse(scheduledTimeStr);
+            } catch (Exception e) {
+                logger.warn("Could not parse scheduled time, using current time");
+            }
+        }
+
+        List<Driver> allDrivers = driverRepository.findAll();
+        logger.info("=== FINDING DRIVER ===");
+        logger.info("Total drivers in DB: {}", allDrivers.size());
+        logger.info("Looking for: vehicleType={}, babyFriendly={}, petFriendly={}",
+                vehicleType, needsBabyFriendly, needsPetFriendly);
+
+        Driver bestDriver = null;
+        double bestScore = -1;
+
+        for (Driver driver : allDrivers) {
+            logger.info("--- Checking driver: {} ({})",
+                    driver.getEmail(), driver.getId());
+
+            double score = calculateDriverScore(driver, startLat, startLon, vehicleType,
+                    needsBabyFriendly, needsPetFriendly, scheduledTime);
+
+            logger.info("    Score: {}", score);
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestDriver = driver;
+                logger.info("    ✓ NEW BEST DRIVER!");
+            }
+        }
+
+        logger.info("=== RESULT: Best driver = {} (score: {}) ===",
+                bestDriver != null ? bestDriver.getEmail() : "NONE", bestScore);
+
+        return bestDriver;
+    }
+
+    /**
+     * Bodovanje vozača prema različitim kriterijumima
+     */
+   /* private double calculateDriverScore(
+            Driver driver,
+            double startLat, double startLon,
+            VehicleType vehicleType,
+            boolean needsBabyFriendly,
+            boolean needsPetFriendly,
+            LocalDateTime scheduledTime
+    ) {
+        double score = 0;
+
+        // 1. DA LI JE AKTIVAN? (blokirajući uslov)
+        if (driver.getIsActive() == null || !driver.getIsActive()) {
+            return -1; // Ne razmatraj neaktivne vozače
+        }
+
+        // 2. DA LI IMA VOZILO?
+        if (driver.getVehicle() == null) {
+            return -1;
+        }
+
+        // 3. DA LI JE ODGOVARAJUĆI TIP VOZILA? (blokirajući uslov)
+        if (!driver.getVehicle().getType().equals(vehicleType)) {
+            return -1;
+        }
+
+        // 4. DA LI VOZILO ISPUNJAVA ZAHTEVE? (blokirajući uslov)
+        if (needsBabyFriendly && !driver.getVehicle().getBabyFriendly()) {
+            return -1;
+        }
+        if (needsPetFriendly && !driver.getVehicle().getPetFriendly()) {
+            return -1;
+        }
+
+        // 5. PROVERA RADNIH SATI (blokirajući uslov - max 8h u 24h)
+        if (driver.getActiveHours() != null && driver.getActiveHours() > 8 * 3600) { // 8h in seconds
+            return -1;
+        }
+
+        // 6. OSNOVNI BODOVI - vozač prolazi sve blokirajuće uslove
+        score += 100;
+
+        // 7. BODOVI ZA BLIZINU (maximum +50 poena)
+        double distance = calculateDistance(
+                startLat, startLon,
+                driver.getVehicle().getCurrentLatitude() != null ? driver.getVehicle().getCurrentLatitude() : 0,
+                driver.getVehicle().getCurrentLongitude() != null ? driver.getVehicle().getCurrentLongitude() : 0
+        );
+
+        // Što je bliže, više poena (max 50 poena za distance = 0, 0 poena za distance > 10km)
+        double proximityScore = Math.max(0, 50 - (distance * 5));
+        score += proximityScore;
+
+        // 8. PROVERA TRENUTNIH I BUDUĆIH VOŽNJI
+        List<RideStatus> activeStatuses = List.of(RideStatus.IN_PROGRESS, RideStatus.REQUESTED);
+        List<Ride> activeRides = rideRepository.findByDriverIdAndRideStatusIn(
+                driver.getId(), activeStatuses
+        );
+
+        if (activeRides.isEmpty()) {
+            // VOZAČ JE POTPUNO SLOBODAN - bonus poeni
+            score += 30;
+        } else {
+            // Proveri da li će biti slobodan na vreme
+            boolean willBeFree = true;
+
+            for (Ride ride : activeRides) {
+                // Ako je vožnja u toku i završava se uskoro (u narednih 10 min)
+                if (ride.getRideStatus() == RideStatus.IN_PROGRESS) {
+                    LocalDateTime estimatedEnd = ride.getStartTime()
+                            .plusSeconds(ride.getRoute().getEstimatedTime());
+
+                    long minutesUntilFree = java.time.Duration.between(LocalDateTime.now(), estimatedEnd).toMinutes();
+
+                    if (minutesUntilFree > 10) {
+                        willBeFree = false;
+                        break;
+                    } else {
+                        // Blizu kraja trenutne vožnje - manji bonus
+                        score += 10;
+                    }
+                }
+
+                // Ako ima zakazanu buduću vožnju koja se preklapa
+                if (ride.getRideStatus() == RideStatus.REQUESTED && ride.getScheduledTime() != null) {
+                    if (ride.getScheduledTime().isBefore(scheduledTime.plusMinutes(30))) {
+                        willBeFree = false;
+                        break;
+                    }
+                }
+            }
+
+            if (!willBeFree) {
+                return -1; // Vozač neće biti dostupan
+            }
+        }
+
+        // 9. BONUS ZA VISOK REJTING
+        double rating = driver.getAverageRating();
+        score += rating * 5; // Max +25 poena za rejting 5.0
+
+        return score;
+    }*/
+
+    private double calculateDriverScore(
+            Driver driver,
+            double startLat, double startLon,
+            VehicleType vehicleType,
+            boolean needsBabyFriendly,
+            boolean needsPetFriendly,
+            LocalDateTime scheduledTime
+    ) {
+        double score = 0;
+
+        // 1. DA LI JE AKTIVAN?
+        if (driver.getIsActive() == null || !driver.getIsActive()) {
+            logger.info("    ✗ Driver NOT ACTIVE (isActive={})", driver.getIsActive());
+            return -1;
+        }
+        logger.info("    ✓ Driver is ACTIVE");
+
+        // 2. DA LI IMA VOZILO?
+        if (driver.getVehicle() == null) {
+            logger.info("    ✗ Driver has NO VEHICLE");
+            return -1;
+        }
+        logger.info("    ✓ Has vehicle: {} ({})", driver.getVehicle().getModel(), driver.getVehicle().getType());
+
+        // 3. DA LI JE ODGOVARAJUĆI TIP VOZILA?
+        if (!driver.getVehicle().getType().equals(vehicleType)) {
+            logger.info("    ✗ WRONG vehicle type (need {}, has {})",
+                    vehicleType, driver.getVehicle().getType());
+            return -1;
+        }
+        logger.info("    ✓ Vehicle type MATCHES");
+
+        // 4. DA LI VOZILO ISPUNJAVA ZAHTEVE?
+        if (needsBabyFriendly && !driver.getVehicle().getBabyFriendly()) {
+            logger.info("    ✗ Need baby-friendly but vehicle is NOT");
+            return -1;
+        }
+        if (needsPetFriendly && !driver.getVehicle().getPetFriendly()) {
+            logger.info("    ✗ Need pet-friendly but vehicle is NOT");
+            return -1;
+        }
+        logger.info("    ✓ Vehicle features OK (baby={}, pet={})",
+                driver.getVehicle().getBabyFriendly(), driver.getVehicle().getPetFriendly());
+
+        // 5. PROVERA RADNIH SATI
+        if (driver.getActiveHours() != null && driver.getActiveHours() > 8 * 3600) {
+            logger.info("    ✗ Driver exceeded 8h limit (activeHours={} sec)", driver.getActiveHours());
+            return -1;
+        }
+        logger.info("    ✓ Working hours OK (activeHours={} sec)", driver.getActiveHours());
+
+        // 6. OSNOVNI BODOVI
+        score += 100;
+        logger.info("    ✓ Base score: 100");
+
+        // 7. BODOVI ZA BLIZINU
+        double lat = driver.getVehicle().getCurrentLatitude() != null ? driver.getVehicle().getCurrentLatitude() : 0;
+        double lon = driver.getVehicle().getCurrentLongitude() != null ? driver.getVehicle().getCurrentLongitude() : 0;
+
+        double distance = calculateDistance(startLat, startLon, lat, lon);
+        double proximityScore = Math.max(0, 50 - (distance * 5));
+        score += proximityScore;
+        logger.info("    ✓ Proximity: distance={}km, bonus={}",
+                String.format("%.2f", distance), String.format("%.2f", proximityScore));
+
+        // 8. PROVERA TRENUTNIH VOŽNJI
+        List<RideStatus> activeStatuses = List.of(RideStatus.IN_PROGRESS, RideStatus.REQUESTED);
+        List<Ride> activeRides = rideRepository.findByDriverIdAndRideStatusIn(
+                driver.getId(), activeStatuses
+        );
+
+        if (activeRides.isEmpty()) {
+            score += 30;
+            logger.info("    ✓ Driver is FREE (bonus +30)");
+        } else {
+            logger.info("    ⚠ Driver has {} active rides", activeRides.size());
+            // ... ostatak logike
+        }
+
+        // 9. BONUS ZA REJTING
+        double rating = driver.getAverageRating();
+        double ratingBonus = rating * 5;
+        score += ratingBonus;
+        logger.info("    ✓ Rating bonus: rating={}, bonus={}",
+                String.format("%.2f", rating), String.format("%.2f", ratingBonus));
+
+        return score;
+    }
+
+    /**
+     * Haversine formula za računanje distance između dve tačke
+     */
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371; // Earth radius in km
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c; // Distance in km
     }
 }

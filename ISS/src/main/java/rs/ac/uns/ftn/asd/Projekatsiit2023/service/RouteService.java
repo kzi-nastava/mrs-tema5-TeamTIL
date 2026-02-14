@@ -16,6 +16,7 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RouteRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class RouteService {
@@ -34,7 +35,7 @@ public class RouteService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public RouteEstimation estimateRoute(double startLat, double startLon, double endLat, double endLon) {
+    /*public RouteEstimation estimateRoute(double startLat, double startLon, double endLat, double endLon) {
         String url = String.format(
                 "https://api.openrouteservice.org/v2/directions/driving-car?api_key=%s&start=%f,%f&end=%f,%f",
                 orsApiKey, startLon, startLat, endLon, endLat
@@ -61,6 +62,46 @@ public class RouteService {
                 routeCoordinates.add(point);
             }
 
+            return new RouteEstimation(distanceKm, durationMin, routeCoordinates);
+        } catch (RestClientException e) {
+            logger.error("Error while sending request to ORS API: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error while processing ORS API response: {}", e.getMessage());
+        }
+        return null;
+    }*/
+
+    public RouteEstimation estimateRoute(double startLat, double startLon, double endLat, double endLon) {
+        // ORS očekuje format: lon,lat (ne lat,lon!)
+        String url = String.format(Locale.US,
+                "https://api.openrouteservice.org/v2/directions/driving-car?api_key=%s&start=%.6f,%.6f&end=%.6f,%.6f",
+                orsApiKey, startLon, startLat, endLon, endLat
+        );
+
+        logger.info("Calling ORS API: {}", url);
+
+        try {
+            String response = restTemplate.getForObject(url, String.class);
+            JSONObject json = new JSONObject(response);
+            JSONObject feature = json.getJSONArray("features").getJSONObject(0);
+
+            // Izvuci distance i duration
+            JSONObject segment = feature.getJSONObject("properties")
+                    .getJSONArray("segments")
+                    .getJSONObject(0);
+            double distanceKm = segment.getDouble("distance") / 1000.0;
+            double durationMin = segment.getDouble("duration") / 60.0;
+
+            // Izvuci koordinate putanje
+            JSONArray coordinates = feature.getJSONObject("geometry").getJSONArray("coordinates");
+            List<List<Double>> routeCoordinates = new ArrayList<>();
+            for (int i = 0; i < coordinates.length(); i++) {
+                JSONArray coord = coordinates.getJSONArray(i);
+                List<Double> point = List.of(coord.getDouble(0), coord.getDouble(1));
+                routeCoordinates.add(point);
+            }
+
+            logger.info("Route estimated: {}km, {}min", distanceKm, durationMin);
             return new RouteEstimation(distanceKm, durationMin, routeCoordinates);
         } catch (RestClientException e) {
             logger.error("Error while sending request to ORS API: {}", e.getMessage());
