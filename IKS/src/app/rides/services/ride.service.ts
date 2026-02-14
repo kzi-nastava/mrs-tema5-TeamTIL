@@ -13,6 +13,10 @@ export class RideService {
     return this.http.get<any[]>('http://localhost:8080/api/rides/admin/history');
   }
 
+  getDriverRideHistory(driverEmail: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/driver/${driverEmail}/history`);
+  }
+
   stopRide(rideId: number, stopRequest: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/${rideId}/stop`, stopRequest);
   }
