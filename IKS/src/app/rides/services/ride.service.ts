@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { RideDetailsResponseDTO } from '../../models/ride-dto.model';
+import { RideDetailsResponseDTO, RideRequestDTO } from '../../models/ride-dto.model';
 
 @Injectable({ providedIn: 'root' })
 export class RideService {
@@ -50,4 +50,8 @@ export class RideService {
     console.log('[RideService] Calling getRideDetails with URL:', url);
     return this.http.get<RideDetailsResponseDTO>(url);
   }
+
+createRide(request: RideRequestDTO): Observable<any> {
+  return this.http.post(`${this.apiUrl}`, request);
+}
 }

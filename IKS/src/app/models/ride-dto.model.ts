@@ -7,6 +7,20 @@ export interface RideRequestDTO {
   scheduledTime: string | null;
 }
 
+export interface RideCreatedResponseDTO {
+  rideId: number;
+  status: string;
+  estimatedPrice: number;
+  driverName: string;
+  driverEmail: string;
+  vehicleInfo: string;
+  message: string;
+  startTime: string;
+  estimatedEndTime: string;
+  distanceKm: number;
+  durationMin: number;
+}
+
 export interface RideHistoryDTO {
   id: number;
   passengerEmail: string;
