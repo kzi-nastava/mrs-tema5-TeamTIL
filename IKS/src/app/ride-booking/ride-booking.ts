@@ -4,8 +4,10 @@ import { MapView } from '../map/map';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HttpClientModule } from '@angular/common/http';
-import { RideService } from '../services/ride.service';
-import { RideRequestDTO } from '../models/ride-dto.model';
+import { RideService } from '../rides/services/ride.service';
+import { RideCreatedResponseDTO, RideRequestDTO } from '../models/ride-dto.model';
+import { GeocodingService } from '../services/geocoding.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-ride-booking',
@@ -22,80 +24,157 @@ export class RideBooking implements OnInit {
   
   showFavorites: boolean = false;
   
-  // lista mejlova za putnike
   passengers: string[] = [];
   newPassengerEmail: string = '';
 
-  // tip vozila i dodaci
   selectedVehicleType: string = 'STANDARD';
   babyFriendly: boolean = false;
   petFriendly: boolean = false;
 
-  // kalendar podaci
   viewDate: Date = new Date(); 
   selectedDate: Date = new Date(); 
   daysInMonth: (number | null)[] = [];
   monthNames = ["January", "February", "March", "April", "May", "June", 
                 "July", "August", "September", "October", "November", "December"];
 
-  // vreme podaci
   hourValue: number = 12;
   minuteValue: number = 0;
 
-  // Injektujemo servis
-  constructor(private rideService: RideService) {}
+  constructor(private rideService: RideService, private geocodingService: GeocodingService) {}
 
   ngOnInit() {
     this.generateCalendar();
   }
 
-  // --- GLAVNA FUNKCIJA ZA SLANJE ---
   requestRide() {
-    if (!this.startLocation || !this.endLocation) {
-      alert("Please enter start and end locations!");
+    if (!this.startLocation || !this.startLocation.trim()) {
+      alert("Please enter start location!");
+      return;
+    }
+    
+    if (!this.endLocation || !this.endLocation.trim()) {
+      alert("Please enter end location!");
       return;
     }
 
-    // Spajamo lokacije: [Start, ...Stanice, Kraj]
-    // Filter izbacuje prazne stringove ako korisnik nije popunio medjustanicu
-    const allLocations = [
-      this.startLocation,
-      ...this.intermediateStops.filter(s => s && s.trim() !== ''),
-      this.endLocation
+    const allAddresses = [
+      this.startLocation.trim(),
+      ...this.intermediateStops
+        .filter(s => s && s.trim() !== '')
+        .map(s => s.trim()),
+      this.endLocation.trim()
     ];
 
-    // Priprema datuma
+    const validEmails = this.passengers.filter(email => 
+      email && email.includes('@')
+    );
+
     const scheduledDateTime = new Date(this.selectedDate);
     scheduledDateTime.setHours(this.hourValue);
     scheduledDateTime.setMinutes(this.minuteValue);
 
-    // Konverzija u ISO string za backend (pazimo na vremensku zonu)
-    // Ovo salje lokalno vreme kao string
+    const now = new Date();
+    if (scheduledDateTime <= now) {
+      alert("Scheduled time must be in the future!");
+      return;
+    }
+
+    const fiveHoursFromNow = new Date(now.getTime() + 5 * 60 * 60 * 1000);
+    if (scheduledDateTime > fiveHoursFromNow) {
+      alert("You can only schedule rides up to 5 hours in advance!");
+      return;
+    }
+
     const offset = scheduledDateTime.getTimezoneOffset();
     const localDate = new Date(scheduledDateTime.getTime() - (offset * 60 * 1000));
-    const isoString = localDate.toISOString().split('.')[0]; 
+    const isoString = localDate.toISOString().split('.')[0];
 
-    const request: RideRequestDTO = {
-      locations: allLocations,
-      passengerEmails: this.passengers,
-      vehicleType: this.selectedVehicleType,
-      babyFriendly: this.babyFriendly,
-      petFriendly: this.petFriendly,
-      scheduledTime: isoString 
-    };
+    const geocodeObservables = allAddresses.map(address => 
+      this.geocodingService.geocode(address)
+    );
 
-    console.log('Sending request:', request);
+    forkJoin(geocodeObservables).subscribe({
+      next: (results) => {
+        for (let i = 0; i < results.length; i++) {
+          if (!results[i] || results[i].length === 0) {
+            alert(`❌ Could not find location: ${allAddresses[i]}`);
+            return;
+          }
+        }
 
-    this.rideService.createRide(request).subscribe({
-      next: (response) => {
-        console.log('Ride created:', response);
-        alert('Ride ordered successfully! Price: ' + response.price);
+        const locations = results.map((result, index) => ({
+          address: allAddresses[index],
+          latitude: parseFloat(result[0].lat), 
+          longitude: parseFloat(result[0].lon)
+        }));
+
+        const request: RideRequestDTO = {
+          locations: locations,
+          passengerEmails: validEmails,
+          vehicleType: this.selectedVehicleType,
+          babyFriendly: this.babyFriendly,
+          petFriendly: this.petFriendly,
+          scheduledTime: isoString
+        };
+
+        this.rideService.createRide(request).subscribe({
+          next: (response: RideCreatedResponseDTO) => {
+            const message = `
+✅ Ride successfully ordered!
+
+📍 Route: ${allAddresses[0]} → ${allAddresses[allAddresses.length - 1]}
+${allAddresses.length > 2 ? '   Stops: ' + allAddresses.slice(1, -1).join(', ') : ''}
+
+👤 Driver: ${response.driverName}
+🚗 Vehicle: ${response.vehicleInfo}
+💰 Price: ${response.estimatedPrice.toFixed(2)} RSD
+📏 Distance: ${response.distanceKm.toFixed(1)} km
+⏱️ Duration: ${response.durationMin.toFixed(0)} min
+
+🕐 Start: ${response.startTime}
+🏁 Estimated arrival: ${response.estimatedEndTime}
+
+${validEmails.length > 0 ? '👥 Passengers: ' + validEmails.join(', ') : ''}
+            `.trim();
+            
+            alert(message);
+            this.resetForm();
+          },
+          error: (err) => {
+            console.error('Error creating ride:', err);
+            
+            let errorMessage = 'Failed to order ride.';
+            if (err.error && err.error.error) {
+              errorMessage = err.error.error;
+            } else if (err.error && typeof err.error === 'string') {
+              errorMessage = err.error;
+            } else if (err.message) {
+              errorMessage = err.message;
+            }
+            
+            alert('❌ ' + errorMessage);
+          }
+        });
       },
       error: (err) => {
-        console.error('Error:', err);
-        alert('Failed to order ride.');
+        console.error('Geocoding error:', err);
+        alert('❌ Could not find one or more locations. Please check the addresses.');
       }
     });
+  }
+
+  resetForm() {
+    this.startLocation = '';
+    this.endLocation = '';
+    this.intermediateStops = [''];
+    this.passengers = [];
+    this.newPassengerEmail = '';
+    this.selectedVehicleType = 'STANDARD';
+    this.babyFriendly = false;
+    this.petFriendly = false;
+    this.selectedDate = new Date();
+    this.hourValue = 12;
+    this.minuteValue = 0;
   }
 
   addPassenger() {

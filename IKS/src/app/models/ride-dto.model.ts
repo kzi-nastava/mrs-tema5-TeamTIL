@@ -1,10 +1,30 @@
+export interface LocationDTO {
+  address: string;
+  latitude: number;
+  longitude: number;
+}
+
 export interface RideRequestDTO {
-  locations: string[];
+  locations: LocationDTO[];
   passengerEmails: string[];
   vehicleType: string;
   babyFriendly: boolean;
   petFriendly: boolean;
   scheduledTime: string | null;
+}
+
+export interface RideCreatedResponseDTO {
+  rideId: number;
+  status: string;
+  estimatedPrice: number;
+  driverName: string;
+  driverEmail: string;
+  vehicleInfo: string;
+  message: string;
+  startTime: string;
+  estimatedEndTime: string;
+  distanceKm: number;
+  durationMin: number;
 }
 
 export interface RideHistoryDTO {

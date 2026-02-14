@@ -2,15 +2,30 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.VehicleType;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
 import java.util.List;
 
-@Getter @Setter
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class RideRequestDTO {
-    private List<String> locations;
+    private List<LocationDTO> locations;
     private List<String> passengerEmails;
-    private VehicleType vehicleType;
+    private String vehicleType;
     private Boolean babyFriendly;
     private Boolean petFriendly;
     private String scheduledTime;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LocationDTO {
+        private String address;
+        private Double latitude;
+        private Double longitude;
+    }
 }

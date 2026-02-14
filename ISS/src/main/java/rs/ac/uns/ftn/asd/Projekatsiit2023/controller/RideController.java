@@ -2,6 +2,8 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,9 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.service.LocationService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RideService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
 
+import java.security.Principal;
+import java.util.Map;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -37,12 +42,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.springframework.security.authorization.AuthorityAuthorizationManager.hasAnyRole;
-
 @RestController
 @RequestMapping("/api/rides")
 @Validated
 public class RideController {
+    private static final Logger logger = LoggerFactory.getLogger(RideController.class);
 
     @Autowired
     private RideRepository rideRepository;
@@ -161,13 +165,29 @@ public class RideController {
 
     // 2.4.1 Ordering a ride
     @PostMapping
-    public ResponseEntity<?> createRide(@RequestBody RideRequestDTO request) {
+    @PreAuthorize("hasRole('REGISTERED_USER')")
+    public ResponseEntity<?> createRide(
+            @RequestBody RideRequestDTO request,
+            Principal principal) {
+
         try {
-            // Pozivamo servis da obradi logiku i sacuva u bazu
-            RideHistoryDTO response = rideService.createNewRide(request);
+            if (principal == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "User not authenticated"));
+            }
+
+            String userEmail = principal.getName();
+            RideCreatedResponseDTO response = rideService.createNewRide(request, userEmail);
             return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            logger.error("Error creating ride: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error creating ride: " + e.getMessage());
+            logger.error("Unexpected error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred"));
         }
     }
 

@@ -16,6 +16,7 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RouteRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class RouteService {
@@ -35,8 +36,9 @@ public class RouteService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public RouteEstimation estimateRoute(double startLat, double startLon, double endLat, double endLon) {
-        String url = String.format(
-                "https://api.openrouteservice.org/v2/directions/driving-car?api_key=%s&start=%f,%f&end=%f,%f",
+        // ORS očekuje format: lon,lat (ne lat,lon!)
+        String url = String.format(Locale.US,
+                "https://api.openrouteservice.org/v2/directions/driving-car?api_key=%s&start=%.6f,%.6f&end=%.6f,%.6f",
                 orsApiKey, startLon, startLat, endLon, endLat
         );
 
@@ -63,9 +65,9 @@ public class RouteService {
 
             return new RouteEstimation(distanceKm, durationMin, routeCoordinates);
         } catch (RestClientException e) {
-            logger.error("Error while sending request to ORS API: {}", e.getMessage());
+            logger.error("Error calling ORS API: {}", e.getMessage());
         } catch (Exception e) {
-            logger.error("Error while processing ORS API response: {}", e.getMessage());
+            logger.error("Error processing ORS response: {}", e.getMessage());
         }
         return null;
     }
