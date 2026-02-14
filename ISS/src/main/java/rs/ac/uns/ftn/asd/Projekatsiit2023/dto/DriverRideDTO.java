@@ -11,18 +11,22 @@ import java.util.List;
 @AllArgsConstructor
 public class DriverRideDTO{
     private Integer id;
+    private List<PassengerDTO> passengers;
+
+    private String from;
+    private String to;
+    private String status; // "Completed" | "Canceled"
+    private String canceledBy; // "Driver" | "Passenger"
+
     private String date;
     private String startTime;
     private String endTime;
-    private String from;
-    private String to;
+
     private String price;
-    private String status; // "Completed" | "Canceled"
-    private String canceledBy; // "Driver" | "Passenger"
-    private Boolean panicActivated;
     private String duration;
     private String distance;
-    private List<PassengerDTO> passengers;
+
+    private Boolean panicActivated;
 
     @Getter
     @Setter

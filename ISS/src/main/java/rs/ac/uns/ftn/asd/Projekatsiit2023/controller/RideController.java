@@ -189,6 +189,7 @@ public class RideController {
 
     // 2.6.2 Track ride location
     @GetMapping("/{rideId}/tracking")
+    @PreAuthorize("hasRole('REGISTERED_USER')")
     public ResponseEntity<RideTrackingDTO> trackRide(@PathVariable Integer rideId) {
 
         if (rideId <= 0) {
@@ -216,6 +217,7 @@ public class RideController {
 
     // 2.6.2 Report inconsistency
     @PostMapping("/{rideId}/report")
+    @PreAuthorize("hasRole('REGISTERED_USER')")
     public ResponseEntity<InconsistencyReportResponseDTO> reportInconsistency(
             @PathVariable Integer rideId,
             @RequestBody InconsistencyReportRequestDTO reportDTO) {
@@ -237,6 +239,7 @@ public class RideController {
 
     // 2.7 Complete the ride
     @PutMapping("/{rideId}/end")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<RideStopResponseDTO> endRide(
             @PathVariable Integer rideId,
             @RequestBody RideEndRequestDTO request) {
@@ -293,6 +296,7 @@ public class RideController {
 
     // 2.8 Rate ride, driver and vehicle
     @PostMapping("/{rideId}/rate")
+    @PreAuthorize("hasRole('REGISTERED_USER')")
     public ResponseEntity<RideRatingResponseDTO> rateRide(
             @PathVariable Integer rideId,
             @RequestBody RideRatingRequestDTO request,
@@ -326,28 +330,16 @@ public class RideController {
     }
 
     // 2.9.2 Driver's ride history
-    @GetMapping("/driver/history")
+    @GetMapping("/driver/{driverEmail}/history")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<List<DriverRideDTO>> getDriverRideHistory(
-            @RequestParam String driverEmail,
+            @PathVariable String driverEmail,
             @RequestParam(required = false) String dateFrom,
             @RequestParam(required = false) String dateTo) {
+        LocalDateTime dateFromParsed = dateFrom != null ? LocalDateTime.parse(dateFrom) : null;
+        LocalDateTime dateToParsed = dateTo != null ? LocalDateTime.parse(dateTo) : null;
 
-        List<RideStatus> statuses = List.of(RideStatus.FINISHED, RideStatus.CANCELED);
-        List<Ride> rides = rideRepository.findByDriver_EmailAndRideStatusIn(driverEmail, statuses);
-
-        LocalDate from = (dateFrom != null) ? LocalDate.parse(dateFrom) : null;
-        LocalDate to = (dateTo != null) ? LocalDate.parse(dateTo) : null;
-
-        List<DriverRideDTO> result = rides.stream()
-                .filter(r -> {
-                    LocalDate rideDate = r.getStartTime().toLocalDate();
-                    boolean afterFrom = (from == null) || !rideDate.isBefore(from);
-                    boolean beforeTo = (to == null) || !rideDate.isAfter(to);
-                    return afterFrom && beforeTo;
-                })
-                .sorted((r1, r2) -> r2.getStartTime().compareTo(r1.getStartTime()))
-                .map(rideService::mapRideToDriverRideDTO)
-                .toList();
+        List<DriverRideDTO> result = rideService.getDriverRideHistory(driverEmail, dateFromParsed, dateToParsed);
 
         return ResponseEntity.ok(result);
     }
