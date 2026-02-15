@@ -176,7 +176,8 @@ export class AssignedRides implements OnInit, OnDestroy {
 
     openRide(ride: Ride) {
       console.log('Opening ride:', ride);
-      // TODO: Navigate to ride tracking/map view
+      if (!ride) return;
+      this.router.navigate(['/track-ride', ride.id]);
     }
 
     startRide(ride: Ride) {
