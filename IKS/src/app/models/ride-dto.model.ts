@@ -4,6 +4,15 @@ export interface LocationDTO {
   longitude: number;
 }
 
+export interface FavoriteRouteDTO {
+  routeId: number;
+  startLocation: string;
+  endLocation: string;
+  intermediateStops: string[];
+  distanceKm: number;
+  estimatedTimeMin: number;
+}
+
 export interface RideRequestDTO {
   locations: LocationDTO[];
   passengerEmails: string[];
@@ -29,6 +38,7 @@ export interface RideCreatedResponseDTO {
 
 export interface RideHistoryDTO {
   id: number;
+  routeId?: number;
   passengerEmail: string;
   driverEmail: string;
   startLocation: string;

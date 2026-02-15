@@ -13,6 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Route;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RouteRepository;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.FavoriteRouteDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.AddToFavoritesResponseDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RegisteredUserRepository;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.RegisteredUser;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Location;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +38,8 @@ public class RouteService {
     public RouteService(RouteRepository routeRepository) {
         this.routeRepository = routeRepository;
     }
+    @Autowired
+    private RegisteredUserRepository userRepository;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -110,5 +118,90 @@ public class RouteService {
             e.printStackTrace();
             return List.of();
         }
+    }
+
+    @Transactional
+    public AddToFavoritesResponseDTO addToFavorites(Integer routeId, String userEmail) {
+        RegisteredUser user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Route route = routeRepository.findById(routeId)
+                .orElseThrow(() -> new RuntimeException("Route not found"));
+
+        if (user.getFavoriteRoutes().contains(route)) {
+            return new AddToFavoritesResponseDTO(
+                    routeId,
+                    "Route is already in favorites",
+                    true
+            );
+        }
+
+        user.getFavoriteRoutes().add(route);
+        userRepository.save(user);
+
+        return new AddToFavoritesResponseDTO(
+                routeId,
+                "Route added to favorites",
+                true
+        );
+    }
+
+    @Transactional
+    public AddToFavoritesResponseDTO removeFromFavorites(Integer routeId, String userEmail) {
+        RegisteredUser user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Route route = routeRepository.findById(routeId)
+                .orElseThrow(() -> new RuntimeException("Route not found"));
+
+        user.getFavoriteRoutes().remove(route);
+        userRepository.save(user);
+
+        return new AddToFavoritesResponseDTO(
+                routeId,
+                "Route removed from favorites",
+                false
+        );
+    }
+
+    public List<FavoriteRouteDTO> getFavoriteRoutes(String userEmail) {
+        RegisteredUser user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return user.getFavoriteRoutes().stream()
+                .map(route -> {
+                    List<Location> locations = route.getLocations();
+
+                    if (locations == null || locations.isEmpty()) {
+                        return null;
+                    }
+
+                    String startLocation = locations.get(0).getAddress();
+                    String endLocation = locations.get(locations.size() - 1).getAddress();
+
+                    List<String> intermediateStops = locations.subList(1, locations.size() - 1)
+                            .stream()
+                            .map(Location::getAddress)
+                            .toList();
+
+                    return new FavoriteRouteDTO(
+                            route.getId(),
+                            startLocation,
+                            endLocation,
+                            intermediateStops,
+                            route.getDistance(),
+                            route.getEstimatedTime() / 60.0
+                    );
+                })
+                .filter(dto -> dto != null)
+                .toList();
+    }
+
+    public boolean isRouteFavorite(Integer routeId, String userEmail) {
+        RegisteredUser user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return user.getFavoriteRoutes().stream()
+                .anyMatch(route -> route.getId().equals(routeId));
     }
 }
