@@ -615,7 +615,7 @@ mat-card.ride-card.selected,
 .ride-meta {
   display: flex;
   align-items: center;
-  gap: 12px; /* SMANJI GAP jer sad ima zvezdicu */
+  gap: 12px;
 }
 
 /* Responsive Design */

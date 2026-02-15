@@ -5,8 +5,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HttpClientModule } from '@angular/common/http';
 import { RideService } from '../rides/services/ride.service';
-import { RouteService } from '../services/route.service'; // DODAJ
-import { RideCreatedResponseDTO, RideRequestDTO, FavoriteRouteDTO } from '../models/ride-dto.model'; // DODAJ FavoriteRouteDTO
+import { RouteService } from '../services/route.service';
+import { RideCreatedResponseDTO, RideRequestDTO, FavoriteRouteDTO } from '../models/ride-dto.model';
 import { GeocodingService } from '../services/geocoding.service';
 import { forkJoin } from 'rxjs';
 
@@ -41,22 +41,20 @@ export class RideBooking implements OnInit {
   hourValue: number = 12;
   minuteValue: number = 0;
 
-  // DODAJ
   favoriteRoutes: FavoriteRouteDTO[] = [];
 
   constructor(
     private rideService: RideService, 
-    private routeService: RouteService, // DODAJ
+    private routeService: RouteService,
     private geocodingService: GeocodingService, 
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.generateCalendar();
-    this.loadFavoriteRoutes(); // DODAJ
+    this.loadFavoriteRoutes(); 
   }
 
-  // NOVA METODA
   loadFavoriteRoutes() {
     this.routeService.getFavoriteRoutes().subscribe({
       next: (routes) => {
@@ -70,7 +68,6 @@ export class RideBooking implements OnInit {
     });
   }
 
-  // NOVA METODA
   selectFavoriteRoute(route: FavoriteRouteDTO) {
   // Popuni start location
   this.startLocation = route.startLocation;
@@ -78,17 +75,14 @@ export class RideBooking implements OnInit {
   // Popuni end location
   this.endLocation = route.endLocation;
   
-  // Popuni intermediate stops
+  // Popuni stops
   if (route.intermediateStops && route.intermediateStops.length > 0) {
     this.intermediateStops = [...route.intermediateStops];
   } else {
     this.intermediateStops = [''];
   }
   
-  // Zatvori accordion
   this.showFavorites = false;
-  
-  // Force UI update
   this.cdr.detectChanges();
 }
 

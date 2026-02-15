@@ -16,12 +16,12 @@ import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { RateRideComponent } from '../../modals/rate-ride/rate-ride';
 import { RideService } from '../../services/ride.service';
-import { RouteService } from '../../../services/route.service'; // DODAJ
+import { RouteService } from '../../../services/route.service';
 import { AuthService } from '../../../services/auth.service';
 
 interface Ride {
   id: number;
-  routeId?: number; // DODAJ
+  routeId?: number;
   startTime: string;
   endTime: string;
   from: string;
@@ -33,7 +33,7 @@ interface Ride {
   distance?: string;
   driver?: { name: string; phone: string };
   vehicle?: { model: string; plate: string };
-  isFavorite?: boolean; // DODAJ
+  isFavorite?: boolean; 
 }
 
 @Component({
@@ -71,7 +71,7 @@ export class UserRideHistory implements OnInit {
     private router: Router,
     private dialog: MatDialog,
     private rideService: RideService,
-    private routeService: RouteService, // DODAJ
+    private routeService: RouteService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -87,7 +87,7 @@ export class UserRideHistory implements OnInit {
       next: (ridesFromBackend) => {
         this.allRides = ridesFromBackend.map(ride => ({
           id: ride.id,
-          routeId: ride.routeId, // DODAJ
+          routeId: ride.routeId,
           date: ride.startTime?.split(',')[0]?.trim() || '-',
           startTime: ride.startTime?.split(',')[1]?.trim() || '-',
           endTime: ride.estimatedEndTime ? ride.estimatedEndTime.split(',')[1]?.trim() : '-',
@@ -104,10 +104,9 @@ export class UserRideHistory implements OnInit {
             phone: ride.driverPhoneNumber || '-'
           },
           vehicle: { model: '-', plate: '-' },
-          isFavorite: false // DODAJ
+          isFavorite: false
         }));
         
-        // Proveri koji su omiljeni
         this.checkFavorites();
         
         this.rides = [...this.allRides];
@@ -120,7 +119,6 @@ export class UserRideHistory implements OnInit {
     });
   }
 
-  // NOVA METODA
   checkFavorites() {
     this.allRides.forEach(ride => {
       if (ride.routeId) {
@@ -135,9 +133,8 @@ export class UserRideHistory implements OnInit {
     });
   }
 
-  // NOVA METODA
   toggleFavorite(ride: Ride, event: Event) {
-    event.stopPropagation(); // Spreči selektovanje ride-a
+    event.stopPropagation();
     
     if (!ride.routeId) {
       alert('Cannot add this ride to favorites (no route ID)');
@@ -171,7 +168,6 @@ export class UserRideHistory implements OnInit {
     }
   }
 
-  // OSTALE METODE OSTAJU ISTE...
   setActiveFilter(option: string) {
     this.activeFilter = option;
     
