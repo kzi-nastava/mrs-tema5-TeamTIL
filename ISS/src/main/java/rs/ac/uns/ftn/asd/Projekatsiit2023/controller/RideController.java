@@ -191,16 +191,6 @@ public class RideController {
         }
     }
 
-    // 2.4.3 Ordering from your favorite routes
-    @PostMapping("/favorites/{routeId}")
-    public ResponseEntity<RideHistoryDTO> createRideFromFavorite(@PathVariable Long routeId) {
-        RideHistoryDTO response = new RideHistoryDTO(
-                102, "me@example.com", "driver@example.com",
-                "Favorite Start", "Favorite End",
-                "ACCEPTED", 500.0, "2025-12-28T15:30:00");
-        return ResponseEntity.ok(response);
-    }
-
     // 2.6.1 The start of the ride
     @PutMapping("/{rideId}/start")
     @PreAuthorize("hasRole('DRIVER')")

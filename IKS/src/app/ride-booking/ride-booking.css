@@ -387,3 +387,33 @@ app-map {
   margin-top: 20px;
   cursor: pointer;
 }
+
+/* NO FAVORITES MESSAGE */
+.no-favorites {
+  padding: 20px;
+  text-align: center;
+  color: #a098ae;
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 10px 0;
+}
+
+/* STOPS INFO */
+.stops-info {
+  font-size: 0.75rem;
+  color: #a098ae;
+  display: block;
+  margin-top: 4px;
+}
+
+.route-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dist {
+  font-size: 0.7rem;
+  color: #FFD524;
+  font-weight: 600;
+}

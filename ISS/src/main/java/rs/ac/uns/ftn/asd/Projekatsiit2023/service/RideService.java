@@ -180,6 +180,7 @@ public class RideService {
 
             return new RideHistoryResponseDTO(
                     ride.getId(),
+                    ride.getRoute() != null ? ride.getRoute().getId() : null, // DODAJ OVO
                     ride.getPassenger().getEmail(),
                     ride.getPassenger().getFirstName(),
                     ride.getPassenger().getLastName(),
@@ -621,6 +622,7 @@ public class RideService {
 
             return new RideHistoryResponseDTO(
                     ride.getId(),
+                    ride.getRoute() != null ? ride.getRoute().getId() : null,
                     ride.getPassenger().getEmail(),
                     ride.getPassenger().getFirstName(),
                     ride.getPassenger().getLastName(),
@@ -715,6 +717,7 @@ public class RideService {
 
             return new RideHistoryResponseDTO(
                     ride.getId(),
+                    ride.getRoute() != null ? ride.getRoute().getId() : null, // DODAJ OVO
                     ride.getPassenger().getEmail(),
                     ride.getPassenger().getFirstName(),
                     ride.getPassenger().getLastName(),
