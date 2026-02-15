@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class RideService {
@@ -88,6 +89,28 @@ public class RideService {
                 savedRide.getCancellationReason(),
                 "Ride cancelled successfully",
                 savedRide.getCanceledBy() != null ? savedRide.getCanceledBy().name() : null
+        );
+    }
+
+    @Transactional
+    public RideStartResponseDTO startRide(Integer rideId) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found with id: " + rideId));
+
+        if (!RideStatus.REQUESTED.equals(ride.getRideStatus())) {
+            throw new RuntimeException("Ride cannot be started. Current status: " + ride.getRideStatus());
+        }
+
+        ride.setRideStatus(RideStatus.IN_PROGRESS);
+        ride.setStartTime(LocalDateTime.now());
+        Ride savedRide = rideRepository.save(ride);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
+        return new RideStartResponseDTO(
+                savedRide.getId(),
+                savedRide.getRideStatus().name(),
+                "Ride started successfully",
+                savedRide.getStartTime().format(formatter)
         );
     }
 
