@@ -14,12 +14,14 @@ public class DriverResponseDTO extends UserResponseDTO {
     private Boolean petFriendly;
 
     private Boolean isActive;
+    private Boolean isBlocked;
+    private String blockReason;
 
     public DriverResponseDTO(Integer id, String firstName, String lastName, String email,
                              String phoneNumber, String address, String profilePictureUrl,
                              String vehicleModel, String vehicleType, String licensePlate,
                              Integer passengerCapacity, Boolean babyFriendly, Boolean petFriendly,
-                             Boolean isActive) {
+                             Boolean isActive, Boolean isBlocked, String blockReason) {
         super(id, firstName, lastName, email, phoneNumber, address, profilePictureUrl);
         this.vehicleModel = vehicleModel;
         this.vehicleType = vehicleType;
@@ -28,5 +30,7 @@ public class DriverResponseDTO extends UserResponseDTO {
         this.babyFriendly = babyFriendly;
         this.petFriendly = petFriendly;
         this.isActive = isActive;
+        this.isBlocked = isBlocked;
+        this.blockReason = blockReason;
     }
 }
