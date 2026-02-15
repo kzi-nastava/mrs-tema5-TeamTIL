@@ -16,7 +16,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.UberProject"
-        android:usesCleartextTraffic="true" >
+        android:usesCleartextTraffic="true"
+        android:hardwareAccelerated="true" >
         <activity
             android:name=".activities.SplashScreenActivity"
             android:exported="true">

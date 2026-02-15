@@ -94,6 +94,12 @@
     <string name="finished_only">Finished only</string>
     <string name="canceled_only">Canceled only</string>
     <string name="all">All</string>
+    <string name="fast_safe_and_reliable_ntaxi_service_near_you">Fast, safe and reliable\ntaxi service near you</string>
+    <string name="see_available_rides_near_you">See available rides near you</string>
+    <string name="watch_our_fleet_of_drivers_in_real_time_click_on_any_vehicle_to_see_driver_details">Watch our fleet of drivers in real-time. Click on any vehicle to see driver details.</string>
+    <string name="welcome_to">Welcome To</string>
+    <string name="tiltaxi">tilTaxi</string>
+    <string name="taxi_hero_image">Taxi hero image</string>
 
     <string-array name="vehicle_types">
         <item>Standard</item>

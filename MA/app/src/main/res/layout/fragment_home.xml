@@ -1,0 +1,123 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/home_scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Overlay hero content -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/hero_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_hero">
+
+            <!-- Welcome texts -->
+            <TextView
+                android:id="@+id/text1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="60dp"
+                android:layout_marginTop="32dp"
+                android:fontFamily="@font/tactic_sans_font"
+                android:text="@string/welcome_to"
+                android:textColor="@android:color/white"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                app:layout_constraintHorizontal_bias="0.3"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/text2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="60dp"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/rollerscript_font"
+                android:text="@string/tiltaxi"
+                android:textColor="@android:color/white"
+                android:textSize="52sp"
+                android:textStyle="bold"
+                app:layout_constraintHorizontal_bias="0.3"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/text1" />
+
+            <TextView
+                android:id="@+id/text3_main"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="36dp"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/montserrat_semibold_font"
+                android:gravity="center"
+                android:shadowColor="#88FFD524"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowRadius="8"
+                android:text="@string/fast_safe_and_reliable_ntaxi_service_near_you"
+                android:textColor="#FFD524"
+                android:textSize="12sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/text2" />
+
+            <!-- Image -->
+            <ImageView
+                android:id="@+id/hero_image"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:contentDescription="@string/taxi_hero_image"
+                android:src="@drawable/taxi"
+                app:layout_constraintBottom_toBottomOf="@id/text3_main"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_percent="0.5"
+                app:layout_constraintTop_toBottomOf="@id/text2"
+                app:layout_constraintWidth_percent="0.5" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Center text section (ispod hero i tekstova) -->
+        <LinearLayout
+            android:id="@+id/center_text_section"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_center_text"
+            android:padding="20dp"
+            android:gravity="center">
+            <!-- Center text section -->
+            <TextView
+                android:id="@+id/center_text_large"
+                android:text="@string/see_available_rides_near_you"
+                android:fontFamily="@font/montserrat_bold_font"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/center_text_small"
+                android:text="@string/watch_our_fleet_of_drivers_in_real_time_click_on_any_vehicle_to_see_driver_details"
+                android:fontFamily="@font/montserrat_regular_font"
+                android:textSize="9sp"
+                android:textColor="@android:color/white"
+                android:lineSpacingExtra="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <!-- Map fragment -->
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/map_fragment_container"
+            android:name="com.example.uberproject.fragments.map.MapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
+</ScrollView>

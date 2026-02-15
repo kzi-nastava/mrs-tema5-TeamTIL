@@ -25,6 +25,7 @@ import com.example.uberproject.R;
 import com.example.uberproject.fragments.admin.AdminRideHistoryFragment;
 import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
 import com.example.uberproject.fragments.forms.DriverRegisterFragment;
+import com.example.uberproject.fragments.home.HomeFragment;
 import com.example.uberproject.fragments.user.UserRideHistoryFragment;
 import com.example.uberproject.fragments.forms.ProfileFragment;
 import com.example.uberproject.fragments.forms.LoginFragment;
@@ -46,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new HomeFragment())
+                .commit();
         // Provera je li token istekao
         checkTokenExpiration();
 
