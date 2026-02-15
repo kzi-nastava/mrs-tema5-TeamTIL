@@ -109,7 +109,9 @@ public class DriverService {
                 v != null ? v.getCapacity() : 0,
                 v != null ? v.getBabyFriendly() : false,
                 v != null ? v.getPetFriendly() : false,
-                driver.getIsActive()
+                driver.getIsActive(),
+                driver.getIsBlocked(),
+                driver.getBlockReason()
         );
     }
 

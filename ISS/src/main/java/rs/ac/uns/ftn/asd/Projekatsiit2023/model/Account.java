@@ -77,7 +77,7 @@ public class Account implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return !Boolean.TRUE.equals(isBlocked);
+        return true;
     }
 
     @Override
@@ -86,7 +86,5 @@ public class Account implements UserDetails {
     }
 
     @Override
-    public boolean isEnabled() {
-        return !Boolean.TRUE.equals(isBlocked);
-    }
+    public boolean isEnabled() { return true; }
 }

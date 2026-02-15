@@ -22,6 +22,7 @@
           <h2>{{ driver.firstName }} {{ driver.lastName }}</h2>
           <p>{{ driver.email }}</p>
           <p class="hours-active">Hours Active (last 24h): 6 h 30 min</p>
+
         </div>
       </div>
 
@@ -40,6 +41,16 @@
         </button>
       </div>
     </div>
+
+    <!-- BLOCKED WARNING BANNER -->
+    <div class="blocked-banner" *ngIf="driver.isBlocked">
+      <i class="fas fa-exclamation-triangle"></i>
+      <div class="blocked-text">
+        <strong>Account Blocked:</strong>
+        <span>{{ driver.blockReason || 'No reason provided' }}</span>
+      </div>
+    </div>
+
 
     <div class="profile-tabs-bar">
       <button class="tab-item" [class.active]="activeTab === 'profile'" (click)="setActiveTab('profile')">Profile info</button>

@@ -15,6 +15,9 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.model.RegisteredUser;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.AccountRepository;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RegisteredUserRepository;
 
+import java.util.stream.Collectors;
+import java.util.List;
+
 @Service
 public class AccountService implements UserDetailsService {
 
@@ -114,6 +117,34 @@ public class AccountService implements UserDetailsService {
 
         // hashovanje nove lozinke i cuvanje
         account.setPassword(passwordEncoder.encode(newPassword));
+        accountRepository.save(account);
+    }
+
+    public List<Account> getAllDrivers() {
+        return accountRepository.findAll().stream()
+                .filter(acc -> acc.getUserType() == UserType.DRIVER)
+                .collect(Collectors.toList());
+    }
+
+    public List<Account> getAllRegisteredUsers() {
+        return accountRepository.findAll().stream()
+                .filter(acc -> acc.getUserType() == UserType.REGISTERED_USER)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void blockUser(Integer userId, Boolean block, String reason) {
+        Account account = accountRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        account.setIsBlocked(block);
+
+        if (block) {
+            account.setBlockReason(reason);
+        } else {
+            account.setBlockReason(null); // uklonimo napomenu kada se odblokira
+        }
+
         accountRepository.save(account);
     }
 }

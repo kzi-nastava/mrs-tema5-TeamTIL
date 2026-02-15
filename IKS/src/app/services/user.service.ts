@@ -35,4 +35,26 @@ export class UserService {
     hasToken() { 
         return !!this.authService.getToken(); 
     }
+
+    getAllDrivers(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/accounts/drivers`, { 
+      headers: this.getHeaders() 
+    });
+  }
+
+  getAllRegisteredUsers(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/accounts/users`, { 
+      headers: this.getHeaders() 
+    });
+  }
+
+  blockUser(userId: number, block: boolean, reason: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/accounts/block`, {
+      userId: userId,
+      block: block,
+      reason: reason
+    }, { 
+      headers: this.getHeaders() 
+    });
+  }
 }

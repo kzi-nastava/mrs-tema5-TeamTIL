@@ -298,6 +298,12 @@ public class RideService {
         RegisteredUser passenger = userRepository.findByEmail(currentUserEmail)
                 .orElseThrow(() -> new RuntimeException("Passenger not found: " + currentUserEmail));
 
+        // PROVERA DA LI JE KORISNIK BLOKIRAN
+        if (Boolean.TRUE.equals(passenger.getIsBlocked())) {
+            String reason = passenger.getBlockReason() != null ? passenger.getBlockReason() : "No reason provided";
+            throw new RuntimeException("Your account has been blocked. Reason: " + reason);
+        }
+
         // UZMI START I END
         RideRequestDTO.LocationDTO start = request.getLocations().get(0);
         RideRequestDTO.LocationDTO end = request.getLocations().get(request.getLocations().size() - 1);
@@ -798,6 +804,11 @@ public class RideService {
 
         // Proveri da li je aktivan
         if (driver.getIsActive() == null || !driver.getIsActive()) {
+            return -1;
+        }
+
+        // Proveri da li je blokiran
+        if (Boolean.TRUE.equals(driver.getIsBlocked())) {
             return -1;
         }
 
