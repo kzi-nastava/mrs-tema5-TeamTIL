@@ -203,13 +203,19 @@ public class RideController {
 
     // 2.6.1 The start of the ride
     @PutMapping("/{rideId}/start")
-    public ResponseEntity<String> startRide(@PathVariable Long rideId) {
-        return ResponseEntity.ok("Ride " + rideId + " has started.");
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<?> startRide(@PathVariable Integer rideId) {
+        try {
+            RideStartResponseDTO response = rideService.startRide(rideId);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     // 2.6.2 Track ride location
     @GetMapping("/{rideId}/tracking")
-    @PreAuthorize("hasRole('REGISTERED_USER')")
+    @PreAuthorize("hasAnyRole('REGISTERED_USER', 'DRIVER')")
     public ResponseEntity<RideTrackingDTO> trackRide(@PathVariable Integer rideId) {
 
         if (rideId <= 0) {

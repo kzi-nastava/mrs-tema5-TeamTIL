@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { Router } from '@angular/router';
 
 interface Ride {
   id: number;
@@ -38,7 +39,7 @@ export class AssignedRides implements OnInit, OnDestroy {
     selectedRide: Ride | null = null;
     private subscriptions: Subscription = new Subscription();
     
-    constructor(private rideService: RideService, private authService: AuthService, private cdr: ChangeDetectorRef) {}
+    constructor(private rideService: RideService, private authService: AuthService, private cdr: ChangeDetectorRef, private router: Router) {}
 
     openCancelModal(ride: Ride) {
       this.rideToCancel = ride;
@@ -179,9 +180,16 @@ export class AssignedRides implements OnInit, OnDestroy {
     }
 
     startRide(ride: Ride) {
-      console.log('Starting ride:', ride);
-      // TODO: Start ride logic
+  this.rideService.startRide(ride.id).subscribe({
+    next: () => {
+      alert('Ride started successfully!');
+      this.router.navigate(['/track-ride', ride.id]);
+    },
+    error: (err: any) => {
+      alert('Failed to start ride: ' + (err?.error?.error || 'error'));
     }
+  });
+}
 
     cancelRide(ride: Ride) {
       console.log('Canceling ride:', ride);

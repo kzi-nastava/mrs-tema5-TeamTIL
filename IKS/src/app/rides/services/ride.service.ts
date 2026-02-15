@@ -52,4 +52,8 @@ export class RideService {
   getRideDetails(rideId: number): Observable<RideDetailsResponseDTO> {
     return this.http.get<RideDetailsResponseDTO>(`${this.apiUrl}/${rideId}/details`);
   }
+
+  startRide(rideId: number): Observable<any> {
+  return this.http.put(`${this.apiUrl}/${rideId}/start`, {});
+}
 }
