@@ -97,6 +97,22 @@ export class AuthService {
       clearInterval(this.tokenCheckInterval);
       this.tokenCheckInterval = null;
     }
+
+    // Pošalji logout zahtev na backend
+    const token = this.getToken();
+    if (token) {
+      const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+      this.http.post(`${this.apiUrl}/auth/logout`, {}, { headers })
+        .subscribe({
+          next: (response) => {
+            console.log('Logout recorded on backend:', response);
+          },
+          error: (error) => {
+            console.error('Error recording logout on backend:', error);
+          }
+        });
+    }
+
     localStorage.removeItem('currentUser');
     localStorage.removeItem('token'); // Ukloni token iz localStorage
     this.currentUserSubject.next(null);
