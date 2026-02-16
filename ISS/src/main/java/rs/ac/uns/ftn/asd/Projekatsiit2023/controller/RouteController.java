@@ -3,11 +3,17 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideEstimationRequestDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideEstimationResponseDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.FavoriteRouteDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.AddToFavoritesResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
+
+import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/route")
@@ -35,6 +41,67 @@ public class RouteController {
         RideEstimationResponseDTO response = getRideEstimationResponseDTO(request, estimation);
 
         return ResponseEntity.ok(response);
+    }
+
+    // Dodaj u omiljene
+    @PostMapping("/{routeId}/favorite")
+    @PreAuthorize("hasRole('REGISTERED_USER')")
+    public ResponseEntity<AddToFavoritesResponseDTO> addToFavorites(
+            @PathVariable Integer routeId,
+            Principal principal) {
+
+        if (principal == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String userEmail = principal.getName();
+        AddToFavoritesResponseDTO response = routeService.addToFavorites(routeId, userEmail);
+        return ResponseEntity.ok(response);
+    }
+
+    // Ukloni iz omiljenih
+    @DeleteMapping("/{routeId}/favorite")
+    @PreAuthorize("hasRole('REGISTERED_USER')")
+    public ResponseEntity<AddToFavoritesResponseDTO> removeFromFavorites(
+            @PathVariable Integer routeId,
+            Principal principal) {
+
+        if (principal == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String userEmail = principal.getName();
+        AddToFavoritesResponseDTO response = routeService.removeFromFavorites(routeId, userEmail);
+        return ResponseEntity.ok(response);
+    }
+
+    // Lista omiljenih ruta
+    @GetMapping("/favorites")
+    @PreAuthorize("hasRole('REGISTERED_USER')")
+    public ResponseEntity<List<FavoriteRouteDTO>> getFavoriteRoutes(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String userEmail = principal.getName();
+        List<FavoriteRouteDTO> favorites = routeService.getFavoriteRoutes(userEmail);
+        return ResponseEntity.ok(favorites);
+    }
+
+    // Proveri da li je ruta omiljena
+    @GetMapping("/{routeId}/favorite/check")
+    @PreAuthorize("hasRole('REGISTERED_USER')")
+    public ResponseEntity<Boolean> isFavorite(
+            @PathVariable Integer routeId,
+            Principal principal) {
+
+        if (principal == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String userEmail = principal.getName();
+        boolean isFavorite = routeService.isRouteFavorite(routeId, userEmail);
+        return ResponseEntity.ok(isFavorite);
     }
 
     private static RideEstimationResponseDTO getRideEstimationResponseDTO(RideEstimationRequestDTO request, RouteService.RouteEstimation estimation) {

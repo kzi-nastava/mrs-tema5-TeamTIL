@@ -9,13 +9,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.LoginRequestDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RegisterRequestDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.LoginResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RegisterResponseDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Account;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.AccountService;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.service.DriverService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.utils.TokenUtils;
 
 @RestController
@@ -24,16 +28,21 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.utils.TokenUtils;
 @Validated
 public class AuthController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     private final AuthenticationManager authenticationManager;
     private final TokenUtils tokenUtils;
     private final AccountService accountService;
+    private final DriverService driverService;
 
     public AuthController(AuthenticationManager authenticationManager,
                           TokenUtils tokenUtils,
-                          AccountService accountService) {
+                          AccountService accountService,
+                          DriverService driverService) {
         this.authenticationManager = authenticationManager;
         this.tokenUtils = tokenUtils;
         this.accountService = accountService;
+        this.driverService = driverService;
     }
 
     // ================= LOGIN =================
@@ -57,6 +66,19 @@ public class AuthController {
                     userDetails.getUsername(),
                     role
             );
+
+            // Ako je vozač, automatski ga prijavi na sistem
+            if (account.getUserType() == UserType.DRIVER) {
+                try {
+                    logger.info("Attempting to login driver: {}", request.getEmail());
+                    driverService.loginDriver(request.getEmail());
+                    logger.info("Driver logged in successfully: {}", request.getEmail());
+                } catch (Exception e) {
+                    // Vozač je možda već prijavljen, ili došlo do greške
+                    logger.warn("Driver login failed: {}", e.getMessage());
+                    // Nastavi sa token-om čak i ako je login vozača fail
+                }
+            }
 
             LoginResponseDTO response = new LoginResponseDTO(
                     token,
@@ -129,6 +151,62 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new TokenValidationResponse(false, "Token validation failed"));
+        }
+    }
+
+    // ================= LOGOUT =================
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        logger.info("=== LOGOUT REQUEST === Authorization Header: {}", authHeader != null ? "Present" : "Missing");
+
+        try {
+            if (authHeader == null || authHeader.isEmpty()) {
+                logger.warn("No authorization header provided in logout request");
+                return ResponseEntity.badRequest()
+                        .body(new TokenValidationResponse(false, "No authorization header provided"));
+            }
+
+            if (!authHeader.startsWith("Bearer ")) {
+                logger.warn("Invalid authorization header format: {}", authHeader);
+                return ResponseEntity.badRequest()
+                        .body(new TokenValidationResponse(false, "Invalid authorization header format"));
+            }
+
+            String token = authHeader.substring(7);
+            String email = tokenUtils.getEmailFromToken(token);
+            logger.info("Extracted email from token: {}", email);
+
+            if (email == null) {
+                logger.warn("Could not extract email from token");
+                return ResponseEntity.badRequest()
+                        .body(new TokenValidationResponse(false, "Invalid token"));
+            }
+
+            Account account = accountService.findByEmail(email);
+            logger.info("Found account: {}, UserType: {}", email, account != null ? account.getUserType() : "null");
+
+            // Ako je vozač, automatski ga odjavi iz sistema
+            if (account != null && account.getUserType() == UserType.DRIVER) {
+                logger.info("Attempting to logout driver: {}", email);
+                try {
+                    driverService.logoutDriver(email);
+                    logger.info("Driver logged out successfully: {}", email);
+                } catch (Exception e) {
+                    logger.error("Error logging out driver: {}", e.getMessage(), e);
+                    // Vozač se ne može odjaviti (ima aktivnu vožnju ili nije prijavljen)
+                    return ResponseEntity.badRequest()
+                            .body(new TokenValidationResponse(false, e.getMessage()));
+                }
+            } else {
+                logger.info("Account is not a driver or account is null");
+            }
+
+            logger.info("=== LOGOUT SUCCESS ===");
+            return ResponseEntity.ok(new TokenValidationResponse(true, "Logout successful"));
+        } catch (Exception e) {
+            logger.error("Unexpected error during logout: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                    .body(new TokenValidationResponse(false, "Logout failed: " + e.getMessage()));
         }
     }
 

@@ -16,10 +16,12 @@ import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { RateRideComponent } from '../../modals/rate-ride/rate-ride';
 import { RideService } from '../../services/ride.service';
+import { RouteService } from '../../../services/route.service';
 import { AuthService } from '../../../services/auth.service';
 
 interface Ride {
   id: number;
+  routeId?: number;
   startTime: string;
   endTime: string;
   from: string;
@@ -31,6 +33,7 @@ interface Ride {
   distance?: string;
   driver?: { name: string; phone: string };
   vehicle?: { model: string; plate: string };
+  isFavorite?: boolean; 
 }
 
 @Component({
@@ -68,6 +71,7 @@ export class UserRideHistory implements OnInit {
     private router: Router,
     private dialog: MatDialog,
     private rideService: RideService,
+    private routeService: RouteService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -83,8 +87,9 @@ export class UserRideHistory implements OnInit {
       next: (ridesFromBackend) => {
         this.allRides = ridesFromBackend.map(ride => ({
           id: ride.id,
-          date: ride.startTime?.split(',')[0]?.trim() || '-', // "04 Feb 2026"
-          startTime: ride.startTime?.split(',')[1]?.trim() || '-', // "21:20"
+          routeId: ride.routeId,
+          date: ride.startTime?.split(',')[0]?.trim() || '-',
+          startTime: ride.startTime?.split(',')[1]?.trim() || '-',
           endTime: ride.estimatedEndTime ? ride.estimatedEndTime.split(',')[1]?.trim() : '-',
           from: ride.startLocation || '-',
           to: ride.endLocation || '-',
@@ -98,8 +103,12 @@ export class UserRideHistory implements OnInit {
               : ride.driverEmail || '-',
             phone: ride.driverPhoneNumber || '-'
           },
-          vehicle: { model: '-', plate: '-' }
+          vehicle: { model: '-', plate: '-' },
+          isFavorite: false
         }));
+        
+        this.checkFavorites();
+        
         this.rides = [...this.allRides];
         this.selectedRide = this.rides.length > 0 ? this.rides[0] : null;
         this.cdr.detectChanges();
@@ -108,6 +117,55 @@ export class UserRideHistory implements OnInit {
         console.error('[UserRideHistory] Error fetching user ride history:', err);
       }
     });
+  }
+
+  checkFavorites() {
+    this.allRides.forEach(ride => {
+      if (ride.routeId) {
+        this.routeService.isFavorite(ride.routeId).subscribe({
+          next: (isFav) => {
+            ride.isFavorite = isFav;
+            this.cdr.detectChanges();
+          },
+          error: (err) => console.error('Error checking favorite:', err)
+        });
+      }
+    });
+  }
+
+  toggleFavorite(ride: Ride, event: Event) {
+    event.stopPropagation();
+    
+    if (!ride.routeId) {
+      alert('Cannot add this ride to favorites (no route ID)');
+      return;
+    }
+
+    if (ride.isFavorite) {
+      // Ukloni iz omiljenih
+      this.routeService.removeFromFavorites(ride.routeId).subscribe({
+        next: () => {
+          ride.isFavorite = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error removing from favorites:', err);
+          alert('❌ Failed to remove from favorites');
+        }
+      });
+    } else {
+      // Dodaj u omiljene
+      this.routeService.addToFavorites(ride.routeId).subscribe({
+        next: () => {
+          ride.isFavorite = true;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error adding to favorites:', err);
+          alert('❌ Failed to add to favorites');
+        }
+      });
+    }
   }
 
   setActiveFilter(option: string) {
@@ -158,7 +216,6 @@ export class UserRideHistory implements OnInit {
   applyFilters() {
     let filtered = [...this.allRides];
     
-    // Filter by date range
     if (this.dateFrom || this.dateTo) {
       filtered = filtered.filter(ride => {
         const rideDate = this.parseRideDate(ride.date);
@@ -174,7 +231,6 @@ export class UserRideHistory implements OnInit {
       });
     }
     
-    // Filter by status
     if (this.selectedStatus) {
       filtered = filtered.filter(ride => 
         ride.status.toLowerCase() === this.selectedStatus.toLowerCase()
@@ -183,14 +239,12 @@ export class UserRideHistory implements OnInit {
     
     this.rides = filtered;
     
-    // Update selected ride if it's not in filtered results
     if (this.selectedRide && !this.rides.find(r => r.id === this.selectedRide?.id)) {
       this.selectedRide = this.rides.length > 0 ? this.rides[0] : null;
     }
   }
 
   parseRideDate(dateString: string): Date {
-    // Parse "04 Feb 2026" format (short and long month names)
     const months: { [key: string]: number } = {
       'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
       'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11,
@@ -276,8 +330,6 @@ export class UserRideHistory implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         console.log('Rating:', result.rating, result.comment);
-        // TODO: backend poziv
-        // this.ridesService.rateRide(ride.id, result)
       }
     });
   }

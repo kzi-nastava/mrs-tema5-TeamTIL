@@ -95,9 +95,143 @@
 
     </div>
 
-    <div class="placeholder-content" *ngIf="activeTab !== 'profile'">
-      <p>Sadržaj za tab <strong>{{ activeTab }}</strong> će biti ovde.</p>
+<!-- BLOCKING TAB -->
+<div class="blocking-container" *ngIf="activeTab === 'blocking'">
+  
+  <!-- toggle izmedju Drivers i Users -->
+  <div class="blocking-toggle">
+    <button 
+      class="toggle-btn" 
+      [class.active]="blockingView === 'drivers'" 
+      (click)="blockingView = 'drivers'; loadDrivers()">
+      Drivers
+    </button>
+    <button 
+      class="toggle-btn" 
+      [class.active]="blockingView === 'users'" 
+      (click)="blockingView = 'users'; loadUsers()">
+      Users
+    </button>
+  </div>
+
+  <!-- SEARCH BAR -->
+  <div class="search-container">
+    <i class="fas fa-search search-icon"></i>
+    <input 
+      type="text" 
+      class="search-input" 
+      [(ngModel)]="searchQuery"
+      (input)="onSearchChange()"
+      placeholder="Search by name, email or phone...">
+    <button 
+      class="clear-search-btn" 
+      *ngIf="searchQuery" 
+      (click)="clearSearch()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <!-- DRIVERS -->
+  <div class="users-list" *ngIf="blockingView === 'drivers'">
+    <div class="user-card" *ngFor="let driver of filteredDrivers">
+      <div class="user-info">
+        <div class="user-avatar">
+          <img *ngIf="driver.profilePictureUrl" 
+               [src]="driver.profilePictureUrl.startsWith('http') ? driver.profilePictureUrl : 'data:image/png;base64,' + driver.profilePictureUrl">
+          <i *ngIf="!driver.profilePictureUrl" class="far fa-user"></i>
+        </div>
+        <div class="user-details">
+          <h3>{{ driver.firstName }} {{ driver.lastName }}</h3>
+          <p>{{ driver.email }}</p>
+          <p class="phone">{{ driver.phoneNumber }}</p>
+          <div class="block-status" *ngIf="driver.isBlocked">
+            <span class="blocked-badge">BLOCKED</span>
+            <p class="block-reason">{{ driver.blockReason }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="user-actions">
+        <button 
+          class="block-btn" 
+          [class.blocked]="driver.isBlocked"
+          (click)="openBlockModal(driver)">
+          {{ driver.isBlocked ? 'Unblock' : 'Block' }}
+        </button>
+      </div>
     </div>
+    <p class="empty-message" *ngIf="filteredDrivers.length === 0">
+      {{ searchQuery ? 'No drivers match your search.' : 'No drivers found.' }}
+    </p>
+  </div>
+
+  <!-- USERS -->
+  <div class="users-list" *ngIf="blockingView === 'users'">
+    <div class="user-card" *ngFor="let user of filteredUsers">
+      <div class="user-info">
+        <div class="user-avatar">
+          <img *ngIf="user.profilePictureUrl" 
+               [src]="user.profilePictureUrl.startsWith('http') ? user.profilePictureUrl : 'data:image/png;base64,' + user.profilePictureUrl">
+          <i *ngIf="!user.profilePictureUrl" class="far fa-user"></i>
+        </div>
+        <div class="user-details">
+          <h3>{{ user.firstName }} {{ user.lastName }}</h3>
+          <p>{{ user.email }}</p>
+          <p class="phone">{{ user.phoneNumber }}</p>
+          <div class="block-status" *ngIf="user.isBlocked">
+            <span class="blocked-badge">BLOCKED</span>
+            <p class="block-reason">{{ user.blockReason }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="user-actions">
+        <button 
+          class="block-btn" 
+          [class.blocked]="user.isBlocked"
+          (click)="openBlockModal(user)">
+          {{ user.isBlocked ? 'Unblock' : 'Block' }}
+        </button>
+      </div>
+    </div>
+   <p class="empty-message" *ngIf="filteredUsers.length === 0">
+      {{ searchQuery ? 'No users match your search.' : 'No users found.' }}
+    </p>
+  </div>
+
+</div>
+
+<!-- PANIC TAB -->
+<div class="placeholder-content" *ngIf="activeTab === 'panic'">
+  <p>Sadržaj za tab <strong>{{ activeTab }}</strong> će biti ovde.</p>
+</div>
+
+<!-- MODAL ZA BLOKIRANJE -->
+<div class="modal-overlay" *ngIf="showBlockModal" (click)="closeBlockModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h2>{{ selectedUser?.isBlocked ? 'Unblock' : 'Block' }} {{ selectedUser?.firstName }} {{ selectedUser?.lastName }}</h2>
+    
+    <div class="modal-body">
+      <p *ngIf="!selectedUser?.isBlocked">Please provide a reason for blocking this {{ selectedUser?.userType === 'DRIVER' ? 'driver' : 'user' }}:</p>
+      <p *ngIf="selectedUser?.isBlocked">Are you sure you want to unblock this {{ selectedUser?.userType === 'DRIVER' ? 'driver' : 'user' }}?</p>
+      
+      <textarea 
+        *ngIf="!selectedUser?.isBlocked"
+        class="block-reason-input" 
+        [(ngModel)]="blockReason" 
+        placeholder="Enter reason for blocking..."
+        rows="4"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="cancel-btn" (click)="closeBlockModal()">Cancel</button>
+      <button 
+        class="confirm-btn" 
+        [class.unblock]="selectedUser?.isBlocked"
+        (click)="confirmBlockAction()">
+        {{ selectedUser?.isBlocked ? 'Unblock' : 'Block' }}
+      </button>
+    </div>
+  </div>
+</div>
 
   </section>
 </main>

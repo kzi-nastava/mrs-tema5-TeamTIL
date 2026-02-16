@@ -1,5 +1,6 @@
 package com.example.uberproject.api;
 
+import com.example.uberproject.dto.response.ActiveHoursResponseDTO;
 import com.example.uberproject.dto.response.DriverResponseDTO;
 import com.example.uberproject.dto.response.UserResponseDTO;
 import retrofit2.Call;
@@ -19,4 +20,7 @@ public interface UserApi {
 
     @PUT("drivers/my-profile")
     Call<DriverResponseDTO> updateDriverProfile(@Body DriverResponseDTO updatedData);
+
+    @GET("drivers/active-hours")
+    Call<ActiveHoursResponseDTO> getActiveHours();
 }

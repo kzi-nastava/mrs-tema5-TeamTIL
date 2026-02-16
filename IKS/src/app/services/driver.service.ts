@@ -19,4 +19,9 @@ export class DriverService {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${this.authService.getToken()}`);
     return this.http.put(`${this.apiUrl}/my-profile`, data, { headers });
   }
+
+  getActiveHours(): Observable<any> {
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${this.authService.getToken()}`);
+    return this.http.get(`${this.apiUrl}/active-hours`, { headers });
+  }
 }

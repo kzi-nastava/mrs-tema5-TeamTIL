@@ -109,6 +109,15 @@ public class RideController {
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
+
+        // Validacija null vrednosti
+        if (request.getActualEndLocation() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (request.getActualEndTime() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         try {
             RideStopResponseDTO response = rideService.stopRide(
                     rideId,
@@ -189,16 +198,6 @@ public class RideController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "An unexpected error occurred"));
         }
-    }
-
-    // 2.4.3 Ordering from your favorite routes
-    @PostMapping("/favorites/{routeId}")
-    public ResponseEntity<RideHistoryDTO> createRideFromFavorite(@PathVariable Long routeId) {
-        RideHistoryDTO response = new RideHistoryDTO(
-                102, "me@example.com", "driver@example.com",
-                "Favorite Start", "Favorite End",
-                "ACCEPTED", 500.0, "2025-12-28T15:30:00");
-        return ResponseEntity.ok(response);
     }
 
     // 2.6.1 The start of the ride

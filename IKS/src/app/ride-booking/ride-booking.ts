@@ -5,7 +5,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HttpClientModule } from '@angular/common/http';
 import { RideService } from '../rides/services/ride.service';
-import { RideCreatedResponseDTO, RideRequestDTO } from '../models/ride-dto.model';
+import { RouteService } from '../services/route.service';
+import { RideCreatedResponseDTO, RideRequestDTO, FavoriteRouteDTO } from '../models/ride-dto.model';
 import { GeocodingService } from '../services/geocoding.service';
 import { forkJoin } from 'rxjs';
 
@@ -40,11 +41,50 @@ export class RideBooking implements OnInit {
   hourValue: number = 12;
   minuteValue: number = 0;
 
-  constructor(private rideService: RideService, private geocodingService: GeocodingService, private cdr: ChangeDetectorRef) {}
+  favoriteRoutes: FavoriteRouteDTO[] = [];
+
+  constructor(
+    private rideService: RideService, 
+    private routeService: RouteService,
+    private geocodingService: GeocodingService, 
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.generateCalendar();
+    this.loadFavoriteRoutes(); 
   }
+
+  loadFavoriteRoutes() {
+    this.routeService.getFavoriteRoutes().subscribe({
+      next: (routes) => {
+        this.favoriteRoutes = routes;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading favorite routes:', err);
+        this.favoriteRoutes = [];
+      }
+    });
+  }
+
+  selectFavoriteRoute(route: FavoriteRouteDTO) {
+  // Popuni start location
+  this.startLocation = route.startLocation;
+  
+  // Popuni end location
+  this.endLocation = route.endLocation;
+  
+  // Popuni stops
+  if (route.intermediateStops && route.intermediateStops.length > 0) {
+    this.intermediateStops = [...route.intermediateStops];
+  } else {
+    this.intermediateStops = [''];
+  }
+  
+  this.showFavorites = false;
+  this.cdr.detectChanges();
+}
 
   requestRide() {
     if (!this.startLocation || !this.startLocation.trim()) {
@@ -138,8 +178,8 @@ ${validEmails.length > 0 ? '👥 Passengers: ' + validEmails.join(', ') : ''}
             `.trim();
             
             alert(message);
-this.resetForm();
-this.cdr.detectChanges();
+            this.resetForm();
+            this.cdr.detectChanges();
           },
           error: (err) => {
             console.error('Error creating ride:', err);
@@ -196,9 +236,10 @@ this.cdr.detectChanges();
   decrementHour() { this.hourValue = this.hourValue === 0 ? 23 : this.hourValue - 1; }
   decrementMinute() { this.minuteValue = this.minuteValue === 0 ? 59 : this.minuteValue - 1; }
 
-trackByIndex(index: number): number {
-  return index;
-}
+  trackByIndex(index: number): number {
+    return index;
+  }
+  
   formatTime(val: number): string { return val.toString().padStart(2, '0'); }
 
   generateCalendar() {

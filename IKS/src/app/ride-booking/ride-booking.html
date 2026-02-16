@@ -10,13 +10,14 @@
     </div>
 
     <div class="scroll-content">
+      <!-- FORMA ZA LOKACIJE - UVEK VIDLJIVA -->
       <div class="section-container">
         <div class="input-group">
           <span class="dot outline">S</span>
           <input type="text" [(ngModel)]="startLocation" placeholder="Add starting location">
         </div>
 
-       <div class="input-group" *ngFor="let stop of intermediateStops; let i = index; trackBy: trackByIndex">
+        <div class="input-group" *ngFor="let stop of intermediateStops; let i = index; trackBy: trackByIndex">
           <span class="dot outline">S{{i + 1}}</span>
           <input type="text" [(ngModel)]="intermediateStops[i]" placeholder="Add stop">
           <button class="remove-stop" (click)="removeStop(i)">&times;</button>
@@ -35,6 +36,7 @@
 
       <hr class="separator">
 
+      <!-- KALENDAR I VREME -->
       <div class="date-time-flex-row">
         <div class="date-section">
           <label class="section-label">Choose date</label>
@@ -57,41 +59,52 @@
         <div class="time-section">
           <label class="section-label">Enter time</label>
           <div class="stepper-time-picker">
-  <div class="time-unit">
-    <button class="minus-btn" (click)="decrementHour()">−</button>
-    <span class="time-val">{{formatTime(hourValue)}}</span>
-    <button class="plus-btn" (click)="incrementHour()">+</button>
-  </div>
-  <span class="time-sep">:</span>
-  <div class="time-unit">
-    <button class="minus-btn" (click)="decrementMinute()">−</button>
-    <span class="time-val">{{formatTime(minuteValue)}}</span>
-    <button class="plus-btn" (click)="incrementMinute()">+</button>
-  </div>
-</div>
-        </div>
-      </div>
-
-      <hr class="separator">
-
-      <div class="section-container">
-        <div class="accordion-header" (click)="toggleFavorites()">
-          <span>Select from Favorite Routes</span>
-          <span class="arrow" [class.open]="showFavorites">▼</span>
-        </div>
-        <div class="accordion-content" *ngIf="showFavorites">
-          <div class="fav-route-card" *ngFor="let i of [1,2,3]">
-            <div class="route-info">
-              <span class="dist">Distance 8.2km</span>
-              <p>Stražilovska → Bulevar Kralja Petra I</p>
+            <div class="time-unit">
+              <button class="minus-btn" (click)="decrementHour()">−</button>
+              <span class="time-val">{{formatTime(hourValue)}}</span>
+              <button class="plus-btn" (click)="incrementHour()">+</button>
             </div>
-            <button class="yellow-btn-small">Choose</button>
+            <span class="time-sep">:</span>
+            <div class="time-unit">
+              <button class="minus-btn" (click)="decrementMinute()">−</button>
+              <span class="time-val">{{formatTime(minuteValue)}}</span>
+              <button class="plus-btn" (click)="incrementMinute()">+</button>
+            </div>
           </div>
         </div>
       </div>
 
       <hr class="separator">
 
+      <!-- OMILJENE RUTE -->
+      <div class="section-container">
+        <div class="accordion-header" (click)="toggleFavorites()">
+          <span>Select from Favorite Routes</span>
+          <span class="arrow" [class.open]="showFavorites">▼</span>
+        </div>
+        <div class="accordion-content" *ngIf="showFavorites">
+          @if (favoriteRoutes.length === 0) {
+            <p class="no-favorites">No favorite routes yet. Add routes from your ride history!</p>
+          }
+          
+          @for (route of favoriteRoutes; track route.routeId) {
+            <div class="fav-route-card">
+              <div class="route-info">
+                <span class="dist">Distance {{ route.distanceKm.toFixed(1) }}km · {{ route.estimatedTimeMin.toFixed(0) }} min</span>
+                <p>{{ route.startLocation }} → {{ route.endLocation }}</p>
+                @if (route.intermediateStops.length > 0) {
+                  <span class="stops-info">{{ route.intermediateStops.length }} stop(s): {{ route.intermediateStops.join(', ') }}</span>
+                }
+              </div>
+              <button class="yellow-btn-small" (click)="selectFavoriteRoute(route)">Choose</button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <hr class="separator">
+
+      <!-- PUTNICI -->
       <div class="section-container">
         <label class="section-label">Invite passengers</label>
         <div class="input-group">
@@ -110,6 +123,7 @@
 
       <hr class="separator">
 
+      <!-- TIP VOZILA -->
       <div class="section-container">
         <label class="section-label">Vehicle Type</label>
         <div class="vehicle-type-grid">

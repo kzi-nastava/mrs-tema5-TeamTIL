@@ -11,6 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class RideHistoryResponseDTO {
     private Integer id;
+    private Integer routeId;
     private String passengerEmail;
     private String passengerFirstName;
     private String passengerLastName;

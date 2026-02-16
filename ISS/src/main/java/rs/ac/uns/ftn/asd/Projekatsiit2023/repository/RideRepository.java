@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RideStatus;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Ride;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Driver;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,4 +34,10 @@ public interface RideRepository extends JpaRepository<Ride, Integer> {
     List<Ride> findByPassenger_EmailAndRideStatusIn(String email, List<RideStatus> statuses);
 
     List<Ride> findByRideStatusIn(List<RideStatus> statuses);
+
+    @Query("SELECT r FROM Ride r WHERE r.id = :id AND r.rideStatus = 'IN_PROGRESS'")
+    Optional<Ride> findActiveRideById(@Param("id") Integer id);
+
+    @Query("SELECT r FROM Ride r WHERE r.driver = :driver AND r.rideStatus = :status")
+    List<Ride> findByDriverAndRideStatus(@Param("driver") Driver driver, @Param("status") RideStatus status);
 }
