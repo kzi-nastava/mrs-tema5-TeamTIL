@@ -325,8 +325,7 @@ public class RideController {
     @PreAuthorize("hasRole('REGISTERED_USER')")
     public ResponseEntity<RideRatingResponseDTO> rateRide(
             @PathVariable Integer rideId,
-            @RequestBody RideRatingRequestDTO request,
-            @AuthenticationPrincipal RegisteredUser rater) {
+            @RequestBody RideRatingRequestDTO request) {
         Ride ride = rideRepository.findById(Math.toIntExact(rideId))
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
 
@@ -335,11 +334,17 @@ public class RideController {
                     new RideRatingResponseDTO(rideId, "UNRATED", "Deadline exceeded, rating not accepted"));
         }
 
+        if (!ride.getPassenger().getEmail().equals(request.getUserEmail())) {
+            return ResponseEntity.badRequest().body(
+                    new RideRatingResponseDTO(rideId, "UNRATED", "User not authorized to rate this ride"));
+        }
+
         Rating rating = new Rating();
         rating.setDriverRating(request.getDriverRating().doubleValue());
         rating.setVehicleRating(request.getVehicleRating().doubleValue());
         rating.setRatedDriver(ride.getDriver());
-        rating.setRater(rater);
+        rating.setRatedVehicle(ride.getDriver().getVehicle());
+        rating.setRater(ride.getPassenger());
         rating.setRide(ride);
         rating.setComment(request.getComment());
         rating.setCreatedAt(LocalDateTime.now());
