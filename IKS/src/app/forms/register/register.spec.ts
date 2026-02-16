@@ -7,7 +7,6 @@ import { of, throwError } from 'rxjs';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { vi } from 'vitest';
 
 /**
  * UNIT TESTS FOR FUNCTIONALITY 2.2.2: USER REGISTRATION
@@ -28,7 +27,7 @@ describe('Register - Functionality 2.2.2: User Registration', () => {
 
   beforeEach(async () => {
     const mockSnackBar = {
-      open: vi.fn().mockReturnValue({} as any)
+      open: jasmine.createSpy('open').and.returnValue({} as any)
     };
 
     await TestBed.configureTestingModule({
@@ -220,7 +219,7 @@ describe('Register - Functionality 2.2.2: User Registration', () => {
   describe('Sending data to backend (onSubmit method)', () => {
     
     it('TEST 16: Should not submit form if invalid', () => {
-      const registerSpy = vi.spyOn(authService, 'register');
+      const registerSpy = spyOn(authService, 'register');
       
       // Form with invalid email
       component.registerForm.patchValue({
@@ -239,7 +238,7 @@ describe('Register - Functionality 2.2.2: User Registration', () => {
     });
 
     it('TEST 17: Should not submit form if passwords do not match', () => {
-      const registerSpy = vi.spyOn(authService, 'register');
+      const registerSpy = spyOn(authService, 'register');
       
       component.registerForm.patchValue({
         name: 'Marko',
@@ -263,14 +262,14 @@ describe('Register - Functionality 2.2.2: User Registration', () => {
 
     it('TEST 18: Sends data to backend when form is valid', () => {
       // Mock service call
-      vi.spyOn(authService, 'register').mockReturnValue(
+      spyOn(authService, 'register').and.returnValue(
         of({ 
           email: 'marko@example.com',
           userType: 'REGISTERED_USER',
           message: 'Registration successful' 
         })
       );
-      vi.spyOn(authService, 'login').mockReturnValue(
+      spyOn(authService, 'login').and.returnValue(
         of({ 
           token: 'mock-token',
           userType: 'REGISTERED_USER',
@@ -297,7 +296,8 @@ describe('Register - Functionality 2.2.2: User Registration', () => {
       expect(authService.register).toHaveBeenCalled();
       
       // Verify the data that was sent
-      const callArgs = (authService.register as any).mock.calls[0][0];
+      const registerSpy = authService.register as jasmine.Spy;
+      const callArgs = registerSpy.calls.argsFor(0)[0];
       expect(callArgs.name).toBe('Marko');
       expect(callArgs.surname).toBe('Marković');
       expect(callArgs.email).toBe('marko@example.com');
@@ -306,14 +306,14 @@ describe('Register - Functionality 2.2.2: User Registration', () => {
     });
 
     it('TEST 19: Calls AuthService.register with correct data', () => {
-      const registerSpy = vi.spyOn(authService, 'register').mockReturnValue(
+      const registerSpy = spyOn(authService, 'register').and.returnValue(
         of({ 
           email: 'test@example.com',
           userType: 'REGISTERED_USER',
           message: 'Success' 
         })
       );
-      vi.spyOn(authService, 'login').mockReturnValue(
+      spyOn(authService, 'login').and.returnValue(
         of({ 
           token: 'token',
           userType: 'REGISTERED_USER',
@@ -349,14 +349,14 @@ describe('Register - Functionality 2.2.2: User Registration', () => {
     });
 
     it('TEST 20: Navigates to /user-profile after successful registration and login', () => {
-      vi.spyOn(authService, 'register').mockReturnValue(
+      spyOn(authService, 'register').and.returnValue(
         of({ 
           email: 'marko@example.com',
           userType: 'REGISTERED_USER',
           message: 'Registration successful' 
         })
       );
-      vi.spyOn(authService, 'login').mockReturnValue(
+      spyOn(authService, 'login').and.returnValue(
         of({ 
           token: 'test-token',
           userType: 'REGISTERED_USER',
@@ -365,7 +365,7 @@ describe('Register - Functionality 2.2.2: User Registration', () => {
           message: 'Login successful'
         })
       );
-      vi.spyOn(router, 'navigate');
+      spyOn(router, 'navigate');
 
       component.registerForm.patchValue({
         name: 'Marko',
@@ -383,17 +383,17 @@ describe('Register - Functionality 2.2.2: User Registration', () => {
     });
 
     it('TEST 21: Navigates to /login if auto-login fails', () => {
-      vi.spyOn(authService, 'register').mockReturnValue(
+      spyOn(authService, 'register').and.returnValue(
         of({ 
           email: 'marko@example.com',
           userType: 'REGISTERED_USER',
           message: 'Registration successful' 
         })
       );
-      vi.spyOn(authService, 'login').mockReturnValue(
+      spyOn(authService, 'login').and.returnValue(
         throwError(() => ({ status: 401 }))
       );
-      vi.spyOn(router, 'navigate');
+      spyOn(router, 'navigate');
 
       component.registerForm.patchValue({
         name: 'Marko',
@@ -411,12 +411,12 @@ describe('Register - Functionality 2.2.2: User Registration', () => {
     });
 
     it('TEST 22: Sets isLoading to false after registration error', async () => {
-      vi.spyOn(authService, 'register').mockReturnValue(
+      spyOn(authService, 'register').and.returnValue(
         throwError(() => ({ 
           error: { message: 'Email već postoji u sistemu' } 
         }))
       );
-      vi.spyOn(router, 'navigate');
+      spyOn(router, 'navigate');
 
       component.registerForm.patchValue({
         name: 'Marko',
