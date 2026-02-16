@@ -49,7 +49,7 @@ export class DriverProfileComponent implements OnInit, OnDestroy {
   }
 
   startPollingActiveHours() {
-    this.activeHoursSubscription = interval(30000).subscribe(() => {
+    this.activeHoursSubscription = interval(60000).subscribe(() => {
       this.driverService.getActiveHours().subscribe(data => {
         console.log('Active hours API response (polling):', data);
         this.activeHours = this.formatActiveHours(data);
