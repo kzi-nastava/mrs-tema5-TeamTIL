@@ -109,6 +109,15 @@ public class RideController {
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
+
+        // Validacija null vrednosti
+        if (request.getActualEndLocation() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (request.getActualEndTime() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         try {
             RideStopResponseDTO response = rideService.stopRide(
                     rideId,

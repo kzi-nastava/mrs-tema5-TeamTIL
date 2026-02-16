@@ -33,4 +33,7 @@ public interface RideRepository extends JpaRepository<Ride, Integer> {
     List<Ride> findByPassenger_EmailAndRideStatusIn(String email, List<RideStatus> statuses);
 
     List<Ride> findByRideStatusIn(List<RideStatus> statuses);
+
+    @Query("SELECT r FROM Ride r WHERE r.id = :id AND r.rideStatus = 'IN_PROGRESS'")
+    Optional<Ride> findActiveRideById(@Param("id") Integer id);
 }
