@@ -35,4 +35,7 @@ public class RideHistoryResponseDTO {
     private Double distance;
     private Double duration;
     private Boolean panicSent;
+
+    private String vehicleModel;
+    private String vehicleLicensePlate;
 }
