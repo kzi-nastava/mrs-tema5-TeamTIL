@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.LinkdPassengerDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.DriverRideDTO;
@@ -19,8 +20,10 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -199,7 +202,9 @@ public class RideService {
                     price,
                     distance,
                     duration,
-                    panicSent
+                    panicSent,
+                    ride.getDriver().getVehicle().getModel(),
+                    ride.getDriver().getVehicle().getLicensePlate()
             );
         }).collect(Collectors.toList());
     }
@@ -433,7 +438,51 @@ public class RideService {
                     .collect(Collectors.toList());
         }
 
-        // Route estimation for distance and duration
+        // For FINISHED or CANCELED rides, use data from database
+        if (ride.getRideStatus() == RideStatus.FINISHED || ride.getRideStatus() == RideStatus.CANCELED) {
+            // Use actual values from database
+            String endTimeFormatted = ride.getEndTime() != null ? ride.getEndTime().format(formatter) : null;
+            double price = ride.getTotalPrice() != null ? ride.getTotalPrice() : 0.0;
+            double distance = ride.getDistanceKm();
+            double duration = ride.getDurationMinutes();
+
+            assert ride.getEndLocation() != null;
+            return new RideDetailsResponseDTO(
+                    ride.getId(),
+                    ride.getPassenger().getFirstName(),
+                    ride.getPassenger().getLastName(),
+                    ride.getPassenger().getProfilePictureUrl(),
+                    ride.getPassenger().getPhoneNumber(),
+                    ride.getDriver() != null ? ride.getDriver().getFirstName() : null,
+                    ride.getDriver() != null ? ride.getDriver().getLastName() : null,
+                    ride.getDriver() != null ? ride.getDriver().getProfilePictureUrl() : null,
+                    ride.getDriver() != null ? ride.getDriver().getPhoneNumber() : null,
+                    ride.getDriver() != null ? ride.getDriver().getAverageRating() : null,
+                    routeLocations,
+                    (ride.getCoPassengers() != null) ?
+                            ride.getCoPassengers().stream()
+                                    .map(co -> new LinkdPassengerDTO(
+                                            co.getFirstName(), co.getLastName(), co.getProfilePictureUrl()))
+                                    .collect(Collectors.toList())
+                            : new ArrayList<>(),
+                    ride.getRideStatus().name(),
+                    ride.getStartTime() != null ? ride.getStartTime().format(formatter) : null,
+                    endTimeFormatted,
+                    Double.valueOf(price),
+                    Double.valueOf(distance),
+                    Double.valueOf(duration),
+                    ride.getRating() != null ? ride.getRating().getOverallRating() : null,
+                    ride.getRating() != null ? ride.getRating().getComment() : null,
+                    ride.getPanicNotifications() != null && !ride.getPanicNotifications().isEmpty(),
+                    ride.getInconsistencyReports() != null ?
+                            ride.getInconsistencyReports().stream()
+                                    .map(InconsistencyReport::getDescription)
+                                    .collect(Collectors.toList())
+                            : new ArrayList<>()
+            );
+        }
+
+        // For REQUESTED or IN_PROGRESS rides, estimate the values
         RouteService.RouteEstimation estimation = routeService.estimateRoute(
                 ride.getStartLocation().getLatitude(),
                 ride.getStartLocation().getLongitude(),
@@ -443,25 +492,18 @@ public class RideService {
         double distance = estimation != null ? estimation.distanceKm() : 0.0;
         double duration = estimation != null ? estimation.durationMin() : 0.0;
 
-        // Use actual end_time for FINISHED rides, otherwise calculate estimated end time
+        // Calculate estimated end time
         String endTimeFormatted = null;
-        if (ride.getRideStatus() == RideStatus.FINISHED && ride.getEndTime() != null) {
-            endTimeFormatted = ride.getEndTime().format(formatter);
-        } else if (ride.getStartTime() != null && duration > 0) {
+        if (ride.getStartTime() != null && duration > 0) {
             endTimeFormatted = ride.getStartTime().plusMinutes((long) duration).format(formatter);
         }
 
-        // Use totalPrice from DB for FINISHED rides, otherwise calculate
-        double price;
-        if (ride.getRideStatus() == RideStatus.FINISHED && ride.getTotalPrice() != null) {
-            price = ride.getTotalPrice();
-        } else {
-            price = calculateFinalPrice(
-                    ride.getDriver() != null ? ride.getDriver().getVehicle().getType() : VehicleType.STANDARD,
-                    ride.getStartLocation(),
-                    ride.getEndLocation()
-            );
-        }
+        // Calculate estimated price
+        double price = calculateFinalPrice(
+                ride.getDriver() != null ? ride.getDriver().getVehicle().getType() : VehicleType.STANDARD,
+                ride.getStartLocation(),
+                ride.getEndLocation()
+        );
 
         assert ride.getEndLocation() != null;
         return new RideDetailsResponseDTO(
@@ -478,7 +520,7 @@ public class RideService {
                 routeLocations,
                 (ride.getCoPassengers() != null) ?
                         ride.getCoPassengers().stream()
-                                .map(co -> new rs.ac.uns.ftn.asd.Projekatsiit2023.dto.LinkdPassengerDTO(
+                                .map(co -> new LinkdPassengerDTO(
                                         co.getFirstName(), co.getLastName(), co.getProfilePictureUrl()))
                                 .collect(Collectors.toList())
                         : new ArrayList<>(),
@@ -527,9 +569,9 @@ public class RideService {
         rideRepository.save(ride);
         long durationMinutes = 0;
         if (ride.getStartTime() != null && ride.getEndTime() != null) {
-            durationMinutes = java.time.temporal.ChronoUnit.MINUTES.between(ride.getStartTime(), ride.getEndTime());
+            durationMinutes = ChronoUnit.MINUTES.between(ride.getStartTime(), ride.getEndTime());
         }
-        return new rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStopResponseDTO(
+        return new RideStopResponseDTO(
                 rideId,
                 "FINISHED",
                 endLocation != null ? endLocation.getAddress() : "",
@@ -609,23 +651,6 @@ public class RideService {
         return rides.stream().map(ride -> {
             boolean panicSent = panicNotificationRepository.existsByRideId(ride.getId());
 
-            // Route estimation
-            RouteService.RouteEstimation estimation = routeService.estimateRoute(
-                    ride.getStartLocation().getLatitude(),
-                    ride.getStartLocation().getLongitude(),
-                    ride.getEndLocation().getLatitude(),
-                    ride.getEndLocation().getLongitude()
-            );
-            double distance = estimation != null ? estimation.distanceKm() : 0.0;
-            double duration = estimation != null ? estimation.durationMin() : 0.0;
-
-            String estimatedEndTime = null;
-            if (ride.getStartTime() != null && duration > 0) {
-                estimatedEndTime = ride.getStartTime().plusMinutes((long) duration).format(formatter);
-            }
-
-            double price = calculateFinalPrice(ride.getDriver().getVehicle().getType(), ride.getStartLocation(), ride.getEndLocation());
-
             return new RideHistoryResponseDTO(
                     ride.getId(),
                     ride.getRoute() != null ? ride.getRoute().getId() : null,
@@ -643,11 +668,13 @@ public class RideService {
                     ride.getEndLocation() != null ? ride.getEndLocation().getAddress() : "",
                     ride.getRideStatus().toString(),
                     ride.getStartTime() != null ? ride.getStartTime().format(formatter) : null,
-                    estimatedEndTime,
-                    price,
-                    distance,
-                    duration,
-                    panicSent
+                    ride.getEndTime() != null ? ride.getEndTime().format(formatter) : null,
+                    ride.getTotalPrice(),
+                    ((double) ride.getDistanceKm()),
+                    ((double) ride.getDurationMinutes()),
+                    panicSent,
+                    ride.getDriver().getVehicle().getModel(),
+                    ride.getDriver().getVehicle().getLicensePlate()
             );
         }).collect(Collectors.toList());
     }
@@ -704,23 +731,6 @@ public class RideService {
         return rides.stream().map(ride -> {
             boolean panicSent = panicNotificationRepository.existsByRideId(ride.getId());
 
-            // Route estimation
-            RouteService.RouteEstimation estimation = routeService.estimateRoute(
-                    ride.getStartLocation().getLatitude(),
-                    ride.getStartLocation().getLongitude(),
-                    ride.getEndLocation().getLatitude(),
-                    ride.getEndLocation().getLongitude()
-            );
-            double distance = estimation != null ? estimation.distanceKm() : 0.0;
-            double duration = estimation != null ? estimation.durationMin() : 0.0;
-
-            String estimatedEndTime = null;
-            if (ride.getStartTime() != null && duration > 0) {
-                estimatedEndTime = ride.getStartTime().plusMinutes((long) duration).format(formatter);
-            }
-
-            double price = calculateFinalPrice(ride.getDriver().getVehicle().getType(), ride.getStartLocation(), ride.getEndLocation());
-
             return new RideHistoryResponseDTO(
                     ride.getId(),
                     ride.getRoute() != null ? ride.getRoute().getId() : null, // DODAJ OVO
@@ -738,11 +748,13 @@ public class RideService {
                     ride.getEndLocation() != null ? ride.getEndLocation().getAddress() : "",
                     ride.getRideStatus().toString(),
                     ride.getStartTime() != null ? ride.getStartTime().format(formatter) : null,
-                    estimatedEndTime,
-                    price,
-                    distance,
-                    duration,
-                    panicSent
+                    ride.getEndTime() != null ? ride.getEndTime().format(formatter) : null,
+                    ride.getTotalPrice(),
+                    ((double) ride.getDistanceKm()),
+                    ((double) ride.getDurationMinutes()),
+                    panicSent,
+                    ride.getDriver().getVehicle().getModel(),
+                    ride.getDriver().getVehicle().getLicensePlate()
             );
         }).collect(Collectors.toList());
     }
@@ -870,7 +882,7 @@ public class RideService {
                     LocalDateTime estimatedEnd = ride.getStartTime()
                             .plusSeconds(ride.getRoute().getEstimatedTime());
 
-                    long minutesUntilFree = java.time.Duration.between(
+                    long minutesUntilFree = Duration.between(
                             LocalDateTime.now(), estimatedEnd
                     ).toMinutes();
 
