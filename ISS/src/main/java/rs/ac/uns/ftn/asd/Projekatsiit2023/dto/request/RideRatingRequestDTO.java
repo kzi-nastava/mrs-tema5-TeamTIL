@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RideRatingRequestDTO {
+    private String userEmail;
     private Integer driverRating;
     private Integer vehicleRating;
     private String comment;
