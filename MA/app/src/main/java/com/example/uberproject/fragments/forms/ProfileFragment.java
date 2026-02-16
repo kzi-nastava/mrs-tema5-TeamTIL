@@ -6,6 +6,8 @@ import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.view.LayoutInflater;
@@ -46,6 +48,10 @@ public class ProfileFragment extends Fragment {
 
     private boolean isDriverActive = true;
     private DriverResponseDTO currentDriverData;
+    private Handler refreshHandler;
+    private Runnable refreshRunnable;
+    private UserApi userApi;
+    private TextView tvHoursActive;
 
     @Nullable
     @Override
@@ -182,10 +188,11 @@ public class ProfileFragment extends Fragment {
         Button btnStatus = view.findViewById(R.id.btnStatusActive);
         TextView tabInfo = view.findViewById(R.id.tabInfo);
         TextView tabVehicle = view.findViewById(R.id.tabVehicle);
+        tvHoursActive = view.findViewById(R.id.tvHoursActive);
 
-        UserApi api = RetrofitClient.getInstance(getContext()).create(UserApi.class);
+        userApi = RetrofitClient.getInstance(getContext()).create(UserApi.class);
 
-        api.getDriverProfile().enqueue(new Callback<DriverResponseDTO>() {
+        userApi.getDriverProfile().enqueue(new Callback<DriverResponseDTO>() {
             @Override
             public void onResponse(Call<DriverResponseDTO> call, Response<DriverResponseDTO> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -205,6 +212,12 @@ public class ProfileFragment extends Fragment {
             public void onFailure(Call<DriverResponseDTO> call, Throwable t) {}
         });
 
+        // Učitaj aktivne sate
+        loadActiveHours(userApi, tvHoursActive);
+
+        // Pokreni Handler za osvježavanje aktivnih sati svakog minuta
+        startRefreshActiveHoursTimer();
+
         tabInfo.setOnClickListener(v -> {
             loadInfoFragment();
             updateTabStyles(tabInfo, tabVehicle);
@@ -221,7 +234,55 @@ public class ProfileFragment extends Fragment {
             setChangePhotoVisible(false);
         });
 
-        btnStatus.setOnClickListener(v -> toggleDriverStatus(api, btnStatus));
+        btnStatus.setOnClickListener(v -> toggleDriverStatus(userApi, btnStatus));
+    }
+
+    private void loadActiveHours(UserApi api, TextView tvHoursActive) {
+        api.getActiveHours().enqueue(new Callback<com.example.uberproject.dto.response.ActiveHoursResponseDTO>() {
+            @Override
+            public void onResponse(Call<com.example.uberproject.dto.response.ActiveHoursResponseDTO> call, Response<com.example.uberproject.dto.response.ActiveHoursResponseDTO> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Double hours = response.body().getActiveHoursLast24h();
+                    if (hours != null) {
+                        android.util.Log.d("ActiveHours", "Success: " + hours);
+                        String displayText = formatActiveHours(hours);
+                        tvHoursActive.setText("Hours Active (last 24h): " + displayText);
+                    }
+                } else {
+                    android.util.Log.e("ActiveHours", "Error: " + response.code() + " - " + response.message());
+                    tvHoursActive.setText("Hours Active (last 24h): Unable to load");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.example.uberproject.dto.response.ActiveHoursResponseDTO> call, Throwable t) {
+                android.util.Log.e("ActiveHours", "Request failed", t);
+                tvHoursActive.setText("Hours Active (last 24h): Unable to load");
+            }
+        });
+    }
+
+    private String formatActiveHours(Double totalHours) {
+        if (totalHours == null || totalHours <= 0) {
+            return "0 min";
+        }
+
+        int hours = (int) Math.floor(totalHours);
+        int minutes = (int) Math.round((totalHours - hours) * 60);
+
+        // Ako je 60 minuta, konvertuj u sat
+        if (minutes >= 60) {
+            hours++;
+            minutes = 0;
+        }
+
+        if (hours > 0 && minutes > 0) {
+            return hours + "h " + minutes + "min";
+        } else if (hours > 0) {
+            return hours + "h";
+        } else {
+            return minutes + "min";
+        }
     }
 
     private void toggleDriverStatus(UserApi api, Button btnStatus) {
@@ -316,6 +377,41 @@ public class ProfileFragment extends Fragment {
         getChildFragmentManager().beginTransaction()
                 .replace(R.id.profileContentContainer, infoFragment)
                 .commit();
+    }
+
+    private void startRefreshActiveHoursTimer() {
+        // ...existing code...
+        if (refreshHandler == null) {
+            refreshHandler = new Handler(Looper.getMainLooper());
+        }
+
+        refreshRunnable = new Runnable() {
+            @Override
+            public void run() {
+                // Osvježi aktivne sate
+                if (userApi != null && tvHoursActive != null) {
+                    loadActiveHours(userApi, tvHoursActive);
+                }
+                // Ponovi nakon 60 sekundi (1 minut)
+                refreshHandler.postDelayed(this, 60000);
+            }
+        };
+
+        // Pokreni prvi refresh nakon 60 sekundi
+        refreshHandler.postDelayed(refreshRunnable, 60000);
+    }
+
+    private void stopRefreshActiveHoursTimer() {
+        if (refreshHandler != null && refreshRunnable != null) {
+            refreshHandler.removeCallbacks(refreshRunnable);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Zaustavi timer kada se fragment uništi
+        stopRefreshActiveHoursTimer();
     }
 
     private void updateTabStyles(TextView selectedTab, TextView... otherTabs) {
