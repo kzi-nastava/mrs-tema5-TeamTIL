@@ -2,6 +2,13 @@ package com.example.uberproject.utils;
 
 import android.content.Context;
 
+import com.example.uberproject.api.AuthApi;
+import com.example.uberproject.api.RetrofitClient;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class AuthGuard {
     public static boolean isUserLoggedIn(Context context) {
         TokenManager tokenManager = TokenManager.getInstance(context);
@@ -79,7 +86,22 @@ public class AuthGuard {
     }
 
     public static void logout(Context context) {
-        TokenManager tokenManager = TokenManager.getInstance(context);
-        tokenManager.clearToken();
+        // Prvo pozovi backend logout API
+        AuthApi authApi = RetrofitClient.getInstance(context).create(AuthApi.class);
+        authApi.logout().enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                // API pozvan, sada obriši token lokalno
+                TokenManager tokenManager = TokenManager.getInstance(context);
+                tokenManager.clearToken();
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                // Čak i ako API poziv ne uspije, obriši token
+                TokenManager tokenManager = TokenManager.getInstance(context);
+                tokenManager.clearToken();
+            }
+        });
     }
 }

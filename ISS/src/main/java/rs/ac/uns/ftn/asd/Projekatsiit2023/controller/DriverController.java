@@ -71,4 +71,35 @@ public class DriverController {
         DriverResponseDTO response = driverService.updateDriverProfile(email, updatedData);
         return ResponseEntity.ok(response);
     }
+
+
+    @PutMapping("/status")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<Map<String, String>> changeStatus(@RequestBody Map<String, Boolean> request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        Boolean isActive = request.get("isActive");
+        if (isActive == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "isActive field is required"));
+        }
+
+        driverService.changeDriverStatus(email, isActive);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Status changed successfully to: " + (isActive ? "ACTIVE" : "INACTIVE"));
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/active-hours")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<Map<String, Object>> getActiveHoursLast24h() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        Double activeHours = driverService.getActiveHoursLast24h(email);
+        Map<String, Object> response = new HashMap<>();
+        response.put("activeHoursLast24h", activeHours);
+        response.put("message", String.format("You have been active for %.2f hours in the last 24 hours.", activeHours));
+        return ResponseEntity.ok(response);
+    }
 }

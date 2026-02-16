@@ -16,6 +16,9 @@ public class Driver extends Account {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = false;
 
+    @Column(name = "logged_in", nullable = true)
+    private Boolean loggedIn = false;
+
     /**
      * Active working time in seconds
      */
@@ -28,6 +31,9 @@ public class Driver extends Account {
 
     @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL)
     private List<PanicNotification> panicNotifications;
+
+    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL)
+    private List<DriverStatusEvent> statusEvents = new ArrayList<>();
 
     @OneToMany(mappedBy = "ratedDriver")
     private List<Rating> ratings = new ArrayList<>();

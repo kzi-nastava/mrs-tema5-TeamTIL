@@ -8,6 +8,7 @@ public class DriverResponseDTO extends UserResponseDTO {
     private Boolean babyFriendly;
     private Boolean petFriendly;
     private Boolean isActive;
+    private Double activeHours;
 
     public String getVehicleModel() { return vehicleModel; }
     public String getVehicleType() { return vehicleType; }
@@ -17,4 +18,6 @@ public class DriverResponseDTO extends UserResponseDTO {
     public Boolean getPetFriendly() { return petFriendly; }
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean active) { isActive = active; }
+    public Double getActiveHours() { return activeHours; }
+    public void setActiveHours(Double activeHours) { this.activeHours = activeHours; }
 }
