@@ -54,6 +54,10 @@ export class RideService {
   }
 
   startRide(rideId: number): Observable<any> {
-  return this.http.put(`${this.apiUrl}/${rideId}/start`, {});
-}
+    return this.http.put(`${this.apiUrl}/${rideId}/start`, {});
+  }
+
+  rateRide(rideId: number, ratingData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${rideId}/rate`, ratingData);
+  }
 }
