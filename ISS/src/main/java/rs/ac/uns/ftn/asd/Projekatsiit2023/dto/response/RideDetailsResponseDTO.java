@@ -41,4 +41,7 @@ public class RideDetailsResponseDTO {
 
     private Boolean panicSent;
     private List<String> reportedIssues;
+
+    private String vehicleModel;
+    private String vehicleLicensePlate;
 }
