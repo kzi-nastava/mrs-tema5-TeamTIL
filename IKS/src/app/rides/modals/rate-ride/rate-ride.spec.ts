@@ -242,4 +242,116 @@ describe('RateRideComponent - Functionality 2.8: Rating vehicle and driver', () 
       expect(component.isWithinDeadline()).toBeTrue();
     });
   });
+
+  // ==================== GROUP 9: EDITING MODE ====================
+  describe('Editing mode (isEditing)', () => {
+
+    afterEach(async () => {
+      // Restore TestBed after resetTestingModule() calls inside createComponentWithRide
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [RateRideComponent, MatDialogModule, MatSnackBarModule],
+        providers: [
+          { provide: MAT_DIALOG_DATA, useValue: mockRide },
+          { provide: MatDialogRef, useValue: dialogRefSpy },
+          { provide: RideService, useValue: rideServiceSpy },
+          { provide: AuthService, useValue: authServiceSpy }
+        ]
+      }).compileComponents();
+    });
+
+    function createComponentWithRide(rideData: any): RateRideComponent {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        imports: [RateRideComponent, MatDialogModule, MatSnackBarModule],
+        providers: [
+          { provide: MAT_DIALOG_DATA, useValue: rideData },
+          { provide: MatDialogRef, useValue: dialogRefSpy },
+          { provide: RideService, useValue: rideServiceSpy },
+          { provide: AuthService, useValue: authServiceSpy }
+        ]
+      });
+      const f = TestBed.createComponent(RateRideComponent);
+      f.detectChanges();
+      return f.componentInstance;
+    }
+
+    it('TEST 14: Should pre-fill comment from existingComment when isEditing is true', () => {
+      const comp = createComponentWithRide({
+        id: 123,
+        isEditing: true,
+        existingComment: 'Odlična vožnja',
+        ...formatDate(new Date())
+      });
+
+      expect(comp.comment).toBe('Odlična vožnja');
+      expect(comp.driverRating).toBe(0); // ratings ostaju 0
+      expect(comp.vehicleRating).toBe(0);
+    });
+
+    it('TEST 15: Should allow submission when isEditing even if ride.rated is true', () => {
+      rideServiceSpy.rateRide.and.returnValue(of({ message: 'Updated' }));
+
+      component.ride = {
+        id: 123,
+        rated: true,
+        isEditing: true,
+        ...formatDate(new Date())
+      };
+
+      component.driverRating = 4;
+      component.vehicleRating = 4;
+      component.comment = 'Izmjenjena ocjena';
+
+      component.submit();
+
+      expect(rideServiceSpy.rateRide).toHaveBeenCalled();
+      expect(dialogRefSpy.close).toHaveBeenCalledWith({ message: 'Updated' });
+    });
+
+    it('TEST 16: Should block submission when ride.rated is true and isEditing is false', () => {
+      spyOn(snackBar, 'open');
+
+      component.ride = {
+        id: 123,
+        rated: true,
+        isEditing: false,
+        ...formatDate(new Date())
+      };
+
+      component.driverRating = 4;
+      component.vehicleRating = 4;
+
+      component.submit();
+
+      expect(snackBar.open).toHaveBeenCalledWith(
+        'This ride has already been rated!',
+        'Close',
+        { duration: 3000 }
+      );
+      expect(rideServiceSpy.rateRide).not.toHaveBeenCalled();
+    });
+
+    it('TEST 17: Should default comment to empty string if existingComment is null/undefined', () => {
+      const comp = createComponentWithRide({
+        id: 123,
+        isEditing: true,
+        existingComment: null,
+        ...formatDate(new Date())
+      });
+
+      expect(comp.comment).toBe('');
+    });
+
+    it('TEST 18: Should NOT pre-fill anything when isEditing is false', () => {
+      const comp = createComponentWithRide({
+        id: 123,
+        isEditing: false,
+        existingComment: 'Nešto',
+        ...formatDate(new Date())
+      });
+
+      expect(comp.comment).toBe(''); // nije pre-fillovano
+    });
+  });
 });

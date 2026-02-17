@@ -33,7 +33,8 @@ interface Ride {
   distance?: string;
   driver?: { name: string; phone: string };
   vehicle?: { model: string; plate: string };
-  isFavorite?: boolean; 
+  isFavorite?: boolean;
+  rated ?: boolean;
 }
 
 @Component({
@@ -103,8 +104,9 @@ export class UserRideHistory implements OnInit {
               : ride.driverEmail || '-',
             phone: ride.driverPhoneNumber || '-'
           },
-          vehicle: { model: '-', plate: '-' },
-          isFavorite: false
+          vehicle: { model: ride.vehicleModel || '-', plate: ride.vehicleLicensePlate || '-' },
+          isFavorite: false,
+          rated : ride.rated || false
         }));
         
         this.checkFavorites();
@@ -322,6 +324,11 @@ export class UserRideHistory implements OnInit {
   openRateRide(ride: Ride) {
     if (!ride) return;
 
+    if (ride.rated) {
+      alert('You have already rated this ride.');
+      return;
+    }
+
     const dialogRef = this.dialog.open(RateRideComponent, {
       width: '420px',
       data: ride,
@@ -329,6 +336,7 @@ export class UserRideHistory implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        ride.rated = true;
         console.log('Rating:', result.rating, result.comment);
       }
     });
