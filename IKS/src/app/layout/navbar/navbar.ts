@@ -33,7 +33,7 @@ export class NavbarComponent implements OnInit {
   profilePhoto: string | null = null;
 
   constructor(private authService: AuthService, private router: Router) {}
-  // Handler for all navbar link clicks when not logged in
+
   onNavLinkClick(event: Event) {
     if (!this.isLoggedIn) {
       event.preventDefault();
@@ -54,7 +54,6 @@ export class NavbarComponent implements OnInit {
 
   private updateNavigation() {
     if (!this.isLoggedIn) {
-      // Neregistrovani korisnik
       this.navLinks = [
         { label: 'Book an Uber', route: '/book' },
         { label: 'Ride History', route: '/user-ride-history' },
@@ -69,12 +68,14 @@ export class NavbarComponent implements OnInit {
           this.navLinks = [
             { label: 'Driver registration', route: '/driver-registration' },
             { label: 'Ride History', route: '/admin-ride-history' },
+            { label: 'Reports', route: '/report' },
             { label: 'Support', route: '/support' }
           ];
           this.profileRoute = '/admin-profile';
           this.menuItems = [
             { label: 'View Profile', route: '/admin-profile', icon: 'fas fa-user' },
             { label: 'Ride History', route: '/admin-ride-history', icon: 'fas fa-calendar-alt' },
+            { label: 'Reports', route: '/report', icon: 'fas fa-chart-line' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },
             { label: 'Change Password', route: '/change-password', icon: 'fas fa-key' },
             { label: 'Log out', icon: 'fas fa-sign-out-alt', action: () => this.logout() }
@@ -85,6 +86,7 @@ export class NavbarComponent implements OnInit {
             { label: 'My Vehicle', route: '/my-vehicle' },
             { label: 'Ride History', route: '/driver-ride-history' },
             { label: 'My rides', route: '/assigned-rides' },
+            { label: 'Reports', route: '/report' },
             { label: 'Support', route: '/support' }
           ];
           this.profileRoute = '/driver-profile';
@@ -93,6 +95,7 @@ export class NavbarComponent implements OnInit {
             { label: 'My Rides', route: '/assigned-rides', icon: 'fas fa-route' },
             { label: 'Ride History', route: '/driver-ride-history', icon: 'fas fa-calendar-alt' },
             { label: 'My Vehicle', route: '/my-vehicle', icon: 'fas fa-car' },
+            { label: 'Reports', route: '/report', icon: 'fas fa-chart-line' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },
             { label: 'Change Password', route: '/change-password', icon: 'fas fa-key' },
             { label: 'Log out', icon: 'fas fa-sign-out-alt', action: () => this.logout() }
@@ -103,6 +106,7 @@ export class NavbarComponent implements OnInit {
             { label: 'Book an Uber', route: '/book' },
             { label: 'Ride History', route: '/user-ride-history' },
             { label: 'Favorite rides', route: '/favorites' },
+            { label: 'Reports', route: '/report' },
             { label: 'Support', route: '/support' }
           ];
           this.profileRoute = '/user-profile';
@@ -111,6 +115,7 @@ export class NavbarComponent implements OnInit {
             { label: 'Book an Uber', route: '/book', icon: 'fas fa-taxi' },
             { label: 'Ride History', route: '/user-ride-history', icon: 'fas fa-calendar-alt' },
             { label: 'Favorite Rides', route: '/favorites', icon: 'fas fa-star' },
+            { label: 'Reports', route: '/report', icon: 'fas fa-chart-line' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },
             { label: 'Change Password', route: '/change-password', icon: 'fas fa-key' },
             { label: 'Log out', icon: 'fas fa-sign-out-alt', action: () => this.logout() }
@@ -141,6 +146,6 @@ export class NavbarComponent implements OnInit {
 
   onImageError(event: any) {
     console.error('Failed to load profile image:', this.profilePhoto);
-    this.profilePhoto = null; // Fallback to default icon
+    this.profilePhoto = null;
   }
 }

@@ -31,6 +31,7 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.service.InconsistencyReportService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.LocationService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RideService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStatsResponseDTO;
 
 import java.security.Principal;
 import java.util.Map;
@@ -435,6 +436,49 @@ public class RideController {
 
         RideDetailsResponseDTO response = rideService.mapRideToDetailsDTO(ride);
         return ResponseEntity.ok(response);
+    }
+
+    // statistika za korisnika
+    @GetMapping("/stats/user/{email}")
+    @PreAuthorize("hasAnyRole('REGISTERED_USER', 'ADMINISTRATOR')")
+    public ResponseEntity<RideStatsResponseDTO> getUserStats(
+            @PathVariable String email,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo) {
+
+        LocalDateTime from = dateFrom != null ? LocalDateTime.parse(dateFrom) : null;
+        LocalDateTime to   = dateTo   != null ? LocalDateTime.parse(dateTo)   : null;
+
+        return ResponseEntity.ok(rideService.getUserStats(email, from, to));
+    }
+
+    // statistika za vozaca
+    @GetMapping("/stats/driver/{email}")
+    @PreAuthorize("hasAnyRole('DRIVER', 'ADMINISTRATOR')")
+    public ResponseEntity<RideStatsResponseDTO> getDriverStats(
+            @PathVariable String email,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo) {
+
+        LocalDateTime from = dateFrom != null ? LocalDateTime.parse(dateFrom) : null;
+        LocalDateTime to   = dateTo   != null ? LocalDateTime.parse(dateTo)   : null;
+
+        return ResponseEntity.ok(rideService.getDriverStats(email, from, to));
+    }
+
+    // statistika za admina, svi ili jedna osoba
+    @GetMapping("/stats/admin")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    public ResponseEntity<RideStatsResponseDTO> getAdminStats(
+            @RequestParam(defaultValue = "DRIVER") String role,
+            @RequestParam(required = false) String filterEmail,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo) {
+
+        LocalDateTime from = dateFrom != null ? LocalDateTime.parse(dateFrom) : null;
+        LocalDateTime to   = dateTo   != null ? LocalDateTime.parse(dateTo)   : null;
+
+        return ResponseEntity.ok(rideService.getAdminStats(from, to, role, filterEmail));
     }
 }
 

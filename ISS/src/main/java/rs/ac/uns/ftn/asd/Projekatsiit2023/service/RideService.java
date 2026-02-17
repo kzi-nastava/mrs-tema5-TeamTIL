@@ -30,6 +30,11 @@ import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.time.format.DateTimeFormatter;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStatsDayDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStatsResponseDTO;
+import java.time.LocalDate;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Service
 public class RideService {
@@ -949,5 +954,94 @@ public class RideService {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         return R * c; // Distance in km
+    }
+
+    //statistika za korisnika koliko je potrosio
+    public RideStatsResponseDTO getUserStats(String email, LocalDateTime from, LocalDateTime to) {
+        List<Ride> rides = rideRepository.findByPassenger_EmailAndRideStatusIn(
+                email, List.of(RideStatus.FINISHED)
+        );
+        return buildStats(rides, from, to, false);
+    }
+
+    //statistika za vozaca koliko je zaradio
+    public RideStatsResponseDTO getDriverStats(String email, LocalDateTime from, LocalDateTime to) {
+        List<Ride> rides = rideRepository.findByDriver_EmailAndRideStatusIn(
+                email, List.of(RideStatus.FINISHED)
+        );
+        return buildStats(rides, from, to, false);
+    }
+
+    //admin statistika za sve voznje, svi vozaci ili putnici
+    public RideStatsResponseDTO getAdminStats(LocalDateTime from, LocalDateTime to, String role, String filterEmail) {
+        List<Ride> rides;
+
+        if (filterEmail != null && !filterEmail.isEmpty()) {
+            //filtriraj po konkretnoj osobi
+            if ("DRIVER".equalsIgnoreCase(role)) {
+                rides = rideRepository.findByDriver_EmailAndRideStatusIn(filterEmail, List.of(RideStatus.FINISHED));
+            } else {
+                rides = rideRepository.findByPassenger_EmailAndRideStatusIn(filterEmail, List.of(RideStatus.FINISHED));
+            }
+        } else {
+            //sve zavrsene voznje
+            rides = rideRepository.findByRideStatusIn(List.of(RideStatus.FINISHED));
+        }
+
+        return buildStats(rides, from, to, false);
+    }
+
+    //zajednicka metoda za izgradnju statistike po danima
+    private RideStatsResponseDTO buildStats(List<Ride> allRides, LocalDateTime from, LocalDateTime to, boolean unused) {
+        //filtriraj po datumu
+        List<Ride> rides = allRides.stream()
+                .filter(r -> r.getStartTime() != null)
+                .filter(r -> from == null || !r.getStartTime().isBefore(from))
+                .filter(r -> to == null || !r.getStartTime().isAfter(to))
+                .collect(Collectors.toList());
+
+        //grupisi po datumu
+        Map<LocalDate, List<Ride>> byDay = new TreeMap<>();
+        for (Ride r : rides) {
+            LocalDate day = r.getStartTime().toLocalDate();
+            byDay.computeIfAbsent(day, k -> new java.util.ArrayList<>()).add(r);
+        }
+
+        //popuni sve dane u opsegu i one bez voznji
+        if (from != null && to != null) {
+            LocalDate cursor = from.toLocalDate();
+            LocalDate end = to.toLocalDate();
+            while (!cursor.isAfter(end)) {
+                byDay.putIfAbsent(cursor, new java.util.ArrayList<>());
+                cursor = cursor.plusDays(1);
+            }
+        }
+
+        //izgradi listu dana
+        List<RideStatsDayDTO> days = new java.util.ArrayList<>();
+        for (Map.Entry<LocalDate, List<Ride>> entry : byDay.entrySet()) {
+            String dateStr = entry.getKey().toString();
+            List<Ride> dayRides = entry.getValue();
+
+            int count = dayRides.size();
+            double dist = dayRides.stream().mapToDouble(Ride::getDistanceKm).sum();
+            double money = dayRides.stream()
+                    .mapToDouble(r -> r.getTotalPrice() != null ? r.getTotalPrice() : 0.0)
+                    .sum();
+
+            days.add(new RideStatsDayDTO(dateStr, count, dist, money));
+        }
+
+        //kumulativni totali
+        int totalRides = days.stream().mapToInt(RideStatsDayDTO::getRidesCount).sum();
+        double totalDist = days.stream().mapToDouble(RideStatsDayDTO::getDistanceKm).sum();
+        double totalMoney = days.stream().mapToDouble(RideStatsDayDTO::getMoneyAmount).sum();
+
+        int numDays = days.isEmpty() ? 1 : days.size();
+        double avgRides = (double) totalRides / numDays;
+        double avgDist = totalDist / numDays;
+        double avgMoney = totalMoney / numDays;
+
+        return new RideStatsResponseDTO(days, totalRides, totalDist, totalMoney, avgRides, avgDist, avgMoney);
     }
 }
