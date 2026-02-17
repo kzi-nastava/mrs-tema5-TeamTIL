@@ -192,56 +192,65 @@ export class AssignedRides implements OnInit, OnDestroy {
   });
 }
 
-    cancelRide(ride: Ride) {
-      console.log('Canceling ride:', ride);
-      // TODO: Cancel ride logic
-    }
+  cancelRide(ride: Ride) {
+    console.log('Canceling ride:', ride);
+    // TODO: Cancel ride logic
+  }
 
-    pauseRide(ride: Ride) {
-      if (!ride) return;
-      const stopRequest = {
-        rideId: ride.id,
-        actualEndLocation: {
-          latitude: 45.2671,
-          longitude: 19.8335,
-          address: 'Trg slobode 1, Novi Sad'
-        },
-        actualEndTime: new Date().toISOString()
-      };
-      this.rideService.stopRide(ride.id, stopRequest).subscribe({
-        next: () => {
-          alert('Ride stopped successfully!');
+  pauseRide(ride: Ride) {
+    if (!ride) return;
+    const stopRequest = {
+      rideId: ride.id,
+      actualEndLocation: {
+        latitude: 45.2671,
+        longitude: 19.8335,
+        address: 'Trg slobode 1, Novi Sad'
+      },
+      actualEndTime: new Date().toISOString()
+    };
+    this.rideService.stopRide(ride.id, stopRequest).subscribe({
+      next: () => {
+        alert('Ride stopped successfully!');
+        this.loadRides();
+      },
+      error: () => {
+        alert('Failed to stop ride!');
+      }
+    });
+  }
+
+  endRide(ride: Ride) {
+    if (!ride) return;
+
+    const requestPayload = {
+      actualEndLocation: {
+        latitude: 45.2671,
+        longitude: 19.8335,
+        address: 'Trg slobode 1, Novi Sad'
+      },
+      actualEndTime: new Date().toISOString()
+    };
+
+    this.rideService.endRide(ride.id, requestPayload).subscribe({
+      next: (response: any) => {
+        this.selectedRide = null;
+
+        if (response.hasNextRide) {
+          alert(`Ride ended successfully! Next ride: ${response.nextRideFrom} → ${response.nextRideTo} at ${response.nextRideScheduledTime}`);
+          this.loadRides(); // Učitaj novu vožnju
+        } else {
+          alert(`Ride ended successfully! Price: ${response.finalPrice} RSD, Duration: ${response.duration}`);
           this.loadRides();
-        },
-        error: () => {
-          alert('Failed to stop ride!');
         }
-      });
-    }
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Failed to end ride!');
+      }
+    });
+  }
 
-    endRide(ride: Ride) {
-      if (!ride) return;
-      const stopRequest = {
-        rideId: ride.id,
-        actualEndLocation: {
-          latitude: 45.2671,
-          longitude: 19.8335,
-          address: 'Trg slobode 1, Novi Sad'
-        },
-        actualEndTime: new Date().toISOString()
-      };
-      this.rideService.stopRide(ride.id, stopRequest).subscribe({
-        next: () => {
-          alert('Ride stopped successfully!');
-          this.loadRides();
-        },
-        error: () => {
-          alert('Failed to stop ride!');
-        }
-      });
-    }
-
-    ngOnDestroy(): void {
-      this.subscriptions.unsubscribe();
-    }
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
 }
