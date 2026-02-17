@@ -1,4 +1,4 @@
-package rs.ac.uns.ftn.asd.Projekatsiit2023.config;
+package rs.ac.uns.ftn.asd.Projekatsiit2023.config.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;

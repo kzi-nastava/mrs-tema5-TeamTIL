@@ -8,13 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.DriverRideDTO;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.RideHistoryDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.InconsistencyReportResponseDTO;
@@ -24,7 +22,6 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStopResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideTrackingDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RideStatus;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.VehicleType;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.InconsistencyReportService;
@@ -35,10 +32,8 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
 import java.security.Principal;
 import java.util.Map;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
@@ -265,58 +260,15 @@ public class RideController {
     // 2.7 Complete the ride
     @PutMapping("/{rideId}/end")
     @PreAuthorize("hasRole('DRIVER')")
-    public ResponseEntity<RideStopResponseDTO> endRide(
+    public ResponseEntity<RideEndResponseDTO> endRide(
             @PathVariable Integer rideId,
             @RequestBody RideEndRequestDTO request) {
-
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
+        RideEndResponseDTO response = rideService.endRideAndNotify(rideId, request);
 
-        Ride ride = rideRepository.findById(rideId)
-                .orElseThrow(() -> new RuntimeException("Ride not found"));
-
-        Route route = ride.getRoute();
-        VehicleType vehicleType = ride.getDriver().getVehicle().getType();
-
-        double finalPrice = rideService.calculateFinalPrice(
-                vehicleType,
-                ride.getStartLocation(),
-                request.getActualEndLocation()
-        );
-
-        Location endLocation = request.getActualEndLocation();
-        endLocation.setRoute(route);
-        endLocation = locationService.findOrSaveLocation(endLocation, route);
-        if (endLocation != null) {
-            route.getLocations().add(endLocation);
-        }
-        routeService.save(route);
-
-        ride.setRideStatus(RideStatus.FINISHED);
-        ride.setEndLocation(endLocation);
-        ride.setEndTime(request.getActualEndTime() != null ? request.getActualEndTime() : LocalDateTime.now());
-        ride.setTotalPrice(finalPrice);
-        ride.setRoute(route);
-
-        rideRepository.save(ride);
-
-        long durationMinutes = ChronoUnit.MINUTES.between(ride.getStartTime(), ride.getEndTime());
-
-        if (endLocation != null) {
-            RideStopResponseDTO response = new RideStopResponseDTO(
-                    rideId,
-                    "COMPLETED",
-                    endLocation.getAddress(),
-                    Math.round(finalPrice * 100.0) / 100.0,
-                    durationMinutes + " min",
-                    "Ride completed successfully"
-            );
-
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.badRequest().build();
-        }
+        return ResponseEntity.ok(response);
     }
 
     // 2.8 Rate ride, driver and vehicle

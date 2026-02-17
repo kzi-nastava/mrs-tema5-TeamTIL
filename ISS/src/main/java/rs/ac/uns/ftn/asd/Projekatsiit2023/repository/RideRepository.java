@@ -40,4 +40,13 @@ public interface RideRepository extends JpaRepository<Ride, Integer> {
 
     @Query("SELECT r FROM Ride r WHERE r.driver = :driver AND r.rideStatus = :status")
     List<Ride> findByDriverAndRideStatus(@Param("driver") Driver driver, @Param("status") RideStatus status);
+
+    @Query("SELECT r FROM Ride r WHERE r.driver.id = :driverId " +
+            "AND r.rideStatus IN :statuses " +
+            "ORDER BY r.startTime ASC " +
+            "LIMIT 1")
+    Optional<Ride> findNextRideByDriverId(
+            @Param("driverId") Integer driverId,
+            @Param("statuses") List<RideStatus> statuses
+    );
 }

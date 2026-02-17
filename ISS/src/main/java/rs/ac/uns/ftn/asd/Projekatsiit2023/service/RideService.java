@@ -41,6 +41,10 @@ public class RideService {
 
     @Autowired
     private LocationService locationService;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private NotificationService notificationService;
 
     @Autowired
     private PriceConfigRepository priceConfigRepository;
@@ -949,5 +953,88 @@ public class RideService {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         return R * c; // Distance in km
+    }
+
+    @Transactional
+    public RideEndResponseDTO endRide(Integer rideId, RideEndRequestDTO request) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+
+        if (RideStatus.FINISHED.equals(ride.getRideStatus())) {
+            throw new RuntimeException("Ride is already finished");
+        }
+
+        Route route = ride.getRoute();
+        VehicleType vehicleType = ride.getDriver().getVehicle().getType();
+
+        double finalPrice = calculateFinalPrice(
+                vehicleType,
+                ride.getStartLocation(),
+                request.getActualEndLocation()
+        );
+
+        Location endLocation = request.getActualEndLocation();
+        endLocation.setRoute(route);
+        endLocation = locationService.findOrSaveLocation(endLocation, route);
+        if (endLocation != null) {
+            route.getLocations().add(endLocation);
+        }
+        routeService.save(route);
+
+        ride.setRideStatus(RideStatus.FINISHED);
+        ride.setEndLocation(endLocation);
+        ride.setEndTime(request.getActualEndTime() != null ? request.getActualEndTime() : LocalDateTime.now());
+        ride.setTotalPrice(finalPrice);
+        ride.setRoute(route);
+        rideRepository.save(ride);
+
+        long durationMinutes = ChronoUnit.MINUTES.between(ride.getStartTime(), ride.getEndTime());
+
+        Driver driver = ride.getDriver();
+        Optional<Ride> nextRide = rideRepository.findNextRideByDriverId(
+                driver.getId(), List.of(RideStatus.REQUESTED)
+        );
+
+        if (nextRide.isEmpty()) {
+            // Ako nema naredne voznje, postavi vozaca kao aktivnog
+            driver.setIsActive(true);
+            driverRepository.save(driver);
+
+            return new RideEndResponseDTO(
+                    rideId,
+                    endLocation != null ? endLocation.getAddress() : "",
+                    Math.round(finalPrice * 100.0) / 100.0,
+                    durationMinutes + " min",
+                    null, null, null, null, false
+            );
+        } else {
+            driver.setIsActive(false);
+            driverRepository.save(driver);
+
+            Ride next = nextRide.get();
+
+            return new RideEndResponseDTO(
+                    rideId,
+                    endLocation != null ? endLocation.getAddress() : "",
+                    Math.round(finalPrice * 100.0) / 100.0,
+                    durationMinutes + " min",
+                    next.getId(),
+                    next.getStartLocation().getAddress(),
+                    next.getEndLocation().getAddress(),
+                    next.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                    true
+            );
+        }
+    }
+
+    public RideEndResponseDTO endRideAndNotify(Integer rideId, RideEndRequestDTO request) {
+        RideEndResponseDTO response = endRide(rideId, request); // transakcija se commituje
+
+        // Tek NAKON commita salji notifikaciju
+        Ride ride = rideRepository.findById(rideId).orElseThrow();
+        notificationService.sendRideFinishedNotification(ride.getPassenger(), ride);
+        emailService.sendRideFinishedEmail(ride.getPassenger().getEmail(), ride);
+
+        return response;
     }
 }

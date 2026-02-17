@@ -3,11 +3,14 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.service;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Ride;
 
 @Service
 public class EmailService {
 
     private final JavaMailSender mailSender;
+
+    private static final String BASE_URL = "http://localhost:4200";
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -45,6 +48,33 @@ public class EmailService {
                         "\n\nThis link is valid for 24 hours.\n\n" +
                         "Welcome to the team!"
         );
+
+        mailSender.send(message);
+    }
+
+    public void sendRideFinishedEmail(String toEmail, Ride ride){
+        String rateLink = BASE_URL + "/user-ride-history";
+        String newRideLink = BASE_URL + "/book";
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("Your Ride Has Been Completed – Thank You for Riding With Us");
+
+        String text = "Dear Customer,\n\n" +
+                "Your ride has been successfully completed.\n\n" +
+                "--------------- Ride Details ---------------\n" +
+                "From: " + ride.getStartLocation().getAddress() + "\n" +
+                "To: " + ride.getEndLocation().getAddress() + "\n" +
+                "Driver: " + ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName() + "\n" +
+                "Price: " + String.format("%.2f", ride.getTotalPrice()) + " RSD\n" +
+                "-------------------------------------------\n\n" +
+                "Please rate your experience by clicking the following link:\n" +
+                rateLink + "\n\n" +
+                "Would you like to book another ride? Visit:\n" +
+                newRideLink + "\n\n" +
+                "Kind regards,\nYour Support Team.";
+
+        message.setText(text);
 
         mailSender.send(message);
     }
