@@ -1,0 +1,174 @@
+<div class="report-page">
+  <div class="report-header">
+    <h1 class="report-title">
+      <span class="title-accent">Ride</span> Statistics
+    </h1>
+    <p class="report-subtitle">Analyze your ride data over time</p>
+  </div>
+
+  <!-- ADMIN CONTROLS -->
+  <div class="admin-controls" *ngIf="isAdmin">
+    <div class="control-group">
+      <label class="control-label">View type</label>
+      <div class="toggle-group">
+        <button class="toggle-btn" [class.active]="adminRole === 'DRIVER'" (click)="adminRole = 'DRIVER'; loadStats()">Drivers</button>
+        <button class="toggle-btn" [class.active]="adminRole === 'PASSENGER'" (click)="adminRole = 'PASSENGER'; loadStats()">Passengers</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label">Filter by person (optional)</label>
+      <input
+        class="filter-input"
+        type="email"
+        placeholder="Enter email address..."
+        [(ngModel)]="adminFilterEmail"
+        (change)="loadStats()"
+      />
+    </div>
+  </div>
+
+  <!-- DATE RANGE PICKER -->
+  <div class="date-range-bar">
+    <div class="date-field">
+      <label class="control-label">From</label>
+      <input type="date" class="date-input" [(ngModel)]="dateFrom" (change)="loadStats()" />
+    </div>
+    <div class="date-separator">→</div>
+    <div class="date-field">
+      <label class="control-label">To</label>
+      <input type="date" class="date-input" [(ngModel)]="dateTo" (change)="loadStats()" />
+    </div>
+    <button class="quick-btn" (click)="setLastDays(7)">Last 7 days</button>
+    <button class="quick-btn" (click)="setLastDays(30)">Last 30 days</button>
+    <button class="quick-btn" (click)="setLastDays(90)">Last 3 months</button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="spinner"></div>
+    <span>Loading statistics...</span>
+  </div>
+
+  <!-- ERROR -->
+  <div class="error-msg" *ngIf="error && !loading">
+    <span>⚠ {{ error }}</span>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-grid" *ngIf="stats && !loading">
+    <div class="summary-card rides">
+      <div class="card-icon">🚕</div>
+      <div class="card-content">
+        <div class="card-value">{{ stats.totalRides }}</div>
+        <div class="card-label">Total Rides</div>
+        <div class="card-avg">Avg {{ stats.avgRidesPerDay | number:'1.1-1' }} / day</div>
+      </div>
+    </div>
+    <div class="summary-card distance">
+      <div class="card-icon">📍</div>
+      <div class="card-content">
+        <div class="card-value">{{ stats.totalDistanceKm | number:'1.0-1' }} <small>km</small></div>
+        <div class="card-label">Total Distance</div>
+        <div class="card-avg">Avg {{ stats.avgDistancePerDay | number:'1.1-1' }} km / day</div>
+      </div>
+    </div>
+    <div class="summary-card money">
+      <div class="card-icon">{{ isDriver ? '💰' : '💳' }}</div>
+      <div class="card-content">
+        <div class="card-value">{{ stats.totalMoney | number:'1.0-0' }} <small>RSD</small></div>
+        <div class="card-label">{{ isDriver ? 'Total Earned' : 'Total Spent' }}</div>
+        <div class="card-avg">Avg {{ stats.avgMoneyPerDay | number:'1.0-0' }} RSD / day</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts-section" *ngIf="stats && !loading && stats.days.length > 0">
+
+    <!-- Chart: Rides per day -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h2 class="chart-title">Rides per Day</h2>
+        <span class="chart-cumulative">Cumulative: <strong>{{ stats.totalRides }}</strong></span>
+      </div>
+      <div class="chart-area">
+        <svg [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight" class="line-chart" preserveAspectRatio="none">
+          <line *ngFor="let y of gridLines" [attr.x1]="padLeft" [attr.y1]="y" [attr.x2]="svgWidth - padRight" [attr.y2]="y" class="grid-line"/>
+          <path [attr.d]="getAreaPath('ridesCount')" class="chart-area-fill rides-fill"/>
+          <polyline [attr.points]="getPoints('ridesCount')" class="chart-line rides-line"/>
+          <circle *ngFor="let p of getPointsArray('ridesCount'); let i = index"
+            [attr.cx]="p.x" [attr.cy]="p.y" r="4" class="chart-dot rides-dot"
+            (mouseenter)="showTooltip($event, i, 'ridesCount')"
+            (mouseleave)="hideTooltip()"/>
+          <text *ngFor="let label of xLabels; let i = index"
+            [attr.x]="getXForIndex(i)" [attr.y]="svgHeight - 4"
+            class="axis-label x-label">{{ label }}</text>
+        </svg>
+        <div class="chart-tooltip" *ngIf="tooltip.visible" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
+          <div class="tt-date">{{ tooltip.date }}</div>
+          <div class="tt-value">{{ tooltip.value }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart: Distance per day -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h2 class="chart-title">Distance per Day (km)</h2>
+        <span class="chart-cumulative">Cumulative: <strong>{{ stats.totalDistanceKm | number:'1.1-1' }} km</strong></span>
+      </div>
+      <div class="chart-area">
+        <svg [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight" class="line-chart" preserveAspectRatio="none">
+          <line *ngFor="let y of gridLines" [attr.x1]="padLeft" [attr.y1]="y" [attr.x2]="svgWidth - padRight" [attr.y2]="y" class="grid-line"/>
+          <path [attr.d]="getAreaPath('distanceKm')" class="chart-area-fill dist-fill"/>
+          <polyline [attr.points]="getPoints('distanceKm')" class="chart-line dist-line"/>
+          <circle *ngFor="let p of getPointsArray('distanceKm'); let i = index"
+            [attr.cx]="p.x" [attr.cy]="p.y" r="4" class="chart-dot dist-dot"
+            (mouseenter)="showTooltip($event, i, 'distanceKm')"
+            (mouseleave)="hideTooltip()"/>
+          <text *ngFor="let label of xLabels; let i = index"
+            [attr.x]="getXForIndex(i)" [attr.y]="svgHeight - 4"
+            class="axis-label x-label">{{ label }}</text>
+        </svg>
+        <div class="chart-tooltip" *ngIf="tooltip.visible" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
+          <div class="tt-date">{{ tooltip.date }}</div>
+          <div class="tt-value">{{ tooltip.value }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart: Money per day -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h2 class="chart-title">{{ isDriver ? 'Earnings' : 'Spending' }} per Day (RSD)</h2>
+        <span class="chart-cumulative">Cumulative: <strong>{{ stats.totalMoney | number:'1.0-0' }} RSD</strong></span>
+      </div>
+      <div class="chart-area">
+        <svg [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight" class="line-chart" preserveAspectRatio="none">
+          <line *ngFor="let y of gridLines" [attr.x1]="padLeft" [attr.y1]="y" [attr.x2]="svgWidth - padRight" [attr.y2]="y" class="grid-line"/>
+          <path [attr.d]="getAreaPath('moneyAmount')" class="chart-area-fill money-fill"/>
+          <polyline [attr.points]="getPoints('moneyAmount')" class="chart-line money-line"/>
+          <circle *ngFor="let p of getPointsArray('moneyAmount'); let i = index"
+            [attr.cx]="p.x" [attr.cy]="p.y" r="4" class="chart-dot money-dot"
+            (mouseenter)="showTooltip($event, i, 'moneyAmount')"
+            (mouseleave)="hideTooltip()"/>
+          <text *ngFor="let label of xLabels; let i = index"
+            [attr.x]="getXForIndex(i)" [attr.y]="svgHeight - 4"
+            class="axis-label x-label">{{ label }}</text>
+        </svg>
+        <div class="chart-tooltip" *ngIf="tooltip.visible" [style.left.px]="tooltip.x" [style.top.px]="tooltip.y">
+          <div class="tt-date">{{ tooltip.date }}</div>
+          <div class="tt-value">{{ tooltip.value }}</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div class="empty-state" *ngIf="stats && !loading && stats.days.length === 0">
+    <div class="empty-icon">📊</div>
+    <p>No ride data found for the selected period.</p>
+  </div>
+
+</div>

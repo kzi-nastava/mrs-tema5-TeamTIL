@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { RideDetailsResponseDTO, RideCreatedResponseDTO, RideRequestDTO } from '../../models/ride-dto.model';
+import { RideStatsResponseDTO } from '../../models/ride-stats.model';
 
 @Injectable({ providedIn: 'root' })
 export class RideService {
@@ -60,4 +61,27 @@ export class RideService {
   rateRide(rideId: number, ratingData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/${rideId}/rate`, ratingData);
   }
+
+  getUserStats(email: string, dateFrom?: string, dateTo?: string): Observable<RideStatsResponseDTO> {
+    let params = '';
+    if (dateFrom) params += `?dateFrom=${dateFrom}`;
+    if (dateTo)   params += `${params ? '&' : '?'}dateTo=${dateTo}`;
+    return this.http.get<RideStatsResponseDTO>(`${this.apiUrl}/stats/user/${email}${params}`);
+  }
+
+  getDriverStats(email: string, dateFrom?: string, dateTo?: string): Observable<RideStatsResponseDTO> {
+    let params = '';
+    if (dateFrom) params += `?dateFrom=${dateFrom}`;
+    if (dateTo)   params += `${params ? '&' : '?'}dateTo=${dateTo}`;
+    return this.http.get<RideStatsResponseDTO>(`${this.apiUrl}/stats/driver/${email}${params}`);
+  }
+
+  getAdminStats(role: string, filterEmail: string, dateFrom?: string, dateTo?: string): Observable<RideStatsResponseDTO> {
+    let params = `?role=${role}`;
+    if (filterEmail) params += `&filterEmail=${filterEmail}`;
+    if (dateFrom)    params += `&dateFrom=${dateFrom}`;
+    if (dateTo)      params += `&dateTo=${dateTo}`;
+    return this.http.get<RideStatsResponseDTO>(`${this.apiUrl}/stats/admin${params}`);
+  }
+
 }
