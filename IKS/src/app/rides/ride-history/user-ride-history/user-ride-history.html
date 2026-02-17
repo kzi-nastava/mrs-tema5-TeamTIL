@@ -142,7 +142,9 @@
         <button mat-raised-button color="primary" class="view-full-btn" (click)="viewFullRideDetails(selectedRide)">
           View full ride details
         </button>
-        <button mat-stroked-button color="accent" class="rate-btn" (click)="openRateRide(selectedRide)">
+        <button mat-stroked-button color="accent" class="rate-btn" 
+          (click)="openRateRide(selectedRide)" 
+          *ngIf="selectedRide && !selectedRide.rated">
           Rate ride
         </button>
       </div>

@@ -37,7 +37,12 @@ export class RateRideComponent {
     private dialogRef: MatDialogRef<RateRideComponent>,
     @Inject(MAT_DIALOG_DATA) public ride: any,
     private snackBar: MatSnackBar
-  ) {}
+  ) {
+    // Pre-fill comment if editing an existing rating
+    if (ride.isEditing) {
+      this.comment = ride.existingComment ?? '';
+    }
+  }
 
   setDriverRating(value: number) {
     if (value < 1 || value > 5) return;
@@ -50,6 +55,12 @@ export class RateRideComponent {
   }
 
   submit() {
+    if (this.ride.rated && !this.ride.isEditing) {
+      this.snackBar.open('This ride has already been rated!', 'Close', { duration: 3000 });
+      this.dialogRef.close();
+      return;
+    }
+
     if (this.driverRating === 0 || this.vehicleRating === 0) {
       this.snackBar.open('Please rate both driver and vehicle before submitting!', 'Close', { duration: 3000 });
       return;

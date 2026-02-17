@@ -192,6 +192,88 @@
   background: #FFC929;
 }
 
+.rating-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rating-label {
+  font-size: 14px;
+  color: #a098ae;
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.stars-display {
+  display: flex;
+  gap: 4px;
+}
+
+.star-icon {
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.2);
+  transition: color 0.2s;
+}
+
+.star-icon.filled {
+  color: #FFB800;
+}
+
+.rating-number {
+  font-size: 15px;
+  font-weight: 600;
+  color: #FFB800;
+  margin-left: 4px;
+}
+
+.rating-number.muted {
+  color: #a098ae;
+}
+
+.rating-status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  background: #4CAF50;
+  color: white;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.rating-status-badge.unrated {
+  background: rgba(255, 255, 255, 0.15);
+  color: #a098ae;
+}
+
+.rating-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.rating-comment {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.comment-text {
+  font-size: 14px;
+  color: #d0c8da;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.5;
+}
+
 /* Passengers Section */
 .passengers-section {
   background: rgba(64, 8, 72, 0.75);
