@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { RideService } from '../../rides/services/ride.service';
+import { NotificationService } from '../../services/notification.service';
 
 interface NavLink {
   label: string;
@@ -31,8 +33,10 @@ export class NavbarComponent implements OnInit {
   isDropdownOpen: boolean = false;
   userName: string = 'Username';
   profilePhoto: string | null = null;
+  hasActiveRide = false;
+  activeRideId: number | null = null;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private rideService: RideService, private router: Router, private notificationService: NotificationService, private cdr: ChangeDetectorRef) {}
   // Handler for all navbar link clicks when not logged in
   onNavLinkClick(event: Event) {
     if (!this.isLoggedIn) {
@@ -49,6 +53,32 @@ export class NavbarComponent implements OnInit {
       this.profilePhoto = user?.profilePictureUrl || null;
       console.log('Navbar - User profile photo URL:', this.profilePhoto);
       this.updateNavigation();
+
+      // Proveri aktivnu vožnju za REGISTERED_USER
+      if (user?.userType === 'REGISTERED_USER' && user.email) {
+        this.rideService.getActiveUserRides(user.email).subscribe({
+          next: (rides) => {
+            const activeRide = rides.find((r: any) => r.status?.toUpperCase() === 'IN_PROGRESS');
+            this.activeRideId = activeRide?.id || null;
+            this.hasActiveRide = !!this.activeRideId;
+            this.updateNavigation();
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.hasActiveRide = false;
+            this.cdr.detectChanges();
+          }
+        });
+      } else {
+        this.hasActiveRide = false;
+      }
+    });
+
+    this.notificationService.rideFinished$.subscribe(() => {
+      this.hasActiveRide = false;
+      this.activeRideId = null;
+      this.updateNavigation();
+      this.cdr.detectChanges();
     });
   }
 
@@ -100,7 +130,9 @@ export class NavbarComponent implements OnInit {
           break;
         default: // REGISTERED_USER
           this.navLinks = [
-            { label: 'Book an Uber', route: '/book' },
+            ...(this.hasActiveRide 
+              ? [{ label: 'Track Ride', route: '/track-ride/' + this.activeRideId }]
+              : [{ label: 'Book an Uber', route: '/book' }]),
             { label: 'Ride History', route: '/user-ride-history' },
             { label: 'Favorite rides', route: '/favorites' },
             { label: 'Support', route: '/support' }
@@ -108,7 +140,9 @@ export class NavbarComponent implements OnInit {
           this.profileRoute = '/user-profile';
           this.menuItems = [
             { label: 'View Profile', route: '/user-profile', icon: 'fas fa-user' },
-            { label: 'Book an Uber', route: '/book', icon: 'fas fa-taxi' },
+            ...(this.hasActiveRide
+              ? [{ label: 'Track Ride', route: '/track-ride/' + this.activeRideId, icon: 'fas fa-location-arrow' }]
+              : [{ label: 'Book an Uber', route: '/book', icon: 'fas fa-taxi' }]),
             { label: 'Ride History', route: '/user-ride-history', icon: 'fas fa-calendar-alt' },
             { label: 'Favorite Rides', route: '/favorites', icon: 'fas fa-star' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },

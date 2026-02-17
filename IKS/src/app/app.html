@@ -1,1 +1,11 @@
-<router-outlet />
+<router-outlet></router-outlet>
+
+<div *ngIf="showNotification" class="notification-toast">
+  <div class="toast-icon">🚕</div>
+  <div class="toast-content">
+    <p class="toast-title">Ride finished!</p>
+    <p class="toast-message">{{ notificationMessage }}</p>
+    <a routerLink="/user-ride-history" class="toast-link">Rate ride →</a>
+  </div>
+  <button class="toast-close" (click)="showNotification = false">✕</button>
+</div>

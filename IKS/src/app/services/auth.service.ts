@@ -11,6 +11,7 @@ import {
   CurrentUser,
   TokenValidationResponse
 } from '../models/auth.models';
+import { NotificationService } from './notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -26,7 +27,8 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
 
@@ -83,6 +85,8 @@ export class AuthService {
           this.currentUserSubject.next(user);
           // Pokreni automatsku proveru trajanja tokena
           this.startTokenValidationCheck();
+          // Konektuj WebSocket odmah nakon logina
+          this.notificationService.connect(response.email);
         })
       );
   }
@@ -92,6 +96,8 @@ export class AuthService {
   }
 
   logout(): void {
+    this.notificationService.disconnect();
+    
     // Zaustavi proveru tokena
     if (this.tokenCheckInterval) {
       clearInterval(this.tokenCheckInterval);

@@ -17,6 +17,7 @@ interface VehicleDTO {
   longitude: number;
 }
 import { Subscription } from 'rxjs';
+import { NotificationService } from '../../services/notification.service';
 
 interface RideCard {
   id: number;
@@ -60,14 +61,18 @@ export class Home implements OnInit {
 
     this.rideService.endRide(this.userRide.id, requestPayload).subscribe({
       next: (response: any) => {
-        alert(`Ride ended successfully! Price: ${response.finalPrice}, Duration: ${response.duration}`);
-        if (this.userRide) {
-          this.userRide.status = 'COMPLETED';
-        }
         this.showRideCard = false;
         this.userRide = null;
         this.showForm = true;
         this.cdr.detectChanges();
+
+        if (response.hasNextRide) {
+          alert(`Ride ended successfully! Next ride: ${response.nextRideFrom} → ${response.nextRideTo} at ${response.nextRideScheduledTime}`);
+          this.router.navigate(['/assigned-rides']);
+        } else {
+          alert(`Ride ended successfully! Price: ${response.finalPrice} RSD, Duration: ${response.duration}`);
+          this.router.navigate(['/assigned-rides']);
+        }
       },
       error: (err) => {
         console.error(err);
@@ -200,7 +205,8 @@ export class Home implements OnInit {
     private panicService: PanicService,
     private cdr: ChangeDetectorRef,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
   onPanicClick() {
     if (!this.userRide) return;
@@ -281,6 +287,26 @@ export class Home implements OnInit {
         this.cdr.detectChanges();
       }
     });
+
+    const rideFinishedSub = this.notificationService.rideFinished$.subscribe(() => {
+      if (this.currentUser?.email && this.currentUser?.userType === 'REGISTERED_USER') {
+        this.userRide = null;
+        this.showRideCard = true;
+        this.showForm = false;
+        this.cdr.detectChanges();
+        
+        this.rideService.getActiveUserRides(this.currentUser.email).subscribe({
+          next: (rides) => {
+            this.processRides(rides);
+          },
+          error: () => {
+            this.cdr.detectChanges();
+          }
+        });
+      }
+    });
+
+    this.subscriptions.add(rideFinishedSub);
     
     this.subscriptions.add(userSub);
   }
