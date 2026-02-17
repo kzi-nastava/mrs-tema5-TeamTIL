@@ -83,6 +83,8 @@ export interface RideDetailsResponseDTO {
   rideComment: string | null;
   panicSent: boolean;
   reportedIssues: string[];
+  vehicleModel: string | null;
+  vehicleLicensePlate: string | null;
 }
 
 export interface InconsistencyReportRequestDTO {

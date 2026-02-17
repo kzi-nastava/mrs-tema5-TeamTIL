@@ -39,7 +39,7 @@
         <div class="rating-header">
           <h3>Your Ride Rating</h3>
           <span class="rating-status-badge" *ngIf="rideDetails.rideRating !== null">Rated</span>
-          <span class="rating-status-badge unrated" *ngIf="rideDetails.rideRating === null">Not yet rated</span>
+          <span class="rating-status-badge unrated" *ngIf="rideDetails.rideRating === null">Not rated</span>
         </div>
 
         <div class="rating-rows">
@@ -62,7 +62,7 @@
           </div>
         </div>
 
-        <button class="change-rating-btn" (click)="changeRating()">
+        <button class="change-rating-btn" (click)="changeRating()" *ngIf="isWithinRatingDeadline()">
           {{ rideDetails.rideRating !== null ? 'Change rating' : 'Rate this ride' }}
         </button>
       </div>

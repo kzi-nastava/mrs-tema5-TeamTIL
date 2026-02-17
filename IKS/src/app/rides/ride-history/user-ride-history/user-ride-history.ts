@@ -321,13 +321,29 @@ export class UserRideHistory implements OnInit {
     return this.rides.filter(ride => ride.date === date);
   }
 
+  isWithinRatingDeadline(ride: Ride): boolean {
+    if (!ride.date || !ride.endTime || ride.endTime === '-') return false;
+    
+    const combined = `${ride.date} ${ride.endTime}`;
+    const months: Record<string, number> = {
+      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+    };
+
+    const parts = combined.split(' ');
+    if (parts.length < 4) return false;
+
+    const [day, monthStr, year, timePart] = parts;
+    const [hours, minutes] = timePart.split(':');
+    const rideEndDate = new Date(Number(year), months[monthStr], Number(day), Number(hours), Number(minutes));
+
+    if (isNaN(rideEndDate.getTime())) return false;
+
+    return Date.now() - rideEndDate.getTime() <= 3 * 24 * 60 * 60 * 1000;
+  }
+
   openRateRide(ride: Ride) {
     if (!ride) return;
-
-    if (ride.rated) {
-      alert('You have already rated this ride.');
-      return;
-    }
 
     const dialogRef = this.dialog.open(RateRideComponent, {
       width: '420px',
@@ -337,7 +353,7 @@ export class UserRideHistory implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         ride.rated = true;
-        console.log('Rating:', result.rating, result.comment);
+        this.cdr.detectChanges();
       }
     });
   }

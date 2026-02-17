@@ -480,7 +480,9 @@ public class RideService {
                             ride.getInconsistencyReports().stream()
                                     .map(InconsistencyReport::getDescription)
                                     .collect(Collectors.toList())
-                            : new ArrayList<>()
+                            : new ArrayList<>(),
+                    ride.getDriver().getVehicle().getModel(),
+                    ride.getDriver().getVehicle().getLicensePlate()
             );
         }
 
@@ -539,7 +541,9 @@ public class RideService {
                         ride.getInconsistencyReports().stream()
                                 .map(InconsistencyReport::getDescription)
                                 .collect(Collectors.toList())
-                        : new ArrayList<>()
+                        : new ArrayList<>(),
+                ride.getDriver().getVehicle().getModel(),
+                ride.getDriver().getVehicle().getLicensePlate()
         );
     }
 

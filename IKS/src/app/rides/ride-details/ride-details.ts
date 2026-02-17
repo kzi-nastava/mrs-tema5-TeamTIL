@@ -332,6 +332,10 @@ export class RideDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       rated: this.rideDetails.rideRating !== null,
       isEditing: true,
       existingComment: this.rideDetails.rideComment,
+      driver: {
+        name: `${this.rideDetails.driverFirstName} ${this.rideDetails.driverLastName}`,
+      },
+      vehicle: { model: this.rideDetails.vehicleModel, plate: this.rideDetails.vehicleLicensePlate }
     };
 
     const dialogRef = this.dialog.open(RateRideComponent, {
@@ -450,5 +454,32 @@ export class RideDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getStars(rating: number | null): boolean[] {
     return [1, 2, 3, 4, 5].map(i => i <= Math.round(rating ?? 0));
+  }
+
+  isWithinRatingDeadline(): boolean {
+    if (!this.rideDetails?.estimatedEndTime) return false;
+    
+    const parts = this.rideDetails.estimatedEndTime.split(',');
+    if (parts.length < 2) return false;
+
+    const date = parts[0].trim();
+    const time = parts[1].trim();
+    const combined = `${date} ${time}`;
+
+    const months: Record<string, number> = {
+      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+    };
+
+    const dateParts = combined.split(' ');
+    if (dateParts.length < 4) return false;
+
+    const [day, monthStr, year, timePart] = dateParts;
+    const [hours, minutes] = timePart.split(':');
+    const rideEndDate = new Date(Number(year), months[monthStr], Number(day), Number(hours), Number(minutes));
+
+    if (isNaN(rideEndDate.getTime())) return false;
+
+    return Date.now() - rideEndDate.getTime() <= 3 * 24 * 60 * 60 * 1000;
   }
 }

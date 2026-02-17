@@ -143,8 +143,8 @@
           View full ride details
         </button>
         <button mat-stroked-button color="accent" class="rate-btn" 
-          (click)="openRateRide(selectedRide)" 
-          *ngIf="selectedRide && !selectedRide.rated">
+          (click)="openRateRide(selectedRide)"
+          *ngIf="selectedRide && !selectedRide.rated && isWithinRatingDeadline(selectedRide)">
           Rate ride
         </button>
       </div>
