@@ -35,7 +35,7 @@
       </div>
 
       <!-- Ride Rating -->
-      <div class="rating-section" *ngIf="isRegisteredUser()">
+      <div class="rating-section" *ngIf="rideDetails.status === 'Completed' && isRegisteredUser()">
         <div class="rating-header">
           <h3>Your Ride Rating</h3>
           <span class="rating-status-badge" *ngIf="rideDetails.rideRating !== null">Rated</span>

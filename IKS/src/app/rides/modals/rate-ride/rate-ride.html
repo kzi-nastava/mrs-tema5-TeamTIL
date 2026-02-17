@@ -9,12 +9,8 @@
       <div class="entity-info">
         <div class="entity-name">{{ ride.driver?.name }}</div>
 
-        <div class="stars">
-          <mat-icon
-            *ngFor="let star of [1, 2, 3, 4, 5]"
-            (click)="setDriverRating(star)"
-            [class.active]="star <= driverRating"
-          >
+        <div class="stars" data-testid="driver-stars">
+          <mat-icon *ngFor="let star of [1, 2, 3, 4, 5]" (click)="setDriverRating(star)" [class.active]="star <= driverRating">
             star
           </mat-icon>
         </div>
@@ -38,12 +34,8 @@
           <span class="plate">({{ ride.vehicle?.plate }})</span>
         </div>
 
-        <div class="stars">
-          <mat-icon
-            *ngFor="let star of [1, 2, 3, 4, 5]"
-            (click)="setVehicleRating(star)"
-            [class.active]="star <= vehicleRating"
-          >
+        <div class="stars" data-testid="vehicle-stars">
+          <mat-icon *ngFor="let star of [1, 2, 3, 4, 5]" (click)="setVehicleRating(star)" [class.active]="star <= vehicleRating">
             star
           </mat-icon>
         </div>
@@ -58,18 +50,12 @@
   <div class="feedback">
     <label class="feedback-label">Additional Feedback</label>
 
-    <textarea matInput class="feedback-input" placeholder="Optional" [(ngModel)]="comment">
-    </textarea>
+    <textarea matInput class="feedback-input" data-testid="comment-input" placeholder="Optional" [(ngModel)]="comment"></textarea>
   </div>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button
-    mat-raised-button
-    class="submit-btn"
-    (click)="submit()"
-    [disabled]="driverRating === 0 || vehicleRating === 0"
-  >
+  <button mat-raised-button class="submit-btn" data-testid="submit-rating-btn" (click)="submit()" [disabled]="driverRating === 0 || vehicleRating === 0">
     Submit Rating
   </button>
 </mat-dialog-actions>
