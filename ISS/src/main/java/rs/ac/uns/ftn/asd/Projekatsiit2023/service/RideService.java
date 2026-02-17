@@ -1041,6 +1041,8 @@ public class RideService {
         emailService.sendRideFinishedEmail(ride.getPassenger().getEmail(), ride);
 
         return response;
+    }
+
     //statistika za korisnika koliko je potrosio
     public RideStatsResponseDTO getUserStats(String email, LocalDateTime from, LocalDateTime to) {
         List<Ride> rides = rideRepository.findByPassenger_EmailAndRideStatusIn(
