@@ -163,6 +163,7 @@ public class RideService {
 
         return rides.stream().map(ride -> {
             boolean panicSent = panicNotificationRepository.existsByRideId(ride.getId());
+            boolean rated = ride.getRating() != null;
 
             // Route estimation
             RouteService.RouteEstimation estimation = routeService.estimateRoute(
@@ -203,6 +204,7 @@ public class RideService {
                     distance,
                     duration,
                     panicSent,
+                    rated,
                     ride.getDriver().getVehicle().getModel(),
                     ride.getDriver().getVehicle().getLicensePlate()
             );
@@ -650,6 +652,7 @@ public class RideService {
 
         return rides.stream().map(ride -> {
             boolean panicSent = panicNotificationRepository.existsByRideId(ride.getId());
+            boolean rated = ride.getRating() != null;
 
             return new RideHistoryResponseDTO(
                     ride.getId(),
@@ -673,6 +676,7 @@ public class RideService {
                     ((double) ride.getDistanceKm()),
                     ((double) ride.getDurationMinutes()),
                     panicSent,
+                    rated,
                     ride.getDriver().getVehicle().getModel(),
                     ride.getDriver().getVehicle().getLicensePlate()
             );
@@ -730,6 +734,7 @@ public class RideService {
 
         return rides.stream().map(ride -> {
             boolean panicSent = panicNotificationRepository.existsByRideId(ride.getId());
+            boolean rated = ride.getRating() != null;
 
             return new RideHistoryResponseDTO(
                     ride.getId(),
@@ -753,6 +758,7 @@ public class RideService {
                     ((double) ride.getDistanceKm()),
                     ((double) ride.getDurationMinutes()),
                     panicSent,
+                    rated,
                     ride.getDriver().getVehicle().getModel(),
                     ride.getDriver().getVehicle().getLicensePlate()
             );
