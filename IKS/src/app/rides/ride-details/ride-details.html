@@ -35,15 +35,36 @@
       </div>
 
       <!-- Ride Rating -->
-      <div class="rating-section" *ngIf="isRegisteredUser()">
+      <div class="rating-section" *ngIf="rideDetails.status === 'Completed' && isRegisteredUser()">
         <div class="rating-header">
-          <h3>Ride rating</h3>
-          <span class="optional-text">Write a review (optional)</span>
+          <h3>Your Ride Rating</h3>
+          <span class="rating-status-badge" *ngIf="rideDetails.rideRating !== null">Rated</span>
+          <span class="rating-status-badge unrated" *ngIf="rideDetails.rideRating === null">Not rated</span>
         </div>
-        <div class="rating-stars">
-          <span class="star" *ngFor="let star of [1,2,3,4,5]">★</span>
+
+        <div class="rating-rows">
+          <!-- Overall Rating (vehicleRating + driverRating) / 2 -->
+          <div class="rating-row">
+            <span class="rating-label">Overall</span>
+            <div class="stars-display">
+              <span *ngFor="let filled of getStars(rideDetails.rideRating)"
+                class="star-icon" [class.filled]="filled">★</span>
+            </div>
+            <span class="rating-number" *ngIf="rideDetails.rideRating !== null">
+              {{ rideDetails.rideRating | number:'1.1-1' }}
+            </span>
+            <span class="rating-number muted" *ngIf="rideDetails.rideRating === null">—</span>
+          </div>
+          <!-- Comment -->
+          <div class="rating-comment" *ngIf="rideDetails.rideComment">
+            <span class="rating-label">Comment</span>
+            <p class="comment-text">"{{ rideDetails.rideComment }}"</p>
+          </div>
         </div>
-        <button class="change-rating-btn" (click)="changeRating()">Change rating</button>
+
+        <button class="change-rating-btn" (click)="changeRating()" *ngIf="isWithinRatingDeadline()">
+          {{ rideDetails.rideRating !== null ? 'Change rating' : 'Rate this ride' }}
+        </button>
       </div>
 
       <!-- Passengers Section -->

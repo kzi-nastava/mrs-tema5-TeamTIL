@@ -5,6 +5,8 @@ import * as L from 'leaflet';
 import { RideService } from '../services/ride.service';
 import { RideDetailsResponseDTO, LocationResponseDTO } from '../../models/ride-dto.model';
 import { AuthService } from '../../services/auth.service';
+import { MatDialog } from '@angular/material/dialog';
+import { RateRideComponent } from '../modals/rate-ride/rate-ride';
 
 @Component({
   selector: 'app-ride-details',
@@ -25,7 +27,7 @@ export class RideDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    private dialog: MatDialog,
     private rideService: RideService,
     private cdr: ChangeDetectorRef,
     private authService: AuthService
@@ -67,6 +69,22 @@ export class RideDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.cleanupMapLayers();
       this.map.remove();
     }
+  }
+
+  private loadRatings(rideId: number) {
+    this.rideService.getRideDetails(rideId).subscribe({
+      next: (data) => {
+        if (this.rideDetails) {
+          this.rideDetails.driverRating = data.driverRating;
+          this.rideDetails.rideRating = data.rideRating;
+          this.rideDetails.rideComment = data.rideComment;
+          this.cdr.detectChanges();
+        }
+      },
+      error: (error) => {
+        console.error('[RideDetails] Error loading ride ratings:', error);
+      }
+    });
   }
 
   private loadRideDetails(rideId: number): void {
@@ -303,11 +321,33 @@ export class RideDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-
-
   changeRating(): void {
-    // Logika za promenu ocjene
-    console.log('Change rating');
+    if (!this.rideDetails) return;
+
+    // Normalize RideDetailsResponseDTO to match what RateRideComponent expects
+    const normalizedData = {
+      id: this.rideDetails.id,
+      date: this.rideDetails.estimatedEndTime?.split(',')[0]?.trim(),
+      endTime: this.rideDetails.estimatedEndTime?.split(',')[1]?.trim(),
+      rated: this.rideDetails.rideRating !== null,
+      isEditing: true,
+      existingComment: this.rideDetails.rideComment,
+      driver: {
+        name: `${this.rideDetails.driverFirstName} ${this.rideDetails.driverLastName}`,
+      },
+      vehicle: { model: this.rideDetails.vehicleModel, plate: this.rideDetails.vehicleLicensePlate }
+    };
+
+    const dialogRef = this.dialog.open(RateRideComponent, {
+      width: '420px',
+      data: normalizedData,
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && this.rideId) {
+        this.loadRatings(this.rideId);
+      }
+    });
   }
 
   reportIssue(): void {
@@ -410,5 +450,36 @@ export class RideDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       return groups.join(' ');
     }
+  }
+
+  getStars(rating: number | null): boolean[] {
+    return [1, 2, 3, 4, 5].map(i => i <= Math.round(rating ?? 0));
+  }
+
+  isWithinRatingDeadline(): boolean {
+    if (!this.rideDetails?.estimatedEndTime) return false;
+    
+    const parts = this.rideDetails.estimatedEndTime.split(',');
+    if (parts.length < 2) return false;
+
+    const date = parts[0].trim();
+    const time = parts[1].trim();
+    const combined = `${date} ${time}`;
+
+    const months: Record<string, number> = {
+      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+    };
+
+    const dateParts = combined.split(' ');
+    if (dateParts.length < 4) return false;
+
+    const [day, monthStr, year, timePart] = dateParts;
+    const [hours, minutes] = timePart.split(':');
+    const rideEndDate = new Date(Number(year), months[monthStr], Number(day), Number(hours), Number(minutes));
+
+    if (isNaN(rideEndDate.getTime())) return false;
+
+    return Date.now() - rideEndDate.getTime() <= 3 * 24 * 60 * 60 * 1000;
   }
 }

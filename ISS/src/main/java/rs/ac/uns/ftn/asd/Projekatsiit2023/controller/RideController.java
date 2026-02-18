@@ -338,7 +338,10 @@ public class RideController {
                     new RideRatingResponseDTO(rideId, "UNRATED", "User not authorized to rate this ride"));
         }
 
-        Rating rating = new Rating();
+        // Upsert: find existing or create new
+        Rating rating = rideRatingRepository.findByRide(ride)
+                .orElse(new Rating());
+
         rating.setDriverRating(request.getDriverRating().doubleValue());
         rating.setVehicleRating(request.getVehicleRating().doubleValue());
         rating.setRatedDriver(ride.getDriver());
@@ -347,7 +350,9 @@ public class RideController {
         rating.setRide(ride);
         rating.setComment(request.getComment());
         rating.setCreatedAt(LocalDateTime.now());
+
         rideRatingRepository.save(rating);
+
         RideRatingResponseDTO response = new RideRatingResponseDTO(
                 rideId,
                 "RATED",
