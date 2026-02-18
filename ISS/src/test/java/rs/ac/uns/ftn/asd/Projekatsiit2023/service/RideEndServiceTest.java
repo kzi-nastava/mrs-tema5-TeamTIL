@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.RideEndRequestDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideEndResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.RideStatus;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
@@ -126,8 +125,12 @@ class RideEndServiceTest {
         when(driverRepository.save(any(Driver.class))).thenReturn(driver);
     }
 
-    private RideEndRequestDTO validRequest() {
-        return new RideEndRequestDTO(endLocation);
+    private Location validRequest() {
+        Location location = new Location();
+        location.setLatitude(endLocation.getLatitude());
+        location.setLongitude(endLocation.getLongitude());
+        location.setAddress(endLocation.getAddress());
+        return location;
     }
 
     // Osnovan slučaj: vožnja u toku, nema sledeće, status -> FINISHED
@@ -357,7 +360,6 @@ class RideEndServiceTest {
     @Test
     void shouldHandleZeroDurationRide() {
         ride.setStartTime(LocalDateTime.now());
-        RideEndRequestDTO req = new RideEndRequestDTO(endLocation);
 
         when(rideRepository.findById(1)).thenReturn(Optional.of(ride));
         when(locationService.findOrSaveLocation(any(), any())).thenReturn(endLocation);
@@ -369,7 +371,7 @@ class RideEndServiceTest {
         when(rideRepository.findNextRideByDriverId(anyInt(), any())).thenReturn(Optional.empty());
         when(driverRepository.save(any())).thenReturn(driver);
 
-        RideEndResponseDTO result = rideService.endRide(1, req);
+        RideEndResponseDTO result = rideService.endRide(1, endLocation);
 
         assertNotNull(result);
         assertEquals("0 min", result.getDuration());
@@ -379,7 +381,6 @@ class RideEndServiceTest {
     @Test
     void shouldHandleRideWithExactlyOneHour() {
         ride.setStartTime(LocalDateTime.now().minusHours(1));
-        RideEndRequestDTO req = new RideEndRequestDTO(endLocation);
 
         when(rideRepository.findById(1)).thenReturn(Optional.of(ride));
         when(locationService.findOrSaveLocation(any(), any())).thenReturn(endLocation);
@@ -391,7 +392,7 @@ class RideEndServiceTest {
         when(rideRepository.findNextRideByDriverId(anyInt(), any())).thenReturn(Optional.empty());
         when(driverRepository.save(any())).thenReturn(driver);
 
-        RideEndResponseDTO result = rideService.endRide(1, req);
+        RideEndResponseDTO result = rideService.endRide(1, endLocation);
 
         assertEquals("60 min", result.getDuration());
     }

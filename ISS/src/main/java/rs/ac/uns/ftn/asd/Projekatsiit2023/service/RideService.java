@@ -32,7 +32,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.time.format.DateTimeFormatter;
+
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStatsDayDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.RideStatsResponseDTO;
 import java.time.LocalDate;
@@ -983,7 +983,7 @@ public class RideService {
     }
 
     @Transactional
-    public RideEndResponseDTO endRide(Integer rideId, RideEndRequestDTO request) {
+    public RideEndResponseDTO endRide(Integer rideId, Location actualEndLocation) {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
 
@@ -1000,10 +1000,10 @@ public class RideService {
         double finalPrice = calculateFinalPrice(
                 vehicleType,
                 ride.getStartLocation(),
-                request.getActualEndLocation()
+                actualEndLocation
         );
 
-        Location endLocation = request.getActualEndLocation();
+        Location endLocation = actualEndLocation;
         endLocation.setRoute(route);
         endLocation = locationService.findOrSaveLocation(endLocation, route);
         if (endLocation != null) {
@@ -1057,8 +1057,8 @@ public class RideService {
         }
     }
 
-    public RideEndResponseDTO endRideAndNotify(Integer rideId, RideEndRequestDTO request) {
-        RideEndResponseDTO response = endRide(rideId, request); // transakcija se commituje
+    public RideEndResponseDTO endRideAndNotify(Integer rideId, Location actualEndLocation) {
+        RideEndResponseDTO response = endRide(rideId, actualEndLocation); // transakcija se commituje
 
         // Tek NAKON commita salji notifikaciju
         Ride ride = rideRepository.findById(rideId).orElseThrow();

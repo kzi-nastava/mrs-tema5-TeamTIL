@@ -223,7 +223,10 @@ public class RideController {
     @PreAuthorize("hasRole('REGISTERED_USER')")
     public ResponseEntity<InconsistencyReportResponseDTO> reportInconsistency(
             @PathVariable Integer rideId,
-            @RequestBody InconsistencyReportRequestDTO reportDTO) {
+            @Valid @RequestBody InconsistencyReportRequestDTO reportDTO) {
+        if (rideId <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
 
         inconsistencyReportService.saveReportWithAttachment(
                 rideId,
@@ -242,11 +245,11 @@ public class RideController {
     @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<RideEndResponseDTO> endRide(
             @PathVariable Integer rideId,
-            @RequestBody RideEndRequestDTO request) {
+            @Valid @RequestBody RideEndRequestDTO request) {
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
-        RideEndResponseDTO response = rideService.endRideAndNotify(rideId, request);
+        RideEndResponseDTO response = rideService.endRideAndNotify(rideId, request.getActualEndLocation());
 
         return ResponseEntity.ok(response);
     }
@@ -256,7 +259,7 @@ public class RideController {
     @PreAuthorize("hasRole('REGISTERED_USER')")
     public ResponseEntity<RideRatingResponseDTO> rateRide(
             @PathVariable Integer rideId,
-            @RequestBody RideRatingRequestDTO request) {
+            @Valid @RequestBody RideRatingRequestDTO request) {
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }

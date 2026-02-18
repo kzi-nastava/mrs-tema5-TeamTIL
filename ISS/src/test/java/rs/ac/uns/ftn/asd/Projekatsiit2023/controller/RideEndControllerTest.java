@@ -40,12 +40,13 @@ class RideEndControllerTest {
 
     @BeforeEach
     void setUp() {
-        Location endLocation = new Location();
-        endLocation.setAddress("Trg slobode 1, Novi Sad");
-        endLocation.setLatitude(45.2550);
-        endLocation.setLongitude(19.8449);
 
-        validRequest = new RideEndRequestDTO(endLocation);
+        Location location = new Location();
+        location.setLatitude(45.2550);
+        location.setLongitude(19.8449);
+        location.setAddress("Trg slobode 1, Novi Sad");
+
+        validRequest = new RideEndRequestDTO(location);
 
         responseNoNextRide = new RideEndResponseDTO(
                 1,
@@ -77,7 +78,7 @@ class RideEndControllerTest {
     @Test
     @WithMockUser(roles = "DRIVER")
     void shouldEndRideSuccessfullyWithoutNextRide() throws Exception {
-        when(rideService.endRideAndNotify(eq(1), any(RideEndRequestDTO.class)))
+        when(rideService.endRideAndNotify(eq(1), any(Location.class)))
                 .thenReturn(responseNoNextRide);
 
         mockMvc.perform(put("/api/rides/1/end")
@@ -94,7 +95,7 @@ class RideEndControllerTest {
     @Test
     @WithMockUser(roles = "DRIVER")
     void shouldEndRideSuccessfullyWithNextRide() throws Exception {
-        when(rideService.endRideAndNotify(eq(1), any(RideEndRequestDTO.class)))
+        when(rideService.endRideAndNotify(eq(1), any(Location.class)))
                 .thenReturn(responseWithNextRide);
 
         mockMvc.perform(put("/api/rides/1/end")
@@ -165,7 +166,7 @@ class RideEndControllerTest {
     @Test
     @WithMockUser(roles = "DRIVER")
     void shouldReturn400WhenRideNotFound() throws Exception {
-        when(rideService.endRideAndNotify(eq(999), any(RideEndRequestDTO.class)))
+        when(rideService.endRideAndNotify(eq(999), any(Location.class)))
                 .thenThrow(new RuntimeException("Ride not found"));
 
         mockMvc.perform(put("/api/rides/999/end")
@@ -178,7 +179,7 @@ class RideEndControllerTest {
     @Test
     @WithMockUser(roles = "DRIVER")
     void shouldReturn400WhenRideAlreadyFinished() throws Exception {
-        when(rideService.endRideAndNotify(eq(1), any(RideEndRequestDTO.class)))
+        when(rideService.endRideAndNotify(eq(1), any(Location.class)))
                 .thenThrow(new RuntimeException("Ride is already finished"));
 
         mockMvc.perform(put("/api/rides/1/end")
@@ -191,7 +192,7 @@ class RideEndControllerTest {
     @Test
     @WithMockUser(roles = "DRIVER")
     void shouldReturn400WhenRideIsCancelled() throws Exception {
-        when(rideService.endRideAndNotify(eq(1), any(RideEndRequestDTO.class)))
+        when(rideService.endRideAndNotify(eq(1), any(Location.class)))
                 .thenThrow(new RuntimeException("Cannot end a cancelled ride"));
 
         mockMvc.perform(put("/api/rides/1/end")
@@ -204,7 +205,7 @@ class RideEndControllerTest {
     @Test
     @WithMockUser(roles = "DRIVER")
     void shouldReturn400WhenPriceConfigMissing() throws Exception {
-        when(rideService.endRideAndNotify(eq(1), any(RideEndRequestDTO.class)))
+        when(rideService.endRideAndNotify(eq(1), any(Location.class)))
                 .thenThrow(new RuntimeException("Price config not found"));
 
         mockMvc.perform(put("/api/rides/1/end")
@@ -217,7 +218,7 @@ class RideEndControllerTest {
     @Test
     @WithMockUser(roles = "DRIVER")
     void shouldReturn500WhenDatabaseErrorOccurs() throws Exception {
-        when(rideService.endRideAndNotify(eq(1), any(RideEndRequestDTO.class)))
+        when(rideService.endRideAndNotify(eq(1), any(Location.class)))
                 .thenThrow(new RuntimeException("Database connection error"));
 
         mockMvc.perform(put("/api/rides/1/end")
@@ -234,7 +235,7 @@ class RideEndControllerTest {
                 1, "Trg slobode 1", 200.0, "0 min",
                 null, null, null, null, false
         );
-        when(rideService.endRideAndNotify(eq(1), any(RideEndRequestDTO.class)))
+        when(rideService.endRideAndNotify(eq(1), any(Location.class)))
                 .thenReturn(zeroResponse);
 
         mockMvc.perform(put("/api/rides/1/end")
