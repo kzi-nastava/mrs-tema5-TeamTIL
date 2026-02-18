@@ -227,8 +227,7 @@ export class AssignedRides implements OnInit, OnDestroy {
         latitude: 45.2671,
         longitude: 19.8335,
         address: 'Trg slobode 1, Novi Sad'
-      },
-      actualEndTime: new Date().toISOString()
+      }
     };
 
     this.rideService.endRide(ride.id, requestPayload).subscribe({
