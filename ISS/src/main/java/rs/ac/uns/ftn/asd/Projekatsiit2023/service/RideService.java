@@ -39,6 +39,11 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.springframework.scheduling.annotation.Scheduled;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 @Service
 public class RideService {
     @Autowired
@@ -63,6 +68,9 @@ public class RideService {
     @Autowired
     private RideRatingRepository rideRatingRepository;
     private final RideRepository rideRepository;
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
     private static final Logger logger = LoggerFactory.getLogger(RideService.class);
 
     public RideService(RideRepository rideRepository) {
@@ -381,6 +389,7 @@ public class RideService {
         );
 
         if (assignedDriver == null) {
+            notificationService.sendRideRejectedNotification(currentUserEmail);
             throw new RuntimeException("No available drivers at the moment");
         }
 
@@ -421,6 +430,15 @@ public class RideService {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
         String estimatedEndTime = scheduledTime.plusMinutes((long) estimation.durationMin()).format(formatter);
+
+        // Notifikacija putniku da je voznja prihvacena
+        notificationService.sendRideAcceptedNotification(passenger, savedRide);
+
+// Notifikacija vozacu o novoj voznji
+        notificationService.sendRideDriverNotification(savedRide);
+
+// Podsjetnici 15, 10 i 5 minuta pre voznje
+        scheduleRideReminders(savedRide, passenger.getEmail());
 
         return new RideCreatedResponseDTO(
                 savedRide.getId(),
@@ -1136,10 +1154,31 @@ public class RideService {
         return new RideStatsResponseDTO(days, totalRides, totalDist, totalMoney, avgRides, avgDist, avgMoney);
     }
 
+private void scheduleRideReminders(Ride ride, String passengerEmail) {
+        LocalDateTime scheduledTime = ride.getScheduledTime();
+        LocalDateTime now = LocalDateTime.now();
+        long[] minutesBefore = {15, 10, 5};
+        for (long minutes : minutesBefore) {
+            LocalDateTime reminderTime = scheduledTime.minusMinutes(minutes);
+            long delaySeconds = java.time.Duration.between(now, reminderTime).getSeconds();
+            if (delaySeconds > 0) {
+                final long min = minutes;
+                scheduler.schedule(() ->
+                                notificationService.sendRideReminderNotification(
+                                        passengerEmail,
+                                        ride.getId(),
+                                        min,
+                                        ride.getStartLocation().getAddress(),
+                                        ride.getEndLocation().getAddress()
+                                ),
+                        delaySeconds, TimeUnit.SECONDS);
+            }
+        }
+    }
+
     public RideTrackingDTO getRideTracking(Integer rideId) {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found"));
-
         return new RideTrackingDTO(
                 ride.getStartLocation().getAddress(),
                 ride.getStartLocation().getLatitude(),
@@ -1159,21 +1198,16 @@ public class RideService {
     public ResponseEntity<RideRatingResponseDTO> rateRide(Integer rideId, RideRatingRequestDTO request) {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
-
         if (ride.getEndTime().isBefore(LocalDateTime.now().minusDays(3))) {
             return ResponseEntity.badRequest().body(
                     new RideRatingResponseDTO(rideId, "UNRATED", "Deadline exceeded, rating not accepted"));
         }
-
         if (!ride.getPassenger().getEmail().equals(request.getUserEmail())) {
             return ResponseEntity.badRequest().body(
                     new RideRatingResponseDTO(rideId, "UNRATED", "User not authorized to rate this ride"));
         }
-
-        // Upsert: find existing or create new
         Rating rating = rideRatingRepository.findByRide(ride)
                 .orElse(new Rating());
-
         rating.setDriverRating(request.getDriverRating().doubleValue());
         rating.setVehicleRating(request.getVehicleRating().doubleValue());
         rating.setRatedDriver(ride.getDriver());
@@ -1183,7 +1217,6 @@ public class RideService {
         rating.setComment(request.getComment());
         rating.setCreatedAt(LocalDateTime.now());
         rideRatingRepository.save(rating);
-
         return ResponseEntity.ok(new RideRatingResponseDTO(
                 rideId,
                 "RATED",

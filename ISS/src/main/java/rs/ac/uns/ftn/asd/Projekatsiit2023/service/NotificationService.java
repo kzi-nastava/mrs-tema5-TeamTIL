@@ -42,4 +42,67 @@ public class NotificationService {
             e.printStackTrace();
         }
     }
+
+    public void sendRideAcceptedNotification(RegisteredUser passenger, Ride ride) {
+        try {
+            Map<String, Object> payload = Map.of(
+                    "type", "RIDE_ACCEPTED",
+                    "rideId", ride.getId(),
+                    "message", "Your ride has been accepted! Driver: " +
+                            ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName(),
+                    "driverName", ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName(),
+                    "vehicle", ride.getDriver().getVehicle().getModel()
+            );
+            String json = objectMapper.writeValueAsString(payload);
+            notificationHandler.sendToUser(passenger.getEmail(), json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendRideRejectedNotification(String passengerEmail) {
+        try {
+            Map<String, Object> payload = Map.of(
+                    "type", "RIDE_REJECTED",
+                    "message", "No available drivers at the moment. Please try again later."
+            );
+            String json = objectMapper.writeValueAsString(payload);
+            notificationHandler.sendToUser(passengerEmail, json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendRideDriverNotification(Ride ride) {
+        try {
+            Map<String, Object> payload = Map.of(
+                    "type", "NEW_RIDE_ASSIGNED",
+                    "rideId", ride.getId(),
+                    "message", "You have a new ride assigned!",
+                    "from", ride.getStartLocation().getAddress(),
+                    "to", ride.getEndLocation().getAddress(),
+                    "passengerName", ride.getPassenger().getFirstName() + " " + ride.getPassenger().getLastName()
+            );
+            String json = objectMapper.writeValueAsString(payload);
+            notificationHandler.sendToUser(ride.getDriver().getEmail(), json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendRideReminderNotification(String passengerEmail, Integer rideId, long minutesBefore, String from, String to) {
+        try {
+            Map<String, Object> payload = Map.of(
+                    "type", "RIDE_REMINDER",
+                    "rideId", rideId,
+                    "message", "Reminder: Your ride starts in " + minutesBefore + " minutes!",
+                    "from", from,
+                    "to", to
+            );
+            String json = objectMapper.writeValueAsString(payload);
+            notificationHandler.sendToUser(passengerEmail, json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
