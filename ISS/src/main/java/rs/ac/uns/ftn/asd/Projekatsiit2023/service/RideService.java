@@ -990,6 +990,9 @@ public class RideService {
         if (RideStatus.FINISHED.equals(ride.getRideStatus())) {
             throw new RuntimeException("Ride is already finished");
         }
+        if (!RideStatus.IN_PROGRESS.equals(ride.getRideStatus())) {
+            throw new RuntimeException("Ride cannot be ended, current status: " + ride.getRideStatus());
+        }
 
         Route route = ride.getRoute();
         VehicleType vehicleType = ride.getDriver().getVehicle().getType();
@@ -1010,7 +1013,7 @@ public class RideService {
 
         ride.setRideStatus(RideStatus.FINISHED);
         ride.setEndLocation(endLocation);
-        ride.setEndTime(request.getActualEndTime() != null ? request.getActualEndTime() : LocalDateTime.now());
+        ride.setEndTime(LocalDateTime.now());
         ride.setTotalPrice(finalPrice);
         ride.setRoute(route);
         rideRepository.save(ride);
