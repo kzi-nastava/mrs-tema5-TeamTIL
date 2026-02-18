@@ -46,8 +46,7 @@ export class Home implements OnInit {
         latitude: 45.2671,
         longitude: 19.8335,
         address: 'Trg slobode 1, Novi Sad'
-      },
-      actualEndTime: new Date().toISOString()
+      }
     };
 
     this.rideService.endRide(this.userRide.id, requestPayload).subscribe({
