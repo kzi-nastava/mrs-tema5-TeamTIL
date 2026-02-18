@@ -7,17 +7,9 @@ import { RideService } from '../../rides/services/ride.service';
 import { AuthService } from '../../services/auth.service';
 import { PanicService } from '../../services/panic.service';
 import { HttpClient } from '@angular/common/http';
-
-interface VehicleDTO {
-  name: string;
-  type: string;
-  licensePlate: string;
-  available: boolean;
-  latitude: number;
-  longitude: number;
-}
 import { Subscription } from 'rxjs';
 import { NotificationService } from '../../services/notification.service';
+import { PublicService } from '../../services/public.service';
 
 interface RideCard {
   id: number;
@@ -38,13 +30,12 @@ export class Home implements OnInit {
   private vehicleMarkers: Map<string, L.Marker> = new Map();
 
   private fetchVehicles(): void {
-    this.http.get<VehicleDTO[]>('http://localhost:8080/api/public/vehicles')
-      .subscribe({
-        next: (data) => {
-          this.mapComponent?.updateVehicleMarkers(data, this.vehicleMarkers);
-        },
-        error: (err) => console.error('Error fetching vehicles:', err)
-      });
+    this.publicService.getAvailableVehicles().subscribe({
+      next: (data) => {
+        this.mapComponent?.updateVehicleMarkers(data, this.vehicleMarkers);
+      },
+      error: (err) => console.error('Error fetching vehicles:', err)
+    });
   }
 
   endRide() {
@@ -192,6 +183,8 @@ export class Home implements OnInit {
 
   userRide: RideCard | null = null;
   currentUser: any = null;
+  isDriver: boolean = false;
+  isPassenger: boolean = false;
   showRideCard = false;
   isLoggedIn = false;
   showCancelForm = false;
@@ -206,15 +199,18 @@ export class Home implements OnInit {
     private cdr: ChangeDetectorRef,
     private http: HttpClient,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private publicService: PublicService
   ) {}
+  
   onPanicClick() {
     if (!this.userRide) return;
+
     const payload = {
       rideId: this.userRide.id,
-      locationId: 1, // TODO: Replace with real locationId if available
-      registeredUserId: null, // TODO: Set if user is registered user
-      driverId: this.currentUser?.userType === 'DRIVER' ? this.currentUser?.email : null // Use email as identifier for now
+      locationId: 1, // TODO: Replace with real locationId
+      userType: this.isDriver ? 'DRIVER' : 'REGISTERED_USER',
+      accountEmail: this.currentUser?.email
     };
     this.panicService.triggerPanic(payload).subscribe({
       next: () => {
@@ -232,6 +228,8 @@ export class Home implements OnInit {
       this.currentUser = user;
       console.log('[DEBUG] currentUser', user);
       this.isLoggedIn = !!user && !!user.email;
+      this.isDriver = user?.userType === 'DRIVER';
+      this.isPassenger = user?.userType === 'REGISTERED_USER';
       if (
         this.isLoggedIn && user && user.email &&
         (user.userType === 'DRIVER' || user.userType === 'REGISTERED_USER')

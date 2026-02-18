@@ -43,13 +43,15 @@ import { ReportDriver } from '../modals/report-driver/report-driver';
 })
 
 export class TrackRide {
-  rideId?: number; // Hardcoded ride ID for demonstration
+  rideId?: number;
 
   selectedRide?: RideTrackingDTO;
 
   @ViewChild(MapView) mapComponent?: MapView;
   currentUser: any = null;
   isLoggedIn: boolean = false;
+  isDriver: boolean = false;
+  isPassenger: boolean = false;
   currentPrice?: number;
   eta?: string;
   etaMin?: number; // minutes
@@ -63,6 +65,8 @@ export class TrackRide {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       this.isLoggedIn = !!user && !!user.email;
+      this.isDriver = user?.userType === 'DRIVER';
+      this.isPassenger = user?.userType === 'REGISTERED_USER';
     });
 
     this.rideTrackingService.getRideTracking(this.rideId)
@@ -125,11 +129,12 @@ export class TrackRide {
 
   onPanicClick() {
     if (!this.selectedRide) return;
+
     const payload = {
       rideId: this.rideId,
-      locationId: 1, // TODO: Replace with real locationId if available
-      registeredUserId: null, // TODO: Set if user is registered user
-      driverId: this.currentUser?.userType === 'DRIVER' ? this.currentUser?.email : null // Use email as identifier for now
+      locationId: 1, // TODO: Replace with real locationId
+      userType: this.isDriver ? 'DRIVER' : 'REGISTERED_USER',
+      accountEmail: this.currentUser?.email
     };
     this.panicService.triggerPanic(payload).subscribe({
       next: () => {

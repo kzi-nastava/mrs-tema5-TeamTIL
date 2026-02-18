@@ -30,18 +30,37 @@
       </div>
 
       <div class="details-body minimal">
-        <div class="detail-item">
-          <label>Driver</label>
-          <div class="driver-info">
-            <div class="driver-avatar">
-              <i class="fas fa-user"></i>
-            </div>
-            <div class="driver-details">
-              <p class="driver-name">{{ selectedRide.driverName }}</p>
-              <p class="driver-phone">{{ selectedRide.driverPhone }}</p>
+        <!-- PASSENGER vidi info o Driveru -->
+        @if (isPassenger) {
+          <div class="detail-item">
+            <label>Driver</label>
+            <div class="driver-info">
+              <div class="driver-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="driver-details">
+                <p class="driver-name">{{ selectedRide.driverName }}</p>
+                <p class="driver-phone">{{ selectedRide.driverPhone }}</p>
+              </div>
             </div>
           </div>
-        </div>
+        }
+
+        <!-- DRIVER vidi info o Passengeru -->
+        @if (isDriver) {
+          <div class="detail-item">
+            <label>Passenger</label>
+            <div class="driver-info">
+              <div class="driver-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="driver-details">
+                <p class="driver-name">{{ selectedRide.passengerName }}</p>
+                <p class="driver-phone">{{ selectedRide.passengerPhone }}</p>
+              </div>
+            </div>
+          </div>
+        }
 
         <div class="detail-item">
           <label>Start time</label>
@@ -62,14 +81,16 @@
         </div>
       </div>
 
-      <button
-        mat-stroked-button
-        color="accent"
-        class="report-btn"
-        (click)="openReportDriver(selectedRide)"
-      >
-        Report driver
-      </button>
+      @if (isPassenger) {
+        <button
+          mat-stroked-button
+          color="accent"
+          class="report-btn"
+          (click)="openReportDriver(selectedRide)"
+        >
+          Report driver
+        </button>
+      }
     }
   </aside>
 </div>

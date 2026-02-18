@@ -35,7 +35,7 @@
       </div>
 
       <!-- Ride Rating -->
-      <div class="rating-section" *ngIf="rideDetails.status === 'Completed' && isRegisteredUser()">
+      <div class="rating-section" *ngIf="rideDetails.status === 'FINISHED' && isRegisteredUser()">
         <div class="rating-header">
           <h3>Your Ride Rating</h3>
           <span class="rating-status-badge" *ngIf="rideDetails.rideRating !== null">Rated</span>
@@ -104,8 +104,33 @@
           </div>
         </div>
       </div>
-      <div class="issues-section" *ngIf="!rideDetails.panicSent && isRegisteredUser()">
-        <button class="report-issue-btn" (click)="reportIssue()">Report an issue</button>
+
+      <!-- Inconsistency Reports -->
+      <div class="issues-section">
+        <h3>Inconsistency Reports</h3>
+
+        @if (rideDetails.reportedIssues && rideDetails.reportedIssues.length > 0) {
+          <div class="issue-list">
+            @for (issue of rideDetails.reportedIssues; track issue) {
+              <div class="issue-item">
+                <svg class="warning-icon" width="24" height="24" viewBox="0 0 24 24">
+                  <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" fill="#FFB800"/>
+                </svg>
+                <span>{{ issue }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <p style="color: #a098ae; font-size: 14px; margin: 0 0 16px 0;">
+            No inconsistency reports for this ride.
+          </p>
+        }
+
+        @if (isRegisteredUser() && rideDetails.status !== 'CANCELED') {
+          <button class="report-issue-btn" (click)="openReportDialog()">
+            Report an inconsistency
+          </button>
+        }
       </div>
     </div>
 
@@ -114,7 +139,6 @@
       <div class="ride-info-panel">
         <div class="panel-header">
           <h2>Ride Info</h2>
-          <button class="close-btn" (click)="closeRideInfo()">×</button>
         </div>
 
         <!-- Driver Info -->
