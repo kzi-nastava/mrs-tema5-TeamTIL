@@ -17,6 +17,8 @@ export class App implements OnInit {
   protected readonly title = signal('UberProject');
   showNotification = false;
   notificationMessage = '';
+  notificationTitle = '';
+  notificationType = '';
 
   constructor(private notificationService: NotificationService, private authService: AuthService, private cdr: ChangeDetectorRef) { }
   
@@ -28,18 +30,36 @@ export class App implements OnInit {
     }
 
     this.notificationService.notification$.subscribe(data => {
-      if (data.type === 'RIDE_FINISHED') {
-        this.notificationMessage = data.message;
-        this.showNotification = true;
-        this.notificationService.rideFinished$.next(); // trigger za navbar
-        this.cdr.detectChanges(); // osveži UI
+      const handledTypes = ['RIDE_FINISHED', 'RIDE_ACCEPTED', 'RIDE_REJECTED', 'RIDE_REMINDER', 'NEW_RIDE_ASSIGNED'];
 
-        // sakrij nakon 8 sekundi
-        setTimeout(() => {
-          this.showNotification = false;
-          this.cdr.detectChanges(); // osveži UI
-        }, 8000);
-      }
+if (handledTypes.includes(data.type)) {
+  this.notificationMessage = data.message;
+  this.notificationTitle = this.getNotificationTitle(data.type);
+  this.notificationType = data.type;
+  this.showNotification = true;
+
+  if (data.type === 'RIDE_FINISHED') {
+    this.notificationService.rideFinished$.next();
+  }
+
+  this.cdr.detectChanges();
+
+  setTimeout(() => {
+    this.showNotification = false;
+    this.cdr.detectChanges();
+  }, 8000);
+}
     });
   }
+
+getNotificationTitle(type: string): string {
+  switch(type) {
+    case 'RIDE_ACCEPTED': return '✅ Ride Accepted';
+    case 'RIDE_REJECTED': return '❌ No Drivers Available';
+    case 'NEW_RIDE_ASSIGNED': return '🚗 New Ride Assigned';
+    case 'RIDE_REMINDER': return '⏰ Ride Reminder';
+    case 'RIDE_FINISHED': return '🏁 Ride Finished';
+    default: return 'Notification';
+  }
+}
 }

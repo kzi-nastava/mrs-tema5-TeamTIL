@@ -36,6 +36,11 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.springframework.scheduling.annotation.Scheduled;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 @Service
 public class RideService {
     @Autowired
@@ -59,6 +64,9 @@ public class RideService {
     private DriverRepository driverRepository;
 
     private final RideRepository rideRepository;
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
     private static final Logger logger = LoggerFactory.getLogger(RideService.class);
 
     public RideService(RideRepository rideRepository) {
@@ -377,6 +385,7 @@ public class RideService {
         );
 
         if (assignedDriver == null) {
+            notificationService.sendRideRejectedNotification(currentUserEmail);
             throw new RuntimeException("No available drivers at the moment");
         }
 
@@ -417,6 +426,15 @@ public class RideService {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
         String estimatedEndTime = scheduledTime.plusMinutes((long) estimation.durationMin()).format(formatter);
+
+        // Notifikacija putniku da je voznja prihvacena
+        notificationService.sendRideAcceptedNotification(passenger, savedRide);
+
+// Notifikacija vozacu o novoj voznji
+        notificationService.sendRideDriverNotification(savedRide);
+
+// Podsjetnici 15, 10 i 5 minuta pre voznje
+        scheduleRideReminders(savedRide, passenger.getEmail());
 
         return new RideCreatedResponseDTO(
                 savedRide.getId(),
@@ -1130,5 +1148,30 @@ public class RideService {
         double avgMoney = totalMoney / numDays;
 
         return new RideStatsResponseDTO(days, totalRides, totalDist, totalMoney, avgRides, avgDist, avgMoney);
+    }
+
+    private void scheduleRideReminders(Ride ride, String passengerEmail) {
+        LocalDateTime scheduledTime = ride.getScheduledTime();
+        LocalDateTime now = LocalDateTime.now();
+
+        long[] minutesBefore = {15, 10, 5};
+
+        for (long minutes : minutesBefore) {
+            LocalDateTime reminderTime = scheduledTime.minusMinutes(minutes);
+            long delaySeconds = java.time.Duration.between(now, reminderTime).getSeconds();
+
+            if (delaySeconds > 0) {
+                final long min = minutes;
+                scheduler.schedule(() ->
+                                notificationService.sendRideReminderNotification(
+                                        passengerEmail,
+                                        ride.getId(),
+                                        min,
+                                        ride.getStartLocation().getAddress(),
+                                        ride.getEndLocation().getAddress()
+                                ),
+                        delaySeconds, TimeUnit.SECONDS);
+            }
+        }
     }
 }
