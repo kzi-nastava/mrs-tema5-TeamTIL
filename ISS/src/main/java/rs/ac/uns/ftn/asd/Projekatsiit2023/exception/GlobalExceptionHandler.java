@@ -1,5 +1,6 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -24,6 +25,16 @@ public class GlobalExceptionHandler {
                 errors.put("error", error.getDefaultMessage())
             );
         }
+        return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> handleConstraintViolation(
+            ConstraintViolationException ex) {
+
+        Map<String, String> errors = new HashMap<>();
+        ex.getConstraintViolations()
+                .forEach(v -> errors.put(v.getPropertyPath().toString(), v.getMessage()));
         return ResponseEntity.badRequest().body(errors);
     }
 

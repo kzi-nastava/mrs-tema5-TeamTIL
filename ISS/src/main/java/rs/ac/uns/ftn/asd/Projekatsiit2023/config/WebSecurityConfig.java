@@ -76,6 +76,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/rides/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
+                .requestMatchers("/api/price-config/**").hasRole("ADMINISTRATOR")
                 .anyRequest().authenticated()
         );
 
