@@ -7,4 +7,14 @@
         android:id="@+id/webViewMap"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
+    <Button
+        android:id="@+id/btnEstimateRide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Estimate Ride"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:textColor="@android:color/white"
+        android:background="@android:color/holo_blue_dark"/>
 </FrameLayout>

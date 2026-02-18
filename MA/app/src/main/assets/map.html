@@ -46,6 +46,7 @@
 
     var markers = [];
     var routeLayer = null;
+    var routeMarkers = [];
 
     var activeIcon = L.icon({
         iconUrl: 'file:///android_asset/active_driver.png',
@@ -57,6 +58,22 @@
         iconUrl: 'file:///android_asset/inactive_driver.png',
         iconSize: [32, 32],
         iconAnchor: [16, 32],
+    });
+
+    var startIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+    });
+
+    var destinationIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
     });
 
     function addMarker(lat, lng, title, available) {
@@ -72,6 +89,8 @@
     function clearMarkers() {
         markers.forEach(function(m) { map.removeLayer(m); });
         markers = [];
+        routeMarkers.forEach(function(m) { map.removeLayer(m); });
+        routeMarkers = [];
         if(routeLayer) {
             map.removeLayer(routeLayer);
             routeLayer = null;
@@ -79,10 +98,32 @@
     }
 
     function drawRoute(coords, estimatedTime) {
+        // Clear previous route elements
+        routeMarkers.forEach(function(m) { map.removeLayer(m); });
+        routeMarkers = [];
         if(routeLayer) map.removeLayer(routeLayer);
+
+        // Draw the route line
         routeLayer = L.polyline(coords, { color: 'blue', weight: 5 }).addTo(map);
 
-        if(estimatedTime && coords.length>1){
+        // Add Start marker
+        if(coords.length > 0) {
+            var startMarker = L.marker(coords[0], { icon: startIcon })
+                .addTo(map)
+                .bindPopup('<strong>Start</strong>');
+            routeMarkers.push(startMarker);
+        }
+
+        // Add Destination marker
+        if(coords.length > 1) {
+            var destMarker = L.marker(coords[coords.length - 1], { icon: destinationIcon })
+                .addTo(map)
+                .bindPopup('<strong>Destination</strong>');
+            routeMarkers.push(destMarker);
+        }
+
+        // Add estimated time popup in the middle of the route
+        if(estimatedTime && coords.length > 1){
             var midIdx = Math.floor(coords.length/2);
             var midPoint = coords[midIdx];
             L.popup({closeButton:false, autoClose:false, closeOnClick:false, className:'route-time-popup'})
