@@ -8,5 +8,7 @@ export interface RideTrackingDTO {
     startTime?: string;
     driverName?: string;
     driverPhone?: string;
+    passengerName?: string;
+    passengerPhone?: string;
     vehicleType?: string;
 }

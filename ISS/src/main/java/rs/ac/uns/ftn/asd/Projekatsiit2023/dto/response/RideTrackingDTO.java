@@ -18,4 +18,6 @@ public class RideTrackingDTO {
     private String driverPhone;
     private String vehicleType;
     private String startTime;
+    private String passengerName;
+    private String passengerPhone;
 }

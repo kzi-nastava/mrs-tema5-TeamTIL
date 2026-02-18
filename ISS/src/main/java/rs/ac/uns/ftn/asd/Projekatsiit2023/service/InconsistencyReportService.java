@@ -29,7 +29,7 @@ public class InconsistencyReportService {
     private CloudinaryService cloudinaryService;
 
     @Transactional
-    public InconsistencyReport saveReportWithAttachment(
+    public void saveReportWithAttachment(
             Integer rideId,
             String passengerEmail,
             String description,
@@ -53,6 +53,6 @@ public class InconsistencyReportService {
             report.setAttachmentUrl(fileUrl);
         }
 
-        return reportRepository.save(report);
+        reportRepository.save(report);
     }
 }

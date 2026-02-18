@@ -5,13 +5,14 @@ import * as L from 'leaflet';
 import { RideService } from '../services/ride.service';
 import { RideDetailsResponseDTO, LocationResponseDTO } from '../../models/ride-dto.model';
 import { AuthService } from '../../services/auth.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RateRideComponent } from '../modals/rate-ride/rate-ride';
+import { ReportDriver } from '../modals/report-driver/report-driver';
 
 @Component({
   selector: 'app-ride-details',
   standalone: true,
-  imports: [CommonModule, DecimalPipe],
+  imports: [CommonModule, DecimalPipe, MatDialogModule],
   templateUrl: './ride-details.html',
   styleUrl: './ride-details.css'
 })
@@ -21,6 +22,9 @@ export class RideDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   rideDetails: RideDetailsResponseDTO | null = null;
   isLoading: boolean = true;
   errorMessage: string = '';
+  showReportForm = false;
+  reportDescription = '';
+  reportSubmitting = false;
   private routePolyline: L.Polyline | null = null;
   private mapInitialized: boolean = false;
   private markers: L.Marker[] = [];
@@ -54,6 +58,22 @@ export class RideDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
         console.error('[RideDetails] Invalid ride ID from params');
         this.errorMessage = 'Invalid ride ID';
         this.isLoading = false;
+      }
+    });
+  }
+
+  openReportDialog(): void {
+    const dialogRef = this.dialog.open(ReportDriver, {
+      width: '480px',
+      data: {
+        rideId: this.rideId,
+        passengerEmail: this.authService.getEmail()
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && this.rideId) {
+        this.loadRideDetails(this.rideId);
       }
     });
   }
@@ -350,11 +370,6 @@ export class RideDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  reportIssue(): void {
-    // Logika za prijavljivanje problema
-    console.log('Report issue');
-  }
-
   rebookRide(): void {
     // Logika za ponovno rezervisanje vožnje
     console.log('Rebook ride');
@@ -363,11 +378,6 @@ export class RideDetailsComponent implements OnInit, AfterViewInit, OnDestroy {
   scheduleForLater(): void {
     // Logika za zakazivanje kasnije
     console.log('Schedule for later');
-  }
-
-  closeRideInfo(): void {
-    // Zatvaranje panela sa informacijama
-    console.log('Close ride info');
   }
 
   zoomIn(): void {

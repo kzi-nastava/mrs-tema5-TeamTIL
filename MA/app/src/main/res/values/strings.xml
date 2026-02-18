@@ -101,6 +101,17 @@
     <string name="tiltaxi">tilTaxi</string>
     <string name="taxi_hero_image">Taxi hero image</string>
 
+    <!-- Ride Estimation -->
+    <string name="estimate_ride">Estimate ride time</string>
+    <string name="pickup_address">Enter pickup location</string>
+    <string name="destination_address">Enter destination</string>
+    <string name="ride_estimation">Ride Estimation</string>
+    <string name="estimated_time">Estimated Time:</string>
+    <string name="estimated_distance">Distance:</string>
+    <string name="estimated_price">Price:</string>
+    <string name="estimated_vehicle">Vehicle:</string>
+    <string name="request_a_ride">Request a ride</string>
+
     <string-array name="vehicle_types">
         <item>Standard</item>
         <item>Luxury</item>

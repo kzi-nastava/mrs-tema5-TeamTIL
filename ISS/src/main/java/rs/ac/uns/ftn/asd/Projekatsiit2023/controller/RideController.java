@@ -5,12 +5,12 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.DriverRideDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request.*;
@@ -34,7 +34,6 @@ import java.security.Principal;
 import java.util.Map;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -212,27 +211,10 @@ public class RideController {
     @GetMapping("/{rideId}/tracking")
     @PreAuthorize("hasAnyRole('REGISTERED_USER', 'DRIVER')")
     public ResponseEntity<RideTrackingDTO> trackRide(@PathVariable Integer rideId) {
-
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
-
-        Ride ride = rideRepository.findById(rideId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ride not found"));
-
-        RideTrackingDTO response = new RideTrackingDTO(
-                ride.getStartLocation().getAddress(),
-                ride.getStartLocation().getLatitude(),
-                ride.getStartLocation().getLongitude(),
-                ride.getEndLocation().getAddress(),
-                ride.getEndLocation().getLatitude(),
-                ride.getEndLocation().getLongitude(),
-                ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName(),
-                ride.getDriver().getPhoneNumber(),
-                ride.getDriver().getVehicle().getType().toString(),
-                ride.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"))
-        );
-
+        RideTrackingDTO response = rideService.getRideTracking(rideId);
         return ResponseEntity.ok(response);
     }
 
@@ -243,19 +225,16 @@ public class RideController {
             @PathVariable Integer rideId,
             @RequestBody InconsistencyReportRequestDTO reportDTO) {
 
-        InconsistencyReport report = inconsistencyReportService.saveReportWithAttachment(
+        inconsistencyReportService.saveReportWithAttachment(
                 rideId,
                 reportDTO.getPassengerEmail(),
                 reportDTO.getDescription(),
                 reportDTO.getAttachmentBase64()
         );
 
-        InconsistencyReportResponseDTO response = new InconsistencyReportResponseDTO(
-                rideId,
-                "Inconsistency reported successfully"
-        );
+        InconsistencyReportResponseDTO response = new InconsistencyReportResponseDTO(rideId, "Report submitted successfully");
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new InconsistencyReportResponseDTO(rideId, "Report submitted successfully"));
     }
 
     // 2.7 Complete the ride
@@ -278,43 +257,10 @@ public class RideController {
     public ResponseEntity<RideRatingResponseDTO> rateRide(
             @PathVariable Integer rideId,
             @RequestBody RideRatingRequestDTO request) {
-        Ride ride = rideRepository.findById(Math.toIntExact(rideId))
-                .orElseThrow(() -> new RuntimeException("Ride not found"));
-
-        if (ride.getEndTime().isBefore(LocalDateTime.now().minusDays(3))) {
-            return ResponseEntity.badRequest().body(
-                    new RideRatingResponseDTO(rideId, "UNRATED", "Deadline exceeded, rating not accepted"));
+        if (rideId <= 0) {
+            return ResponseEntity.badRequest().build();
         }
-
-        if (!ride.getPassenger().getEmail().equals(request.getUserEmail())) {
-            return ResponseEntity.badRequest().body(
-                    new RideRatingResponseDTO(rideId, "UNRATED", "User not authorized to rate this ride"));
-        }
-
-        // Upsert: find existing or create new
-        Rating rating = rideRatingRepository.findByRide(ride)
-                .orElse(new Rating());
-
-        rating.setDriverRating(request.getDriverRating().doubleValue());
-        rating.setVehicleRating(request.getVehicleRating().doubleValue());
-        rating.setRatedDriver(ride.getDriver());
-        rating.setRatedVehicle(ride.getDriver().getVehicle());
-        rating.setRater(ride.getPassenger());
-        rating.setRide(ride);
-        rating.setComment(request.getComment());
-        rating.setCreatedAt(LocalDateTime.now());
-
-        rideRatingRepository.save(rating);
-
-        RideRatingResponseDTO response = new RideRatingResponseDTO(
-                rideId,
-                "RATED",
-                "Rating submitted successfully: Driver=" + request.getDriverRating() +
-                        ", Vehicle=" + request.getVehicleRating() +
-                        ", Comment='" + request.getComment() + "'"
-        );
-
-        return ResponseEntity.ok(response);
+        return rideService.rateRide(rideId, request);
     }
 
     // 2.9.2 Driver's ride history
@@ -322,13 +268,9 @@ public class RideController {
     @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<List<DriverRideDTO>> getDriverRideHistory(
             @PathVariable String driverEmail,
-            @RequestParam(required = false) String dateFrom,
-            @RequestParam(required = false) String dateTo) {
-        LocalDateTime dateFromParsed = dateFrom != null ? LocalDateTime.parse(dateFrom) : null;
-        LocalDateTime dateToParsed = dateTo != null ? LocalDateTime.parse(dateTo) : null;
-
-        List<DriverRideDTO> result = rideService.getDriverRideHistory(driverEmail, dateFromParsed, dateToParsed);
-
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo) {
+        List<DriverRideDTO> result = rideService.getDriverRideHistory(driverEmail, dateFrom, dateTo);
         return ResponseEntity.ok(result);
     }
 
