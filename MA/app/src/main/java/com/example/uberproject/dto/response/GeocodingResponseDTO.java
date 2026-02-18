@@ -1,8 +1,15 @@
 package com.example.uberproject.dto.response;
 
+import com.google.gson.annotations.SerializedName;
+
 public class GeocodingResponseDTO {
+    @SerializedName("lat")
     private double lat;
+
+    @SerializedName("lon")
     private double lon;
+
+    @SerializedName("display_name")
     private String name;
 
     public GeocodingResponseDTO() {}

@@ -46,9 +46,7 @@ public class GeocodingService {
                 })
                 .build();
 
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(GeocodingResponseDTO.class, new GeocodingResponseDeserializer())
-                .create();
+        Gson gson = new GsonBuilder().create();
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://nominatim.openstreetmap.org/")

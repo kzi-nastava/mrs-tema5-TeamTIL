@@ -189,9 +189,12 @@ public class MapFragment extends Fragment {
     private void drawRideEstimation(RideEstimationResponseDTO estimation) {
         if (estimation.getRouteCoordinates() != null && !estimation.getRouteCoordinates().isEmpty()) {
             List<double[]> coords = new java.util.ArrayList<>();
+            // Backend vraća [lon, lat], trebam [lat, lon] za Leaflet
             for (List<Double> coord : estimation.getRouteCoordinates()) {
                 if (coord.size() >= 2) {
-                    coords.add(new double[]{coord.get(0), coord.get(1)});
+                    double lon = coord.get(0);
+                    double lat = coord.get(1);
+                    coords.add(new double[]{lat, lon});
                 }
             }
             drawRoute(coords, estimation.getEstimatedTime());

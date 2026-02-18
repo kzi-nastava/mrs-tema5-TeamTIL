@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="@android:color/white">
+    android:background="@color/background_dark">
 
     <EditText
         android:id="@+id/etPickupAddress"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:hint="@string/pickup_address"
+        android:textColor="@color/text_white"
+        android:textColorHint="@color/text_white"
         android:padding="12dp"
-        android:background="@android:drawable/editbox_background"
+        android:background="@color/card_background_semi"
         android:layout_marginBottom="12dp"
         android:inputType="text"/>
 
@@ -21,29 +24,36 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:hint="@string/destination_address"
+        android:textColor="@color/text_white"
+        android:textColorHint="@color/text_white"
         android:padding="12dp"
-        android:background="@android:drawable/editbox_background"
+        android:background="@color/card_background_semi"
         android:layout_marginBottom="12dp"
         android:inputType="text"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnEstimate"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:text="@string/estimate_ride"
-        android:textColor="@android:color/white"
-        android:background="@color/purple_main"
+        android:textColor="@color/text_dark"
+        android:textStyle="bold"
         android:layout_marginBottom="12dp"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        android:textSize="16sp"
+        app:backgroundTint="#FFB800"
+        app:cornerRadius="12dp"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnRequestRide"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:text="@string/request_a_ride"
-        android:textColor="@android:color/white"
-        android:background="@android:color/holo_blue_dark"
-        android:layout_marginTop="8dp"/>
+        android:textColor="@color/accent_yellow"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"
+        android:textSize="16sp"
+        app:backgroundTint="@color/purple_main"
+        app:cornerRadius="12dp"/>
 
 </LinearLayout>
-
