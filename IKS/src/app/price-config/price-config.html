@@ -1,0 +1,91 @@
+<div class="pricing-wrapper">
+  <div class="pricing-header">
+    <h1>Pricing Configuration</h1>
+    <hr class="header-divider" />
+  </div>
+
+  <div class="pricing-card">
+    <!-- Vehicle type tabs -->
+    <div class="tab-group">
+      <button
+        *ngFor="let tab of tabs"
+        class="tab-btn"
+        [class.active]="activeTab === tab.value"
+        (click)="setTab(tab.value)"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+    <p class="tab-subtitle">Each vehicle has its own pricing configuration</p>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-state">
+      <span class="spinner"></span>
+      Loading configuration...
+    </div>
+
+    <!-- Config form -->
+    <ng-container *ngIf="!isLoading">
+      <div class="config-form">
+        <!-- Start Fee -->
+        <div class="config-row">
+          <label class="config-label">Start Fee</label>
+          <div class="config-input-group">
+            <input
+              type="number"
+              class="config-input"
+              [(ngModel)]="current.basePrice"
+              min="0"
+              step="10"
+            />
+            <span class="currency">RSD</span>
+          </div>
+        </div>
+        <hr class="row-divider" />
+
+        <!-- Price per km -->
+        <div class="config-row">
+          <label class="config-label">Price per km</label>
+          <div class="config-input-group">
+            <input
+              type="number"
+              class="config-input"
+              [(ngModel)]="current.pricePerKm"
+              min="0"
+              step="5"
+            />
+            <span class="currency">RSD</span>
+          </div>
+        </div>
+        <hr class="row-divider" />
+
+        <!-- Formula preview -->
+        <div class="formula-section">
+          <p class="formula-title">Total Fare Formula:</p>
+          <p class="formula-body">
+            Total Fare = Start Fee + (Distance in km × Price per km)
+          </p>
+          <p class="formula-example" *ngIf="current.basePrice || current.pricePerKm">
+            e.g. 10 km → {{ current.basePrice + 10 * current.pricePerKm | number:'1.0-0' }} RSD
+          </p>
+        </div>
+        <hr class="row-divider" />
+
+        <!-- Feedback messages -->
+        <div *ngIf="successMessage" class="alert alert-success">
+          ✓ {{ successMessage }}
+        </div>
+        <div *ngIf="errorMessage" class="alert alert-error">
+          ✕ {{ errorMessage }}
+        </div>
+
+        <p class="save-note">Changes apply immediately to all new rides</p>
+
+        <button class="save-btn" (click)="saveChanges()" [disabled]="isSaving">
+          <span *ngIf="isSaving" class="spinner small"></span>
+          {{ isSaving ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</div>

@@ -17,6 +17,8 @@ import { VehicleRegistrationComponent } from './vehicle-registration/vehicle-reg
 import { RideBooking } from './ride-booking/ride-booking';
 import { TrackRide } from './rides/track-ride/track-ride';
 import { RideReportComponent } from './rides/ride-report/ride-report.component';
+import { PriceConfig } from './price-config/price-config';
+import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   // Routes with layout (navbar + footer)
@@ -30,14 +32,15 @@ export const routes: Routes = [
       { path: 'ride-details/:id', component: RideDetailsComponent, canActivate: [authGuard] },
       { path: 'driver-ride-history', component: DriverHistory, canActivate: [authGuard] },
       { path: 'user-ride-history', component: UserRideHistory, canActivate: [authGuard] },
-      { path: 'admin-ride-history', component: AdminRideHistory, canActivate: [authGuard] },
+      { path: 'admin-ride-history', component: AdminRideHistory, canActivate: [adminGuard] },
       { path: 'user-profile', component: UserProfile, canActivate: [authGuard] },
       { path: 'driver-profile', component: DriverProfileComponent, canActivate: [authGuard] },
-      { path: 'admin-profile', component: AdminProfileComponent, canActivate: [authGuard] },
+      { path: 'admin-profile', component: AdminProfileComponent, canActivate: [adminGuard] },
+      { path: 'price-config', component: PriceConfig, canActivate: [adminGuard] },
       { path: 'change-password', component: ChangePasswordComponent },
       { path: 'new-password', component: NewPasswordComponent },
-      { path: 'driver-registration', component: DriverRegistrationComponent },
-      { path: 'vehicle-registration', component: VehicleRegistrationComponent },
+      { path: 'driver-registration', component: DriverRegistrationComponent, canActivate: [adminGuard] },
+      { path: 'vehicle-registration', component: VehicleRegistrationComponent, canActivate: [adminGuard] },
       { path: 'book', component: RideBooking },
       { path: 'track-ride', component: TrackRide, canActivate: [authGuard] },
       { path: 'track-ride/:id', component: TrackRide, canActivate: [authGuard] },
