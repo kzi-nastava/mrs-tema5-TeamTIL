@@ -19,6 +19,8 @@ import { TrackRide } from './rides/track-ride/track-ride';
 import { RideReportComponent } from './rides/ride-report/ride-report.component';
 import { PriceConfig } from './price-config/price-config';
 import { adminGuard } from './guards/admin.guard';
+import { driverGuard } from './guards/driver.guard';
+import { userGuard } from './guards/user.guard';
 
 export const routes: Routes = [
   // Routes with layout (navbar + footer)
@@ -28,24 +30,23 @@ export const routes: Routes = [
     children: [
       { path: '', component: Home },
       // Protected routes
-      { path: 'assigned-rides', component: AssignedRides, canActivate: [authGuard] },
+      { path: 'assigned-rides', component: AssignedRides, canActivate: [driverGuard] },
       { path: 'ride-details/:id', component: RideDetailsComponent, canActivate: [authGuard] },
-      { path: 'driver-ride-history', component: DriverHistory, canActivate: [authGuard] },
-      { path: 'user-ride-history', component: UserRideHistory, canActivate: [authGuard] },
+      { path: 'driver-ride-history', component: DriverHistory, canActivate: [driverGuard] },
+      { path: 'user-ride-history', component: UserRideHistory, canActivate: [userGuard] },
       { path: 'admin-ride-history', component: AdminRideHistory, canActivate: [adminGuard] },
-      { path: 'user-profile', component: UserProfile, canActivate: [authGuard] },
-      { path: 'driver-profile', component: DriverProfileComponent, canActivate: [authGuard] },
+      { path: 'user-profile', component: UserProfile, canActivate: [userGuard] },
+      { path: 'driver-profile', component: DriverProfileComponent, canActivate: [driverGuard] },
       { path: 'admin-profile', component: AdminProfileComponent, canActivate: [adminGuard] },
       { path: 'price-config', component: PriceConfig, canActivate: [adminGuard] },
-      { path: 'change-password', component: ChangePasswordComponent },
-      { path: 'new-password', component: NewPasswordComponent },
+      { path: 'book', component: RideBooking, canActivate: [userGuard] },
       { path: 'driver-registration', component: DriverRegistrationComponent, canActivate: [adminGuard] },
       { path: 'vehicle-registration', component: VehicleRegistrationComponent, canActivate: [adminGuard] },
-      { path: 'book', component: RideBooking },
-      { path: 'track-ride', component: TrackRide, canActivate: [authGuard] },
       { path: 'track-ride/:id', component: TrackRide, canActivate: [authGuard] },
       { path: 'report', component: RideReportComponent, canActivate: [authGuard] },
       // Public routes can be added here (book, favorites, support, etc.)
+      { path: 'change-password', component: ChangePasswordComponent },
+      { path: 'new-password', component: NewPasswordComponent },
     ]
   },
   // Routes without layout (forms only)

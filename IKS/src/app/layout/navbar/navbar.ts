@@ -87,7 +87,7 @@ export class NavbarComponent implements OnInit {
       this.navLinks = [
         { label: 'Book an Uber', route: '/book' },
         { label: 'Ride History', route: '/user-ride-history' },
-        { label: 'Favorite rides', route: '/favorites' },
+        { label: 'Favorite Rides', route: '/favorites' },
         { label: 'Support', route: '/support' }
       ];
       this.profileRoute = '/user-profile';
@@ -96,14 +96,17 @@ export class NavbarComponent implements OnInit {
       switch (this.userType) {
         case 'ADMINISTRATOR':
           this.navLinks = [
-            { label: 'Driver registration', route: '/driver-registration' },
+            { label: 'Driver Registration', route: '/driver-registration' },
+            { label: 'Price Config', route: '/price-config' },
             { label: 'Ride History', route: '/admin-ride-history' },
             { label: 'Reports', route: '/report' },
-            { label: 'Support', route: '/support' }
+            { label: 'Support', route: '/support' },
           ];
           this.profileRoute = '/admin-profile';
           this.menuItems = [
             { label: 'View Profile', route: '/admin-profile', icon: 'fas fa-user' },
+            { label: 'Driver Registration', route: '/driver-registration', icon: 'fas fa-user-plus' },
+            { label: 'Price Config', route: '/price-config', icon: 'fas fa-dollar-sign' },
             { label: 'Ride History', route: '/admin-ride-history', icon: 'fas fa-calendar-alt' },
             { label: 'Reports', route: '/report', icon: 'fas fa-chart-line' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },
@@ -113,9 +116,8 @@ export class NavbarComponent implements OnInit {
           break;
         case 'DRIVER':
           this.navLinks = [
-            { label: 'My Vehicle', route: '/my-vehicle' },
+            { label: 'My Rides', route: '/assigned-rides' },
             { label: 'Ride History', route: '/driver-ride-history' },
-            { label: 'My rides', route: '/assigned-rides' },
             { label: 'Reports', route: '/report' },
             { label: 'Support', route: '/support' }
           ];
@@ -124,7 +126,6 @@ export class NavbarComponent implements OnInit {
             { label: 'View Profile', route: '/driver-profile', icon: 'fas fa-user' },
             { label: 'My Rides', route: '/assigned-rides', icon: 'fas fa-route' },
             { label: 'Ride History', route: '/driver-ride-history', icon: 'fas fa-calendar-alt' },
-            { label: 'My Vehicle', route: '/my-vehicle', icon: 'fas fa-car' },
             { label: 'Reports', route: '/report', icon: 'fas fa-chart-line' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },
             { label: 'Change Password', route: '/change-password', icon: 'fas fa-key' },
@@ -137,7 +138,6 @@ export class NavbarComponent implements OnInit {
               ? [{ label: 'Track Ride', route: '/track-ride/' + this.activeRideId }]
               : [{ label: 'Book an Uber', route: '/book' }]),
             { label: 'Ride History', route: '/user-ride-history' },
-            { label: 'Favorite rides', route: '/favorites' },
             { label: 'Reports', route: '/report' },
             { label: 'Support', route: '/support' }
           ];
@@ -148,7 +148,6 @@ export class NavbarComponent implements OnInit {
               ? [{ label: 'Track Ride', route: '/track-ride/' + this.activeRideId, icon: 'fas fa-location-arrow' }]
               : [{ label: 'Book an Uber', route: '/book', icon: 'fas fa-taxi' }]),
             { label: 'Ride History', route: '/user-ride-history', icon: 'fas fa-calendar-alt' },
-            { label: 'Favorite Rides', route: '/favorites', icon: 'fas fa-star' },
             { label: 'Reports', route: '/report', icon: 'fas fa-chart-line' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },
             { label: 'Change Password', route: '/change-password', icon: 'fas fa-key' },

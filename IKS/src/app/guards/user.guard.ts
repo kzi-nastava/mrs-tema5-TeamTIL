@@ -3,12 +3,12 @@ import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-export const adminGuard: CanActivateFn = () => {
+export const userGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
-  const snackbar = inject(MatSnackBar); 
+  const snackbar = inject(MatSnackBar);
 
-  if (authService.getUserType() === 'ADMINISTRATOR') {
+  if (authService.getUserType() === 'REGISTERED_USER') {
     return true;
   }
 
@@ -20,5 +20,6 @@ export const adminGuard: CanActivateFn = () => {
     router.navigate(['/']);
   }
 
+  router.navigate(['/']);
   return false;
 };
