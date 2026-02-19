@@ -1,0 +1,183 @@
+<div class="support-wrapper">
+
+  <!-- ════════════════════════════════════════════════════════════
+       ADMIN VIEW
+  ═════════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="isAdmin">
+    <div class="support-header">
+      <h1>Support</h1>
+      <hr class="header-divider" />
+    </div>
+
+    <div class="admin-layout">
+
+      <!-- Sidebar -->
+      <aside class="chat-list-sidebar">
+        <h2 class="chats-title">Chats</h2>
+
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search..."
+            [(ngModel)]="searchQuery"
+            class="search-input"
+          />
+        </div>
+
+        <div class="chat-list" *ngIf="!isLoading">
+
+          <div *ngIf="filteredChats.length === 0" class="no-chats-yet">
+            No conversations yet
+          </div>
+
+          <div
+            *ngFor="let chat of filteredChats"
+            class="chat-list-item"
+            [class.active]="selectedChat?.id === chat.id"
+            (click)="selectChat(chat)"
+          >
+            <div class="chat-avatar">
+              <span class="avatar-icon">👤</span>
+            </div>
+            <div class="chat-meta">
+              <span class="chat-name">{{ chat.userFirstName }} {{ chat.userLastName }}</span>
+              <span class="chat-role" [class]="'role-' + getRoleLabel(chat.userType)">
+                {{ getRoleLabel(chat.userType) }}
+              </span>
+              <span class="chat-preview" *ngIf="chat.lastMessageContent">
+                <span class="preview-sender">{{ getLastMessagePrefix(chat) }}:</span>
+                {{ chat.lastMessageContent | slice:0:28 }}{{ (chat.lastMessageContent.length) > 28 ? '…' : '' }}
+              </span>
+            </div>
+            <div class="chat-right-meta">
+              <span class="chat-time">{{ chat.lastMessageTime ?? '' }}</span>
+              <span class="unread-badge" *ngIf="getUnreadCount(chat.id) > 0">
+                {{ getUnreadCount(chat.id) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="loading-state" *ngIf="isLoading">
+          <span class="spinner"></span> Loading...
+        </div>
+      </aside>
+
+      <!-- Chat window -->
+      <section class="chat-window" *ngIf="selectedChat">
+        <div class="chat-window-header">
+          <div class="chat-avatar large">
+            <span class="avatar-icon">👤</span>
+          </div>
+          <div>
+            <p class="chat-window-name">{{ selectedChat.userFirstName }} {{ selectedChat.userLastName }}</p>
+            <p class="chat-window-role" [class]="'role-' + getRoleLabel(selectedChat.userType)">
+              {{ getRoleLabel(selectedChat.userType) }}
+            </p>
+          </div>
+        </div>
+
+        <div class="messages-area" #messagesContainer>
+          <ng-container *ngFor="let msg of activeMessages">
+            <div class="message-row" [class.mine]="isMyMessage(msg)">
+              <div class="bubble" [class.bubble-mine]="isMyMessage(msg)" [class.bubble-theirs]="!isMyMessage(msg)">
+                {{ msg.content }}
+                <span class="msg-time">{{ msg.timestamp }}</span>
+              </div>
+            </div>
+          </ng-container>
+          <div *ngIf="activeMessages.length === 0" class="no-messages">
+            No messages yet. Say hello!
+          </div>
+        </div>
+
+        <div class="message-input-bar">
+          <input
+            type="text"
+            class="message-input"
+            placeholder="Type your message.."
+            [(ngModel)]="newMessage"
+            (keydown)="onKeyDown($event)"
+          />
+          <button class="send-btn" (click)="sendMessage()">Send</button>
+        </div>
+      </section>
+
+      <div class="no-chat-selected" *ngIf="!selectedChat && !isLoading">
+        <div class="no-chat-inner">
+          <span class="no-chat-icon">💬</span>
+          <p>No conversations yet</p>
+          <p class="no-chat-sub">Users and drivers will appear here once they send a message</p>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       USER / DRIVER VIEW
+  ═════════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="!isAdmin">
+    <div class="support-header">
+      <h1>Support</h1>
+      <p class="support-subtitle">We're here to help you</p>
+    </div>
+
+    <ng-container *ngIf="!isLoading">
+      <div class="user-chat-container">
+
+        <!-- Header -->
+        <div class="admin-header-card">
+          <div class="chat-avatar large">
+            <span class="avatar-icon">👤</span>
+          </div>
+          <div>
+            <p class="admin-name">Support Team</p>
+            <p class="admin-role role-admin">admin</p>
+          </div>
+        </div>
+
+        <!-- Messages — shown only if chat exists -->
+        <div class="messages-area user-messages" #messagesContainer>
+          <ng-container *ngIf="chatExists">
+            <ng-container *ngFor="let msg of activeMessages">
+              <div class="message-row" [class.mine]="isMyMessage(msg)">
+                <div class="bubble" [class.bubble-mine]="isMyMessage(msg)" [class.bubble-theirs]="!isMyMessage(msg)">
+                  {{ msg.content }}
+                  <span class="msg-time">{{ msg.timestamp }}</span>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+
+          <!-- Empty state — no chat started yet -->
+          <div *ngIf="!chatExists" class="no-messages first-contact">
+            <span class="no-messages-icon">👋</span>
+            <p>How can we help?</p>
+            <p class="no-messages-sub">Send a message and our support team will get back to you shortly.</p>
+          </div>
+        </div>
+
+        <!-- Input -->
+        <div class="message-input-bar">
+          <input
+            type="text"
+            class="message-input"
+            placeholder="Type your message.."
+            [(ngModel)]="newMessage"
+            (keydown)="onKeyDown($event)"
+          />
+          <button class="send-btn" (click)="sendMessage()">Send</button>
+        </div>
+
+      </div>
+    </ng-container>
+
+    <div class="loading-state" *ngIf="isLoading">
+      <span class="spinner"></span> Loading chat...
+    </div>
+  </ng-container>
+
+</div>
