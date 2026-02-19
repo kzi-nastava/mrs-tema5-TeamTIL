@@ -1,4 +1,4 @@
-import { Component, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -13,7 +13,9 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MapView } from '../../map/map';
 import { PanicService } from '../../services/panic.service';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 import { take } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { RideTrackingService } from '../services/ride-tracking.service';
 import { RideService } from '../services/ride.service';
 import { ActivatedRoute } from '@angular/router';
@@ -43,12 +45,13 @@ import { ReportDriver } from '../modals/report-driver/report-driver';
   styleUrl: './track-ride.css',
 })
 
-export class TrackRide {
+export class TrackRide implements OnInit, OnDestroy {
   rideId?: number;
 
   selectedRide?: RideTrackingDTO;
   rideDetails?: any;
   isPanicActive: boolean = false;
+  private subscriptions = new Subscription();
 
   @ViewChild(MapView) mapComponent?: MapView;
   currentUser: any = null;
@@ -61,7 +64,16 @@ export class TrackRide {
   currentLat: number = 0; // Current vehicle latitude
   currentLng: number = 0; // Current vehicle longitude
 
-  constructor(private panicService: PanicService, private authService: AuthService, private rideTrackingService: RideTrackingService, private rideService: RideService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private dialog: MatDialog) { }
+  constructor(
+    private panicService: PanicService, 
+    private authService: AuthService, 
+    private notificationService: NotificationService,
+    private rideTrackingService: RideTrackingService, 
+    private rideService: RideService, 
+    private cdr: ChangeDetectorRef, 
+    private route: ActivatedRoute, 
+    private dialog: MatDialog
+  ) { }
   
   ngOnInit(): void {
     const rideIdParam = this.route.snapshot.paramMap.get('id');
@@ -138,7 +150,28 @@ export class TrackRide {
           this.mapComponent?.updateVehiclePosition([lat, lng], this.isPanicActive);
           this.cdr.detectChanges();
         });
+        this.subscriptions.add(liveSubscription);
       });
+
+    // Subscribe to panic vehicles to reset icon when panic is handled
+    const panicSub = this.notificationService.vehiclesInPanic$.subscribe(panicVehicles => {
+      console.log('[TrackRide] Panic vehicles changed:', Array.from(panicVehicles));
+      // If current ride's vehicle was in panic but is now removed, reset the icon
+      if (this.rideDetails?.vehicleLicensePlate) {
+        const isNowInPanic = panicVehicles.has(this.rideDetails.vehicleLicensePlate);
+        if (!isNowInPanic && this.isPanicActive) {
+          console.log('[TrackRide] Panic was handled for this vehicle, resetting icon');
+          this.isPanicActive = false;
+          this.mapComponent?.updateVehiclePosition([this.currentLat, this.currentLng], false);
+        }
+      }
+    });
+    this.subscriptions.add(panicSub);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+    this.rideTrackingService.disconnect();
   }
 
   calculateETA(remainingDuration: number): string {
@@ -154,10 +187,6 @@ export class TrackRide {
 
   shortenAddress(address? : string): string {
     return address ? address.split(',')[0] : '';
-  }
-
-  ngOnDestroy(): void {
-    this.rideTrackingService.disconnect();
   }
 
   openReportDriver(ride: RideTrackingDTO) {
@@ -196,7 +225,9 @@ export class TrackRide {
       rideId: this.rideId,
       locationId: 0, // Placeholder - backend may handle location creation from coordinates
       userType: this.currentUser.userType, // DRIVER or REGISTERED_USER
-      accountEmail: this.currentUser.email
+      accountEmail: this.currentUser.email,
+      latitude: this.currentLat,
+      longitude: this.currentLng
     };
 
     console.log('[TrackRide] Sending panic alert with payload:', payload);
@@ -205,8 +236,6 @@ export class TrackRide {
     this.panicService.triggerPanic(payload).subscribe({
       next: () => {
         console.log('[TrackRide] ✅ Panic signal sent successfully');
-        // Update vehicle marker to show panic icon
-        this.mapComponent?.updateVehiclePosition([this.currentLat, this.currentLng], true);
         alert('🚨 Panic signal sent! Administrators have been notified.');
       },
       error: (err) => {

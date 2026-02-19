@@ -123,7 +123,7 @@ public class NotificationService {
         }
     }
 
-    public void sendPanicNotificationToAdmins(Integer panicId, String reportedBy, String location, Integer rideId) {
+    public void sendPanicNotificationToAdmins(Integer panicId, String reportedBy, String location, Integer rideId, Double latitude, Double longitude) {
         try {
             Map<String, Object> payload = Map.of(
                     "type", "PANIC_ALERT",
@@ -131,6 +131,8 @@ public class NotificationService {
                     "message", "PANIC ALERT! Reported by: " + reportedBy,
                     "reportedBy", reportedBy,
                     "location", location,
+                    "latitude", latitude != null ? latitude : 0.0,
+                    "longitude", longitude != null ? longitude : 0.0,
                     "rideId", rideId
             );
             String json = objectMapper.writeValueAsString(payload);

@@ -13,6 +13,10 @@ public class PanicRequestDTO {
 
     @NotNull(message = "Location ID is required")
     private Integer locationId;
+
+    private Double latitude;
+
+    private Double longitude;
 }
 
 

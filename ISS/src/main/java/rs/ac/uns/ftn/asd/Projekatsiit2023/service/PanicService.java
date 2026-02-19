@@ -50,6 +50,8 @@ public class PanicService {
 
         panic.setRide(ride);
         panic.setLocation(location);
+        panic.setLatitude(request.getLatitude());
+        panic.setLongitude(request.getLongitude());
         assert ride != null;
         panic.setRegisteredUser(ride.getPassenger());
         panic.setDriver(ride.getDriver());
@@ -74,11 +76,15 @@ public class PanicService {
         // Send notification to all admins
         String reportedBy = saved.getReportedBy() != null ? saved.getReportedBy().toString() : "Unknown";
         String locationAddress = location != null ? location.getAddress() : "Unknown location";
+        Double latitude = saved.getLatitude() != null ? saved.getLatitude() : (location != null ? location.getLatitude() : null);
+        Double longitude = saved.getLongitude() != null ? saved.getLongitude() : (location != null ? location.getLongitude() : null);
         notificationService.sendPanicNotificationToAdmins(
                 saved.getId(),
                 reportedBy,
                 locationAddress,
-                ride != null ? ride.getId() : null
+                ride != null ? ride.getId() : null,
+                latitude,
+                longitude
         );
 
         return getPanicResponseDTO(saved);
@@ -103,10 +109,18 @@ public class PanicService {
         // Set location details with null safety
         if (saved.getLocation() != null) {
             response.setLocationAddress(saved.getLocation().getAddress());
+        } else {
+            response.setLocationAddress("Unknown Location");
+        }
+        
+        // Use latitude/longitude from panic request first, fallback to location
+        if (saved.getLatitude() != null && saved.getLongitude() != null) {
+            response.setLatitude(saved.getLatitude());
+            response.setLongitude(saved.getLongitude());
+        } else if (saved.getLocation() != null) {
             response.setLatitude(saved.getLocation().getLatitude());
             response.setLongitude(saved.getLocation().getLongitude());
         } else {
-            response.setLocationAddress("Unknown Location");
             response.setLatitude(0.0);
             response.setLongitude(0.0);
         }

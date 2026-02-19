@@ -29,4 +29,10 @@ public class PanicNotification extends Notification {
 
     @Enumerated(EnumType.STRING)
     private UserType reportedBy;
+
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
 }

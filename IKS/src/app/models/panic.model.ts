@@ -4,6 +4,8 @@ export interface BackendPanicRequest {
   locationId: number;
   userType: 'DRIVER' | 'REGISTERED_USER';
   accountEmail: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface BackendPanicResponse {
