@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/bg_purple_tint"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <!-- Distanca i trajanje -->
+    <TextView
+        android:id="@+id/tvRouteInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/accent_yellow"
+        android:textSize="12sp"
+        android:fontFamily="@font/montserrat_semibold_font"
+        android:layout_marginBottom="4dp"
+        android:text="Distance 1.0km · 2 min" />
+
+    <!-- Ruta: polaziste → odrediste -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvRoutePath"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/text_white"
+            android:textSize="13sp"
+            android:fontFamily="@font/montserrat_regular_font"
+            android:text="Sremska 15 → Lasla Gala 18" />
+
+        <TextView
+            android:id="@+id/btnChooseRoute"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/confirm_button_background"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:text="Choose"
+            android:textColor="@color/text_dark"
+            android:textSize="13sp"
+            android:fontFamily="@font/montserrat_semibold_font"
+            android:clickable="true"
+            android:focusable="true" />
+    </LinearLayout>
+
+</LinearLayout>

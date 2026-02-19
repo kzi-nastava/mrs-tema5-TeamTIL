@@ -1,94 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
-    android:radius="12dp"
-    android:backgroundTint="@color/purple_dark_tint">
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/bg_purple_dark_tint"
+    android:orientation="vertical"
+    android:padding="14dp">
 
+    <!-- ROW 1: Ruta + zvezdica -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="14dp">
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:id="@+id/tvTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="14 March 2025, 15:32 - 16:05"
-                android:fontFamily="@font/montserrat_regular_font"
-                android:textColor="@color/text_gray"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/tvPanicBadge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end|center_vertical"
-                android:text="🚨 PANIC"
-                android:fontFamily="@font/montserrat_semibold_font"
-                android:textColor="@color/text_white"
-                android:textSize="11sp"
-                android:background="@drawable/bg_status_canceled"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
-                android:visibility="gone"
-                android:contentDescription="Panic alert badge" />
-
-        </FrameLayout>
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
 
         <TextView
             android:id="@+id/tvRoute"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/text_white"
+            android:textSize="14sp"
+            android:fontFamily="@font/montserrat_semibold_font"
+            android:text="Polazište → Odredište" />
+
+        <!-- ZVEZDICA ZA FAVORITE -->
+        <ImageView
+            android:id="@+id/ivFavoriteStar"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_star_outline2"
+            android:contentDescription="Favorite"
+            android:clickable="true"
+            android:focusable="true"
+            app:tint="@color/accent_yellow" />
+    </LinearLayout>
+
+    <!-- ROW 2: Status + Panic badge -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
+
+        <TextView
+            android:id="@+id/tvStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/ic_location"
-            android:drawableTint="@color/white"
-            android:drawablePadding="2dp"
-            android:layout_marginTop="6dp"
-            android:text="Stražilovska 32 → Bulevar Kralja Petra 7"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:textSize="11sp"
             android:fontFamily="@font/montserrat_semibold_font"
-            android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textColor="@color/text_white"
+            android:background="@drawable/bg_status_completed"
+            android:text="Completed" />
 
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvPanicBadge"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:orientation="horizontal"
-            android:gravity="right">
-
-            <TextView
-                android:id="@+id/tvPrice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="1,480 RSD"
-                android:fontFamily="@font/montserrat_semibold_font"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginRight="16dp"/>
-
-            <TextView
-                android:id="@+id/tvStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="6dp"
-                android:textSize="15sp"
-                android:text="Completed"
-                android:fontFamily="@font/montserrat_semibold_font"
-                android:textColor="@color/white"
-                android:background="@drawable/bg_status_completed" />
-        </LinearLayout>
-
+            android:layout_marginStart="8dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:textSize="10sp"
+            android:fontFamily="@font/montserrat_semibold_font"
+            android:textColor="@color/text_white"
+            android:background="#CC0000"
+            android:text="⚠ PANIC"
+            android:visibility="gone" />
     </LinearLayout>
-</androidx.cardview.widget.CardView>
+
+    <!-- ROW 3: Datum + Cijena -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvTime"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/text_gray"
+            android:textSize="12sp"
+            android:fontFamily="@font/montserrat_regular_font"
+            android:text="01 Jan 2026, 10:00" />
+
+        <TextView
+            android:id="@+id/tvPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/accent_yellow"
+            android:textSize="14sp"
+            android:fontFamily="@font/montserrat_semibold_font"
+            android:text="1.200 RSD" />
+    </LinearLayout>
+
+</LinearLayout>

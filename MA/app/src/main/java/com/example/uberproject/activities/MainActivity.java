@@ -36,6 +36,7 @@ import com.example.uberproject.utils.AuthGuard;
 import com.example.uberproject.utils.TokenManager;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
+import com.example.uberproject.fragments.forms.RideBookingFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -88,7 +89,10 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
                     showLoginFragment();
                 } else {
-                    loadFragment(new ProfileFragment());
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                    RideBookingFragment bookingSheet = RideBookingFragment.newInstance();
+                    bookingSheet.show(getSupportFragmentManager(), "RideBooking");
+                    return true;
                 }
             } else if (itemId == R.id.ride_history) {
                 if (!AuthGuard.isUserLoggedIn(this)) {

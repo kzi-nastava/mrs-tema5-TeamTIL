@@ -120,9 +120,9 @@
                     android:orientation="horizontal">
 
                     <!-- primer 5 zvezdica -->
-                    <ImageView android:src="@drawable/ic_star_filled" android:layout_height="24dp" android:layout_width="24dp" android:padding="2dp"/>
-                    <ImageView android:src="@drawable/ic_star_filled" android:layout_height="24dp" android:layout_width="24dp" android:padding="2dp"/>
-                    <ImageView android:src="@drawable/ic_star_filled" android:layout_height="24dp" android:layout_width="24dp" android:padding="2dp"/>
+                    <ImageView android:src="@drawable/ic_star_filled2" android:layout_height="24dp" android:layout_width="24dp" android:padding="2dp"/>
+                    <ImageView android:src="@drawable/ic_star_filled2" android:layout_height="24dp" android:layout_width="24dp" android:padding="2dp"/>
+                    <ImageView android:src="@drawable/ic_star_filled2" android:layout_height="24dp" android:layout_width="24dp" android:padding="2dp"/>
                     <ImageView android:src="@drawable/ic_star_half" android:layout_height="24dp" android:layout_width="24dp" android:padding="2dp"/>
                     <ImageView android:src="@drawable/ic_star_empty" android:layout_height="24dp" android:layout_width="24dp" android:padding="2dp"/>
                 </LinearLayout>
