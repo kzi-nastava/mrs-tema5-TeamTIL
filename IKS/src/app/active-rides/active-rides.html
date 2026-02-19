@@ -1,0 +1,242 @@
+<main class="page-wrapper">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Active Rides</h1>
+      <p class="page-subtitle">All currently active rides</p>
+    </div>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="main-layout" [class.with-panel]="selectedRide">
+
+    <!-- LEFT: RIDE LIST -->
+    <section class="rides-section">
+
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search by driver's name"
+            [(ngModel)]="searchQuery"
+            (input)="onSearchChange()"
+          />
+          <button *ngIf="searchQuery" class="clear-btn" (click)="clearSearch()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="refresh-toggle" (click)="toggleAutoRefresh()">
+          <span class="refresh-label">Auto-refresh</span>
+          <span class="refresh-interval">updates every 30s</span>
+          <div class="toggle-pill" [class.on]="autoRefresh">
+            <span class="toggle-text">{{ autoRefresh ? 'ON' : 'OFF' }}</span>
+            <span class="toggle-knob"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- COUNT + LOADING -->
+      <div class="list-meta">
+        <span class="rides-count">
+          Currently Active Rides ({{ isLoading ? '...' : filteredRides.length }})
+        </span>
+        <div class="loading-dot" *ngIf="isLoading"></div>
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div class="empty-state" *ngIf="!isLoading && filteredRides.length === 0">
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="32" cy="32" r="28"/>
+          <path d="M20 32h24M32 20v24"/>
+        </svg>
+        <p>{{ searchQuery ? 'No rides match your search.' : 'No active rides at the moment.' }}</p>
+      </div>
+
+      <!-- RIDE CARDS -->
+      <div class="rides-list">
+        <div
+          class="ride-card"
+          *ngFor="let ride of filteredRides"
+          [class.selected]="selectedRide?.rideId === ride.rideId"
+          (click)="selectRide(ride)"
+        >
+          <!-- DRIVER AVATAR -->
+          <div class="driver-avatar">
+            <img *ngIf="getAvatarSrc(ride.driverProfilePicture)"
+                 [src]="getAvatarSrc(ride.driverProfilePicture)"
+                 alt="driver photo" />
+            <svg *ngIf="!getAvatarSrc(ride.driverProfilePicture)" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+            </svg>
+          </div>
+
+          <!-- DRIVER INFO -->
+          <div class="driver-info">
+            <div class="driver-name-row">
+              <span class="driver-name">{{ ride.driverFirstName }} {{ ride.driverLastName }}</span>
+              <span class="driver-rating">
+                {{ formatRating(ride.driverRating) }}
+                <svg class="star-icon" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </span>
+            </div>
+            <span class="vehicle-model">{{ ride.vehicleModel }}</span>
+            <span class="driver-phone">{{ ride.driverPhone }}</span>
+          </div>
+
+          <!-- RIDE ROUTE & TIME -->
+          <div class="ride-route">
+            <span class="ride-time">
+              {{ ride.startTime }} -
+              <span class="status-badge" [class.ongoing]="ride.rideStatus === 'IN_PROGRESS'">
+                {{ getStatusLabel(ride.rideStatus) }}
+              </span>
+            </span>
+            <div class="route-row">
+              <svg class="pin-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+              <span class="route-text">{{ ride.startAddress }} → {{ ride.endAddress }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT: DETAIL PANEL -->
+    <aside class="detail-panel" *ngIf="selectedRide">
+      <div class="panel-header">
+        <h2 class="panel-title">Ride Details</h2>
+        <button class="panel-close" (click)="deselectRide()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- DRIVER -->
+      <div class="panel-section">
+        <div class="panel-driver-row">
+          <div class="panel-avatar">
+            <img *ngIf="getAvatarSrc(selectedRide.driverProfilePicture)"
+                 [src]="getAvatarSrc(selectedRide.driverProfilePicture)" />
+            <svg *ngIf="!getAvatarSrc(selectedRide.driverProfilePicture)" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+            </svg>
+          </div>
+          <div class="panel-driver-info">
+            <span class="panel-driver-name">
+              {{ selectedRide.driverFirstName }} {{ selectedRide.driverLastName }}
+              <span class="panel-rating">
+                {{ formatRating(selectedRide.driverRating) }}
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;vertical-align:middle;">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </span>
+            </span>
+            <span class="panel-phone">{{ selectedRide.driverPhone }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- VEHICLE -->
+      <div class="panel-section">
+        <div class="panel-row">
+          <div class="panel-vehicle-info">
+            <span class="panel-label-lg">{{ selectedRide.vehicleModel }}</span>
+            <span class="panel-sublabel">{{ selectedRide.vehicleType | titlecase }}</span>
+            <span class="panel-plate">{{ selectedRide.licensePlate }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- TIME -->
+      <div class="panel-section">
+        <span class="panel-section-label">Time</span>
+        <div class="panel-time-row">
+          <span class="panel-time-value">
+            {{ selectedRide.startTime ? selectedRide.startTime.split(', ')[1] : '' }}
+          </span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:#ffd524;">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+          <span class="panel-time-value">
+            {{ selectedRide.estimatedEndTime ? selectedRide.estimatedEndTime.split(', ')[1] : '' }}
+          </span>
+          <span class="panel-eta">(ETA)</span>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- PRICE & DISTANCE -->
+      <div class="panel-section panel-stats-row">
+        <div class="panel-stat">
+          <div class="panel-dist-row">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;color:#ffd524;">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            </svg>
+            <span class="panel-stat-value">{{ selectedRide.distanceKm | number:'1.1-1' }} km</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- PASSENGER -->
+      <div class="panel-section">
+        <span class="panel-section-label">Passenger</span>
+        <div class="panel-driver-row" style="margin-top:12px;">
+          <div class="panel-avatar">
+            <img *ngIf="getAvatarSrc(selectedRide.passengerProfilePicture)"
+                 [src]="getAvatarSrc(selectedRide.passengerProfilePicture)" />
+            <svg *ngIf="!getAvatarSrc(selectedRide.passengerProfilePicture)" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+            </svg>
+          </div>
+          <div class="panel-driver-info">
+            <span class="panel-driver-name">{{ selectedRide.passengerFirstName }} {{ selectedRide.passengerLastName }}</span>
+            <span class="panel-phone">{{ selectedRide.passengerPhone }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- ROUTE -->
+      <div class="panel-section">
+        <span class="panel-section-label">Route</span>
+        <div class="panel-route">
+          <div class="route-stop start">
+            <span class="route-dot start-dot"></span>
+            <span class="route-addr">{{ selectedRide.startAddress }}</span>
+          </div>
+          <div class="route-line"></div>
+          <div class="route-stop end">
+            <span class="route-dot end-dot"></span>
+            <span class="route-addr">{{ selectedRide.endAddress }}</span>
+          </div>
+        </div>
+      </div>
+
+      <button 
+      *ngIf="selectedRide.rideStatus === 'IN_PROGRESS'"
+      class="view-details-btn"
+      (click)="openFullDetails()">
+        View Full Ride Details
+      </button>
+    </aside>
+
+  </div>
+</main>
