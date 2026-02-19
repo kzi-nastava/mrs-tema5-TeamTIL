@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { MapView } from '../../map/map';
 import { RideService } from '../../rides/services/ride.service';
 import { AuthService } from '../../services/auth.service';
-import { PanicService } from '../../services/panic.service';
 import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { NotificationService } from '../../services/notification.service';
@@ -26,13 +25,24 @@ interface RideCard {
   templateUrl: './home.html',
   styleUrls: ['./home.css'],
 })
-export class Home implements OnInit {
+export class Home implements OnInit, OnDestroy {
   private vehicleMarkers: Map<string, L.Marker> = new Map();
+  private vehicleRefreshInterval: any;
 
   private fetchVehicles(): void {
     this.publicService.getAvailableVehicles().subscribe({
       next: (data) => {
-        this.mapComponent?.updateVehicleMarkers(data, this.vehicleMarkers);
+        // Pass current panic vehicles to preserve their red icon
+        const panicVehicles = this.notificationService.vehiclesInPanic$.getValue();
+        this.mapComponent?.updateVehicleMarkers(data, this.vehicleMarkers, panicVehicles);
+        
+        // After updating vehicle markers, re-apply panic markers for admins (just in case)
+        if (this.currentUser?.userType === 'ADMINISTRATOR' && panicVehicles.size > 0) {
+          console.log('[Home] Re-applying panic markers after vehicle update:', Array.from(panicVehicles));
+          panicVehicles.forEach(licensePlate => {
+            this.mapComponent?.markVehicleInPanic(licensePlate, this.vehicleMarkers);
+          });
+        }
       },
       error: (err) => console.error('Error fetching vehicles:', err)
     });
@@ -172,7 +182,7 @@ export class Home implements OnInit {
           }
         });
       }
-    showPanicToast = false;
+
   @ViewChild(MapView) mapComponent?: MapView;
   pickupLocation = '';
   destination = '';
@@ -194,35 +204,33 @@ export class Home implements OnInit {
   constructor(
     private rideService: RideService,
     private authService: AuthService,
-    private panicService: PanicService,
     private cdr: ChangeDetectorRef,
     private http: HttpClient,
     private router: Router,
     private notificationService: NotificationService,
     private publicService: PublicService
   ) {}
-  
-  onPanicClick() {
-    if (!this.userRide) return;
-
-    const payload = {
-      rideId: this.userRide.id,
-      locationId: 1, // TODO: Replace with real locationId
-      userType: this.isDriver ? 'DRIVER' : 'REGISTERED_USER',
-      accountEmail: this.currentUser?.email
-    };
-    this.panicService.triggerPanic(payload).subscribe({
-      next: () => {
-        alert('Panic sent!');
-      },
-      error: () => {
-        alert('Failed to send panic!');
-      }
-    });
-  }
 
   ngOnInit(): void {
     this.fetchVehicles();
+    
+    // Set up periodic vehicle refresh every 10 seconds
+    this.vehicleRefreshInterval = setInterval(() => {
+      console.log('[Home] Refreshing vehicles...');
+      this.fetchVehicles();
+    }, 10000);
+    
+    // Subscribe to panic vehicles ONCE (outside fetchVehicles)
+    const panicSub = this.notificationService.vehiclesInPanic$.subscribe(panicVehicles => {
+      console.log('[Home] Panic vehicles changed:', Array.from(panicVehicles));
+      if (this.currentUser?.userType === 'ADMINISTRATOR') {
+        panicVehicles.forEach(licensePlate => {
+          this.mapComponent?.markVehicleInPanic(licensePlate, this.vehicleMarkers);
+        });
+      }
+    });
+    this.subscriptions.add(panicSub);
+    
     const userSub = this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       console.log('[DEBUG] currentUser', user);
@@ -353,6 +361,11 @@ export class Home implements OnInit {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    
+    // Clear vehicle refresh interval
+    if (this.vehicleRefreshInterval) {
+      clearInterval(this.vehicleRefreshInterval);
+    }
   }
 
   onInputChange() {

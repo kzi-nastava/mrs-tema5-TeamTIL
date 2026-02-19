@@ -1,0 +1,80 @@
+<div class="admin-panic-container">
+  <div class="panic-header">
+    <h2>🚨 Panic Alerts Dashboard</h2>
+    <div class="alert-stats">
+      <div class="stat-card">
+        <span class="stat-number">{{ unhandledAlerts.length }}</span>
+        <span class="stat-label">Unhandled</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">{{ panicAlerts.length }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading panic alerts...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && panicAlerts.length === 0" class="no-alerts">
+    <p>✅ No panic alerts at the moment</p>
+  </div>
+
+  <div *ngIf="!isLoading && panicAlerts.length > 0" class="alerts-list">
+    <div *ngFor="let alert of panicAlerts" [ngClass]="getStatusColor(alert.handled)" class="alert-card">
+      <div class="alert-priority">
+        {{ getReporterIcon(alert.reportedBy) }}
+      </div>
+      
+      <div class="alert-details">
+        <div class="alert-header">
+          <span class="alert-location">{{ alert.locationAddress || alert.location || 'Unknown location' }}</span>
+          <span class="alert-time">{{ alert.timestamp }}</span>
+        </div>
+        
+        <div class="alert-info">
+          <div class="info-row">
+            <span class="label">Reporter:</span>
+            <span class="value">{{ alert.reportedBy === 'DRIVER' ? 'Driver' : 'Registered User' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Ride ID:</span>
+            <span class="value">{{ alert.rideId }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Panic ID:</span>
+            <span class="value">{{ alert.panicId }}</span>
+          </div>
+          <div class="info-row" *ngIf="alert.vehicleName">
+            <span class="label">Vehicle:</span>
+            <span class="value">{{ alert.vehicleName }}</span>
+          </div>
+          <div class="info-row" *ngIf="alert.vehicleLicensePlate">
+            <span class="label">License Plate:</span>
+            <span class="value" style="color: #ff5252; font-weight: 600;">{{ alert.vehicleLicensePlate }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Coordinates:</span>
+            <span class="value">{{ ((alert.latitude || 0)).toFixed(4) }}, {{ ((alert.longitude || 0)).toFixed(4) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert-actions">
+        <span *ngIf="alert.handled" class="badge badge-handled">✓ Handled</span>
+        <span *ngIf="!alert.handled" class="badge badge-unhandled">Pending</span>
+        <button 
+          *ngIf="!alert.handled"
+          (click)="markAsHandled(alert.panicId, alert.vehicleLicensePlate)"
+          class="btn-handle">
+          Mark as Handled
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

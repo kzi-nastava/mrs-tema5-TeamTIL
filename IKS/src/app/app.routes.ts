@@ -18,6 +18,7 @@ import { RideBooking } from './ride-booking/ride-booking';
 import { TrackRide } from './rides/track-ride/track-ride';
 import { RideReportComponent } from './rides/ride-report/ride-report.component';
 import { PriceConfig } from './price-config/price-config';
+import { AdminPanicAlertsComponent } from './shared/admin-panic-alerts/admin-panic-alerts';
 import { adminGuard } from './guards/admin.guard';
 import { driverGuard } from './guards/driver.guard';
 import { userGuard } from './guards/user.guard';
@@ -35,6 +36,7 @@ export const routes: Routes = [
       { path: 'driver-ride-history', component: DriverHistory, canActivate: [driverGuard] },
       { path: 'user-ride-history', component: UserRideHistory, canActivate: [userGuard] },
       { path: 'admin-ride-history', component: AdminRideHistory, canActivate: [adminGuard] },
+      { path: 'admin-panic-alerts', component: AdminPanicAlertsComponent, canActivate: [adminGuard] },
       { path: 'user-profile', component: UserProfile, canActivate: [userGuard] },
       { path: 'driver-profile', component: DriverProfileComponent, canActivate: [driverGuard] },
       { path: 'admin-profile', component: AdminProfileComponent, canActivate: [adminGuard] },

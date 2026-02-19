@@ -1,0 +1,59 @@
+<div *ngIf="isOpen && alert" class="panic-modal-overlay">
+  <div class="panic-modal-container">
+    <!-- Header -->
+    <div class="panic-modal-header">
+      <h2 class="panic-title">🚨 PANIC ALERT!</h2>
+      <button class="close-btn" (click)="onClose()" aria-label="Close">×</button>
+    </div>
+
+    <!-- Content -->
+    <div class="panic-modal-content">
+      <div class="alert-detail">
+        <span class="label">Reported by:</span>
+        <span class="value">
+          {{ alert.reportedBy === 'DRIVER' ? '🚗 Driver' : '👤 User' }}
+        </span>
+      </div>
+
+      <div class="alert-detail">
+        <span class="label">Location:</span>
+        <span class="value">{{ alert.locationAddress || alert.location || 'Unknown Location' }}</span>
+      </div>
+
+      <div class="alert-detail">
+        <span class="label">Ride ID:</span>
+        <span class="value">{{ alert.rideId }}</span>
+      </div>
+
+      <div class="alert-detail">
+        <span class="label">Panic ID:</span>
+        <span class="value">{{ alert.panicId }}</span>
+      </div>
+
+      <div class="alert-detail">
+        <span class="label">Coordinates:</span>
+        <span class="value">{{ (alert.latitude || 0).toFixed(4) }}, {{ (alert.longitude || 0).toFixed(4) }}</span>
+      </div>
+
+      <div class="alert-detail">
+        <span class="label">Vehicle:</span>
+        <span class="value">{{ alert.vehicleName || 'Unknown' }} ({{ alert.vehicleLicensePlate || 'N/A' }})</span>
+      </div>
+
+      <div class="alert-detail">
+        <span class="label">Time:</span>
+        <span class="value">{{ alert.timestamp || 'N/A' }}</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="panic-modal-actions">
+      <button class="btn btn-primary" (click)="onMarkHandled()">
+        ✓ Mark as Handled
+      </button>
+      <button class="btn btn-secondary" (click)="onClose()">
+        Close
+      </button>
+    </div>
+  </div>
+</div>

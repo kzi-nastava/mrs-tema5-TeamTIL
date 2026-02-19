@@ -41,4 +41,17 @@ public class NotificationHandler extends TextWebSocketHandler {
             }
         }
     }
+
+    public void sendToAllAdmins(String jsonMessage) {
+        // Send message to all connected users (admin panel will filter which ones are admins)
+        sessions.forEach((email, session) -> {
+            if (session != null && session.isOpen()) {
+                try {
+                    session.sendMessage(new TextMessage(jsonMessage));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 }

@@ -222,6 +222,19 @@
     box-shadow: 0 0 80px 24px #ff3b3bcc, 0 0 0 12px #ff3b3b44;
 }
 
+.panic-btn:disabled {
+    background: radial-gradient(circle, #4a4a4a 40%, #2a2a2a 100%);
+    border-color: #666666;
+    box-shadow: 0 0 16px 6px #66666644, 0 0 0 4px #2a2a2a44;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.panic-btn:disabled:hover {
+    background: radial-gradient(circle, #4a4a4a 40%, #2a2a2a 100%);
+    box-shadow: 0 0 16px 6px #66666644, 0 0 0 4px #2a2a2a44;
+}
+
 .panic-icon-svg {
     font-size: 2.2rem;
     margin-bottom: 0.1em;

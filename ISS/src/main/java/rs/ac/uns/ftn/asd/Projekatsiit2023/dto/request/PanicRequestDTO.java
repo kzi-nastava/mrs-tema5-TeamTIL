@@ -2,21 +2,17 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
 
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class PanicRequestDTO {
-    @NotNull
+    @NotNull(message = "Ride ID is required")
     private Integer rideId;
-    @NotNull
+
+    @NotNull(message = "Location ID is required")
     private Integer locationId;
-    @NotNull
-    private UserType userType;
-    @NotNull
-    private String accountEmail;
 }
 
 

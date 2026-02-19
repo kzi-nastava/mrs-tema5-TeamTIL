@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, BehaviorSubject, tap, catchError, of } from 'rxjs';
@@ -24,12 +24,20 @@ export class AuthService {
   userProfile$ = this.userProfileSource.asObservable();
   private tokenCheckInterval: any;
   private readonly TOKEN_CHECK_INTERVAL = 5 * 60 * 1000; // Provera svakih 5 minuta
+  private notificationService: NotificationService | null = null;
 
   constructor(
     private http: HttpClient,
     private router: Router,
-    private notificationService: NotificationService
+    private injector: Injector
   ) {}
+
+  private getNotificationService(): NotificationService {
+    if (!this.notificationService) {
+      this.notificationService = this.injector.get(NotificationService);
+    }
+    return this.notificationService;
+  }
 
 
   sendPasswordResetEmail(email: string): Observable<any> {
@@ -86,7 +94,7 @@ export class AuthService {
           // Pokreni automatsku proveru trajanja tokena
           this.startTokenValidationCheck();
           // Konektuj WebSocket odmah nakon logina
-          this.notificationService.connect(response.email);
+          this.getNotificationService().connect(response.email);
         })
       );
   }
@@ -96,7 +104,7 @@ export class AuthService {
   }
 
   logout(): void {
-    this.notificationService.disconnect();
+    this.getNotificationService().disconnect();
     
     // Zaustavi proveru tokena
     if (this.tokenCheckInterval) {
