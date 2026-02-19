@@ -78,4 +78,51 @@ public class EmailService {
 
         mailSender.send(message);
     }
+
+    public void sendRideFinishedEmailToCoPassenger(String toEmail, Ride ride) {
+        String newRideLink = BASE_URL + "/book";
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("Your Ride Has Been Completed – Thank You for Riding With Us");
+
+        String text = "Dear Customer,\n\n" +
+                "Your ride has been successfully completed.\n\n" +
+                "--------------- Ride Details ---------------\n" +
+                "From: " + ride.getStartLocation().getAddress() + "\n" +
+                "To: " + ride.getEndLocation().getAddress() + "\n" +
+                "Driver: " + ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName() + "\n" +
+                "Price: " + String.format("%.2f", ride.getTotalPrice()) + " RSD\n" +
+                "-------------------------------------------\n\n" +
+                "Would you like to book your own ride? Visit:\n" +
+                newRideLink + "\n\n" +
+                "Kind regards,\nYour Support Team.";
+
+        message.setText(text);
+        mailSender.send(message);
+    }
+
+    public void sendRideAcceptedEmail(String toEmail, Ride ride) {
+        String trackLink = BASE_URL + "/track-ride/" + ride.getId();
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("You've Been Added to a Ride – Track Your Journey");
+
+        String text = "Dear Customer,\n\n" +
+                "Great news! You have been added to a ride that has been successfully accepted.\n\n" +
+                "--------------- Ride Details ---------------\n" +
+                "From: " + ride.getStartLocation().getAddress() + "\n" +
+                "To: " + ride.getEndLocation().getAddress() + "\n" +
+                "Driver: " + ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName() + "\n" +
+                "Vehicle: " + ride.getDriver().getVehicle().getModel() + "\n" +
+                "Scheduled: " + ride.getScheduledTime() + "\n" +
+                "-------------------------------------------\n\n" +
+                "You can track your ride in real time by clicking the link below:\n" +
+                trackLink + "\n\n" +
+                "Kind regards,\nYour Support Team.";
+
+        message.setText(text);
+        mailSender.send(message);
+    }
 }

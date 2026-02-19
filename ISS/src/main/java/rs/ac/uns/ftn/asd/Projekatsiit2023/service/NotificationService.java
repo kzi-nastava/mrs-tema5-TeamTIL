@@ -43,6 +43,23 @@ public class NotificationService {
         }
     }
 
+    public void sendRideCoPassengerAddedNotification(RegisteredUser coPassenger, Ride ride) {
+        try {
+            Map<String, Object> payload = Map.of(
+                    "type", "RIDE_ACCEPTED",
+                    "rideId", ride.getId(),
+                    "message", "You've been added to a ride! Driver: " +
+                            ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName(),
+                    "driverName", ride.getDriver().getFirstName() + " " + ride.getDriver().getLastName(),
+                    "vehicle", ride.getDriver().getVehicle().getModel()
+            );
+            String json = objectMapper.writeValueAsString(payload);
+            notificationHandler.sendToUser(coPassenger.getEmail(), json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void sendRideAcceptedNotification(RegisteredUser passenger, Ride ride) {
         try {
             Map<String, Object> payload = Map.of(
