@@ -1,9 +1,8 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
-
-import java.time.LocalTime;
 
 @Setter
 @Getter
@@ -16,6 +15,21 @@ public class PanicResponseDTO {
     private Integer registeredUserId;
     private Integer driverId;
     private Boolean handled;
-    private LocalTime timestamp;
+    private String timestamp;  // Changed from LocalTime to String
     private UserType reportedBy;
+    
+    // Vehicle information
+    private String vehicleName;
+    private String vehicleLicensePlate;
+    
+    // Location information
+    private String locationAddress;
+    private Double latitude;
+    private Double longitude;
+    
+    // Alias for frontend compatibility (frontend expects panicId, backend uses id)
+    @JsonProperty("panicId")
+    public Integer getPanicId() {
+        return this.id;
+    }
 }

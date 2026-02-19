@@ -83,6 +83,12 @@ export class MapView implements AfterViewInit {
     iconAnchor: [16, 32],
   });
 
+  private panicIcon = L.icon({
+    iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIxNCIgZmlsbD0iI0ZGMjUyNSIvPjxjaXJjbGUgY3g9IjE2IiBjeT0iMTYiIHI9IjEwIiBmaWxsPSIjRkY0NDQ0Ii8+PHRleHQgeD0iMTYiIHk9IjIyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9ImJvbGQiPiE8L3RleHQ+PC9zdmc+',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+  });
+
   private initMap(): void {
     const noviSadLat = 45.265;
     const noviSadLng = 19.800;
@@ -97,14 +103,27 @@ export class MapView implements AfterViewInit {
     }).addTo(this.map);
   }
   
-  public updateVehicleMarkers(vehicles: VehicleDTO[], vehicleMarkers: Map<string, L.Marker>): void {
+  public updateVehicleMarkers(vehicles: VehicleDTO[], vehicleMarkers: Map<string, L.Marker>, panicVehicles?: Set<string>): void {
+    console.log('[Map] updateVehicleMarkers called for', vehicles.length, 'vehicles');
+    if (panicVehicles && panicVehicles.size > 0) {
+      console.log('[Map] Panic vehicles to preserve:', Array.from(panicVehicles));
+    }
+    
     vehicles.forEach(vehicle => {
       const existingMarker = vehicleMarkers.get(vehicle.licensePlate);
+      const isInPanic = panicVehicles?.has(vehicle.licensePlate) || false;
 
       if (existingMarker) {
         existingMarker.setLatLng([vehicle.latitude, vehicle.longitude]);
-        const icon = vehicle.available ? this.activeIcon : this.inactiveIcon;
-        existingMarker.setIcon(icon);
+        
+        // Only update icon if vehicle is NOT in panic mode
+        if (!isInPanic) {
+          const icon = vehicle.available ? this.activeIcon : this.inactiveIcon;
+          existingMarker.setIcon(icon);
+        } else {
+          console.log('[Map] Skipping icon update for panic vehicle:', vehicle.licensePlate);
+        }
+        
         existingMarker.bindPopup(`
           <strong>${vehicle.name}</strong><br/>
             <i>${vehicle.licensePlate}</i><br/>
@@ -127,6 +146,31 @@ export class MapView implements AfterViewInit {
         vehicleMarkers.set(vehicle.licensePlate, marker);
       }
     });
+    
+    console.log('[Map] updateVehicleMarkers completed. Total markers:', vehicleMarkers.size);
+  }
+
+  public markVehicleInPanic(licensePlate: string, vehicleMarkers: Map<string, L.Marker>, available: boolean = false): void {
+    console.log('[Map] markVehicleInPanic called for:', licensePlate);
+    console.log('[Map] Current vehicle markers:', Array.from(vehicleMarkers.keys()));
+    
+    const marker = vehicleMarkers.get(licensePlate);
+    if (marker) {
+      console.log('[Map] ✅ Found marker for', licensePlate, '- setting panic icon');
+      marker.setIcon(this.panicIcon);
+      marker.setZIndexOffset(1000); // Bring panic vehicle to front
+    } else {
+      console.warn('[Map] ⚠️ Marker NOT FOUND for license plate:', licensePlate);
+    }
+  }
+
+  public unmarkVehicleInPanic(licensePlate: string, vehicleMarkers: Map<string, L.Marker>, available: boolean = true): void {
+    const marker = vehicleMarkers.get(licensePlate);
+    if (marker) {
+      const icon = available ? this.activeIcon : this.inactiveIcon;
+      marker.setIcon(icon);
+      marker.setZIndexOffset(0); // Reset z-index
+    }
   }
 
   estimateRideTime() {
@@ -199,16 +243,23 @@ export class MapView implements AfterViewInit {
     this.vehicleType = vehicleType || 'STANDARD';
   }
 
-  updateVehiclePosition(latlng: [number, number]) {
+  updateVehiclePosition(latlng: [number, number], isPanicMode: boolean = false) {
     if (!this.map) return;
 
+    const icon = isPanicMode ? this.panicIcon : this.activeIcon;
+
     if (!this.vehicleMarker) {
-      this.vehicleMarker = L.marker(latlng, { icon: this.activeIcon }).addTo(this.map);
+      console.log('[Map] Creating vehicle marker at:', latlng);
+      this.vehicleMarker = L.marker(latlng, { icon }).addTo(this.map);
     } else {
+      console.log('[Map] Updating vehicle marker position to:', latlng);
       (this.vehicleMarker as any).slideTo(latlng, {
         duration: 200,
         keepAtCenter: false
       });
+      
+      // Update icon if panic mode changed
+      this.vehicleMarker.setIcon(icon);
     }
   }
 

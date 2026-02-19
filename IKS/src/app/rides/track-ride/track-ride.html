@@ -9,7 +9,7 @@
       <app-map-view></app-map-view>
 
       <div class="panic-btn-container">
-        <button class="panic-btn" (click)="onPanicClick()">
+        <button class="panic-btn" (click)="onPanicClick()" [disabled]="!selectedRide || !rideId">
           <span class="panic-icon-svg">&#128680;</span>
           <span class="panic-text panic-text-block">PANIC</span>
         </button>

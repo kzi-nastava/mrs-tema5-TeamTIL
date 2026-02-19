@@ -122,4 +122,22 @@ public class NotificationService {
             e.printStackTrace();
         }
     }
+
+    public void sendPanicNotificationToAdmins(Integer panicId, String reportedBy, String location, Integer rideId) {
+        try {
+            Map<String, Object> payload = Map.of(
+                    "type", "PANIC_ALERT",
+                    "panicId", panicId,
+                    "message", "PANIC ALERT! Reported by: " + reportedBy,
+                    "reportedBy", reportedBy,
+                    "location", location,
+                    "rideId", rideId
+            );
+            String json = objectMapper.writeValueAsString(payload);
+            // Send to all connected admin users
+            notificationHandler.sendToAllAdmins(json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

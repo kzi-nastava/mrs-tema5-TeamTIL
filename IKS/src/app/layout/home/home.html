@@ -1,8 +1,3 @@
-<!-- Toast notification for panic sent -->
-<div *ngIf="showPanicToast" class="toast-panic">
-  <span class="toast-panic-icon">&#128680;</span>
-  Panic zahtev je uspešno poslat!
-</div>
 <div class="section">
   <div class="container">
     <div class="text-block">
@@ -124,13 +119,6 @@
         </div>
       </ng-container>
     </div>
-    <!-- Panic button at the bottom if ride is IN_PROGRESS -->
-    <div *ngIf="userRide && userRide.status === 'In progress'" class="panic-btn-container">
-      <button class="panic-btn" (click)="onPanicClick()">
-        <span class="panic-icon-svg">&#128680;</span>
-        <span class="panic-text panic-text-block">PANIC</span>
-      </button>
-    </div>
     <ng-template #emptyRideCard>
       <div class="ride-card-header">
         <span class="ride-date">No active or upcoming rides</span>
@@ -140,8 +128,8 @@
       </div>
     </ng-template>
 
-    <!-- Forma za unos lokacija prikazana samo preko mape -->
-    <div class="ride-request-card" *ngIf="showForm">
+    <!-- Forma za unos lokacija prikazana samo preko mape (HIDDEN for ADMINISTRATOR) -->
+    <div class="ride-request-card" *ngIf="showForm && currentUser?.userType !== 'ADMINISTRATOR'">
       <input
         type="text"
         placeholder="Enter pickup location"

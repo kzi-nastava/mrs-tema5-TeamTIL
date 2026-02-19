@@ -9,3 +9,12 @@
   </div>
   <button class="toast-close" (click)="showNotification = false">✕</button>
 </div>
+
+<!-- Panic Alert Modal - Only for ADMINISTRATOR -->
+<app-panic-alert-modal
+  *ngIf="userType === 'ADMINISTRATOR'"
+  [alert]="currentPanicAlert"
+  [isOpen]="showPanicModal"
+  (close)="onClosePanicModal()"
+  (markHandled)="onMarkPanicAsHandled($event)">
+</app-panic-alert-modal>

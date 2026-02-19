@@ -15,6 +15,7 @@ import { PanicService } from '../../services/panic.service';
 import { AuthService } from '../../services/auth.service';
 import { take } from 'rxjs/operators';
 import { RideTrackingService } from '../services/ride-tracking.service';
+import { RideService } from '../services/ride.service';
 import { ActivatedRoute } from '@angular/router';
 import { RideTrackingDTO } from '../../models/ride-tracking-dto.model';
 import { MatDialog } from '@angular/material/dialog';
@@ -46,6 +47,8 @@ export class TrackRide {
   rideId?: number;
 
   selectedRide?: RideTrackingDTO;
+  rideDetails?: any;
+  isPanicActive: boolean = false;
 
   @ViewChild(MapView) mapComponent?: MapView;
   currentUser: any = null;
@@ -55,12 +58,23 @@ export class TrackRide {
   currentPrice?: number;
   eta?: string;
   etaMin?: number; // minutes
+  currentLat: number = 0; // Current vehicle latitude
+  currentLng: number = 0; // Current vehicle longitude
 
-  constructor(private panicService: PanicService, private authService: AuthService, private rideTrackingService: RideTrackingService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private dialog: MatDialog) { }
+  constructor(private panicService: PanicService, private authService: AuthService, private rideTrackingService: RideTrackingService, private rideService: RideService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private dialog: MatDialog) { }
   
   ngOnInit(): void {
-    const rideId = this.route.snapshot.paramMap.get('id');
-    this.rideId = Number(rideId);
+    const rideIdParam = this.route.snapshot.paramMap.get('id');
+    this.rideId = rideIdParam ? parseInt(rideIdParam, 10) : undefined;
+
+    // Validate rideId was parsed correctly
+    if (!this.rideId || isNaN(this.rideId)) {
+      console.error('[TrackRide] Invalid or missing ride ID:', rideIdParam);
+      alert('Error: Invalid ride ID. Please navigate back and try again.');
+      return;
+    }
+
+    console.log('[TrackRide] Loaded ride ID:', this.rideId);
 
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
@@ -69,9 +83,21 @@ export class TrackRide {
       this.isPassenger = user?.userType === 'REGISTERED_USER';
     });
 
+    // Load ride details for vehicle information
+    this.rideService.getRideDetails(this.rideId!)
+      .pipe(take(1))
+      .subscribe({
+        next: (details) => {
+          this.rideDetails = details;
+          this.cdr.detectChanges();
+        },
+        error: (err) => console.error('Error loading ride details:', err)
+      });
+
     this.rideTrackingService.getRideTracking(this.rideId)
       .pipe(take(1))
       .subscribe(tracking => {
+        console.log('[TrackRide] getRideTracking response:', tracking);
         this.selectedRide = tracking;
         this.cdr.detectChanges();
 
@@ -83,13 +109,33 @@ export class TrackRide {
 
         this.mapComponent?.trackRoute([tracking?.startLatitude || 0, tracking?.startLongitude || 0], [tracking?.endLatitude || 0, tracking?.endLongitude || 0]);
 
+        // Initialize vehicle position at pickup location
+        if (tracking?.startLatitude && tracking?.startLongitude) {
+          console.log('[TrackRide] Initializing vehicle position at start:', [tracking.startLatitude, tracking.startLongitude]);
+          this.currentLat = tracking.startLatitude;
+          this.currentLng = tracking.startLongitude;
+          this.mapComponent?.updateVehiclePosition([tracking.startLatitude, tracking.startLongitude], this.isPanicActive);
+        }
+
+        console.log('[TrackRide] Connecting to ride tracking for rideId:', this.rideId);
         this.rideTrackingService.connectToRideTracking(this.rideId!);
-        this.rideTrackingService.liveRideInfo$.subscribe(data => {
+        
+        const liveSubscription = this.rideTrackingService.liveRideInfo$.subscribe(data => {
+          console.log('[TrackRide] liveRideInfo$ received:', data);
+          if (!data) {
+            console.warn('[TrackRide] ⚠️ Received empty data from liveRideInfo$');
+            return;
+          }
+          
           const [ lat, lng, remainingDuration, price ] = data;
           this.currentPrice = price;
           this.etaMin = remainingDuration;
           this.eta = this.calculateETA(remainingDuration);
-          this.mapComponent?.updateVehiclePosition([lat, lng]);
+          // Store current vehicle position
+          this.currentLat = lat;
+          this.currentLng = lng;
+          console.log('[TrackRide] Updating vehicle position:', { lat, lng, isPanicActive: this.isPanicActive });
+          this.mapComponent?.updateVehiclePosition([lat, lng], this.isPanicActive);
           this.cdr.detectChanges();
         });
       });
@@ -128,20 +174,46 @@ export class TrackRide {
   }
 
   onPanicClick() {
-    if (!this.selectedRide) return;
+    if (!this.selectedRide || !this.rideId || isNaN(this.rideId)) {
+      alert('Error: Unable to send panic alert. Ride information is missing or invalid.');
+      console.error('[TrackRide] onPanicClick: Invalid ride data', { rideId: this.rideId, selectedRide: this.selectedRide });
+      return;
+    }
 
+    if (!this.currentUser?.email || !this.currentUser?.userType) {
+      alert('Error: User information is missing.');
+      console.error('[TrackRide] Missing user information', { email: this.currentUser?.email, userType: this.currentUser?.userType });
+      return;
+    }
+
+    // Mark panic as active
+    this.isPanicActive = true;
+    console.log('[TrackRide] 🚨 PANIC ACTIVATED - setting vehicle to panic mode');
+
+    // Create location for panic alert using current GPS coordinates
+    // Backend might create location from coordinates or we may need to get locationId separately
     const payload = {
       rideId: this.rideId,
-      locationId: 1, // TODO: Replace with real locationId
-      userType: this.isDriver ? 'DRIVER' : 'REGISTERED_USER',
-      accountEmail: this.currentUser?.email
+      locationId: 0, // Placeholder - backend may handle location creation from coordinates
+      userType: this.currentUser.userType, // DRIVER or REGISTERED_USER
+      accountEmail: this.currentUser.email
     };
+
+    console.log('[TrackRide] Sending panic alert with payload:', payload);
+    console.log('[TrackRide] Current GPS location:', { latitude: this.currentLat, longitude: this.currentLng });
+
     this.panicService.triggerPanic(payload).subscribe({
       next: () => {
-        alert('Panic sent!');
+        console.log('[TrackRide] ✅ Panic signal sent successfully');
+        // Update vehicle marker to show panic icon
+        this.mapComponent?.updateVehiclePosition([this.currentLat, this.currentLng], true);
+        alert('🚨 Panic signal sent! Administrators have been notified.');
       },
-      error: () => {
-        alert('Failed to send panic!');
+      error: (err) => {
+        console.error('Failed to send panic:', err);
+        console.error('Error details:', err.error);
+        this.isPanicActive = false; // Reset if panic fails
+        alert('Failed to send panic signal. Please make sure you are in an active ride.');
       }
     });
   }
