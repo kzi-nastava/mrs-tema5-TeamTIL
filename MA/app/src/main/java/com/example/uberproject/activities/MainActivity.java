@@ -23,6 +23,7 @@ import androidx.activity.OnBackPressedCallback;
 import com.bumptech.glide.Glide;
 import com.example.uberproject.R;
 import com.example.uberproject.fragments.admin.AdminRideHistoryFragment;
+import com.example.uberproject.fragments.driver.DriverAssignedRidesFragment;
 import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
 import com.example.uberproject.fragments.forms.DriverRegisterFragment;
 import com.example.uberproject.fragments.home.HomeFragment;
@@ -139,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
                 } else {
-                    loadFragment(new ProfileFragment());
+                    loadFragment(new DriverAssignedRidesFragment());
                 }
             } else if (itemId == R.id.driver_support) {
                 if (!AuthGuard.isUserLoggedIn(this)) {

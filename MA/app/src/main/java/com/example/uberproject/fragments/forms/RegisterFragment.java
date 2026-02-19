@@ -29,6 +29,7 @@ import com.example.uberproject.api.AuthApi;
 import com.example.uberproject.api.RetrofitClient;
 import com.example.uberproject.dto.request.RegisterRequestDTO;
 import com.example.uberproject.dto.response.RegisterResponseDTO;
+import com.example.uberproject.fragments.home.HomeFragment;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -102,6 +103,14 @@ public class RegisterFragment extends Fragment {
         // Inicijalno postaviti Remove dugme kao onemogućeno
         btnRemovePhoto.setEnabled(false);
         btnRemovePhoto.setAlpha(0.5f);
+
+        // Logo container
+        android.widget.LinearLayout logoContainer = view.findViewById(R.id.logoContainer);
+        logoContainer.setOnClickListener(v -> {
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new HomeFragment())
+                    .commit();
+        });
     }
 
 

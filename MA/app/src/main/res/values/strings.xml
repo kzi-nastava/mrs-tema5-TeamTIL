@@ -111,6 +111,18 @@
     <string name="estimated_price">Price:</string>
     <string name="estimated_vehicle">Vehicle:</string>
     <string name="request_a_ride">Request a ride</string>
+    <string name="assigned_rides">Assigned Rides</string>
+    <string name="all_rides_assigned_to_you">All rides assigned to you</string>
+    <string name="today">Today</string>
+    <string name="next_7_days">Next 7 days</string>
+    <string name="all_upcoming">All upcoming</string>
+    <string name="no_assigned_rides">No assigned rides</string>
+    <string name="you_don_t_have_any_assigned_rides_at_the_moment">You don\'t have any assigned rides at the moment</string>
+    <string name="cancel_ride">Cancel Ride</string>
+    <string name="please_provide_a_reason_for_cancellation">Please provide a reason for cancellation</string>
+    <string name="reason_for_cancellation">Reason for cancellation</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
 
     <string-array name="vehicle_types">
         <item>Standard</item>

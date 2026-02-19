@@ -17,6 +17,7 @@ import com.example.uberproject.api.RetrofitClient;
 import com.example.uberproject.api.AuthApi;
 import com.example.uberproject.dto.request.ForgotPasswordRequestDTO;
 import com.example.uberproject.dto.response.ForgotPasswordResponseDTO;
+import com.example.uberproject.fragments.home.HomeFragment;
 import androidx.appcompat.widget.AppCompatButton;
 
 import retrofit2.Call;
@@ -41,6 +42,14 @@ public class ForgotPasswordFragment extends Fragment {
 
         btnResetPassword.setOnClickListener(v -> {
             handleForgotPassword();
+        });
+
+        // Logo container
+        android.widget.LinearLayout logoContainer = view.findViewById(R.id.logoContainer);
+        logoContainer.setOnClickListener(v -> {
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new HomeFragment())
+                    .commit();
         });
 
         return view;
