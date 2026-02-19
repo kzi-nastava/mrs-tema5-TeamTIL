@@ -1243,4 +1243,59 @@ private void scheduleRideReminders(Ride ride, String passengerEmail) {
                         ", Comment='" + request.getComment() + "'"
         ));
     }
+
+    public List<ActiveRideAdminDTO> getActiveRidesForAdmin() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
+        List<RideStatus> activeStatuses = List.of(RideStatus.IN_PROGRESS, RideStatus.REQUESTED);
+        List<Ride> rides = rideRepository.findByRideStatusIn(activeStatuses);
+
+        return rides.stream().map(ride -> {
+            // Procena rute i trajanja
+            RouteService.RouteEstimation estimation = routeService.estimateRoute(
+                    ride.getStartLocation().getLatitude(),
+                    ride.getStartLocation().getLongitude(),
+                    ride.getEndLocation().getLatitude(),
+                    ride.getEndLocation().getLongitude()
+            );
+            double distance = estimation != null ? estimation.distanceKm() : 0.0;
+            double duration = estimation != null ? estimation.durationMin() : 0.0;
+
+            String estimatedEndTime = null;
+            if (ride.getStartTime() != null && duration > 0) {
+                estimatedEndTime = ride.getStartTime().plusMinutes((long) duration).format(formatter);
+            }
+
+            double price = calculateFinalPrice(
+                    ride.getDriver().getVehicle().getType(),
+                    ride.getStartLocation(),
+                    ride.getEndLocation()
+            );
+
+            return new ActiveRideAdminDTO(
+                    ride.getId(),
+                    ride.getDriver().getFirstName(),
+                    ride.getDriver().getLastName(),
+                    ride.getDriver().getEmail(),
+                    ride.getDriver().getPhoneNumber(),
+                    ride.getDriver().getProfilePictureUrl(),
+                    ride.getDriver().getAverageRating(),
+                    ride.getDriver().getVehicle().getModel(),
+                    ride.getDriver().getVehicle().getType().toString(),
+                    ride.getDriver().getVehicle().getLicensePlate(),
+                    ride.getPassenger().getFirstName(),
+                    ride.getPassenger().getLastName(),
+                    ride.getPassenger().getPhoneNumber(),
+                    ride.getPassenger().getProfilePictureUrl(),
+                    ride.getStartLocation().getAddress(),
+                    ride.getEndLocation() != null ? ride.getEndLocation().getAddress() : "",
+                    ride.getRideStatus().toString(),
+                    ride.getStartTime() != null ? ride.getStartTime().format(formatter) : null,
+                    estimatedEndTime,
+                    price,
+                    distance,
+                    ride.getDriver().getVehicle().getCurrentLatitude(),
+                    ride.getDriver().getVehicle().getCurrentLongitude()
+            );
+        }).collect(Collectors.toList());
+    }
 }

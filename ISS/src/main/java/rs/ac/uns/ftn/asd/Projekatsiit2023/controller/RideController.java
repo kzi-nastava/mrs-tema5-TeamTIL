@@ -377,5 +377,13 @@ public class RideController {
 
         return ResponseEntity.ok(rideService.getAdminStats(from, to, role, filterEmail));
     }
+
+    // Endpoint za pregled svih aktivnih vožnji (za admina)
+    @GetMapping("/admin/active")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    public ResponseEntity<List<ActiveRideAdminDTO>> getActiveRidesForAdmin() {
+        List<ActiveRideAdminDTO> activeRides = rideService.getActiveRidesForAdmin();
+        return ResponseEntity.ok(activeRides);
+    }
 }
 
