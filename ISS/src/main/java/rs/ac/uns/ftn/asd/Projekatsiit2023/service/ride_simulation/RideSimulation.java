@@ -2,12 +2,12 @@ package rs.ac.uns.ftn.asd.Projekatsiit2023.service.ride_simulation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.WebSocketRideDTO;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.model.PriceConfig;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Ride;
-import rs.ac.uns.ftn.asd.Projekatsiit2023.model.Route;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.PriceConfigRepository;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.repository.RideRepository;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RideService;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.RouteService;
@@ -34,18 +34,21 @@ public class RideSimulation {
     private double currentPrice;
     private int remainingDuration;
     private double[] currentPosition;
-    @Autowired
+
     private RideService rideService;
-    @Autowired
+
     private RideRepository rideRepository;
-    @Autowired
+
     private RouteService routeService;
 
-    public RideSimulation(int rideId, RideService rideService, RideRepository rideRepository, RouteService routeService) {
+    private PriceConfigRepository priceConfigRepository;
+
+    public RideSimulation(int rideId, RideService rideService, RideRepository rideRepository, RouteService routeService, PriceConfigRepository priceConfigRepository) {
         this.rideId = rideId;
         this.rideService = rideService;
         this.rideRepository = rideRepository;
         this.routeService = routeService;
+        this.priceConfigRepository = priceConfigRepository;
 
         this.routeCoordinates = rideService.getRouteForRide(rideId);
 
@@ -56,15 +59,10 @@ public class RideSimulation {
                 ride.getStartLocation().getLatitude(), ride.getStartLocation().getLongitude(),
                 ride.getEndLocation().getLatitude(), ride.getEndLocation().getLongitude());
 
-        double basePrice = estimation.distanceKm() * 120; // TODO: change based on price config
-        double multiplier = switch (ride.getDriver().getVehicle().getType() == null ? "STANDARD" : ride.getDriver().getVehicle().getType().toString().toUpperCase()) {
-            case "LUXURY" -> 1.5;
-            case "VAN" -> 1.3;
-            default -> 1.0;
-        };
+        PriceConfig priceConfig = priceConfigRepository.findByVehicleType(ride.getDriver().getVehicle().getType())
+                .orElseThrow(() -> new RuntimeException("Price config not found"));
 
-        this.totalPriceCache = Math.round(basePrice * multiplier * 100.0) / 100.0;
-
+        this.totalPriceCache = priceConfig.getBasePrice() + estimation.distanceKm() * priceConfig.getPricePerKm();
         this.currentSegment = 0;
         this.currentStep = 0;
         this.currentPosition = routeCoordinates.get(0);

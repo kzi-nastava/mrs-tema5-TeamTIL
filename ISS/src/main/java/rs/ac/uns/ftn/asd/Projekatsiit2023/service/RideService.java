@@ -163,6 +163,13 @@ public class RideService {
                 ? ride.getDriver().getEmail()
                 : ride.getPassenger().getEmail();
 
+        String passengerName = ride.getPassenger() != null
+                ? ride.getPassenger().getFirstName() + " " + ride.getPassenger().getLastName()
+                : "";
+        String passengerPhone = ride.getPassenger() != null
+                ? ride.getPassenger().getPhoneNumber()
+                : "";
+
         return new AssignedRideDTO(
                 ride.getId(),
                 accountEmail,
@@ -173,7 +180,9 @@ public class RideService {
                 estimatedEndTime,
                 price,
                 distance,
-                duration
+                duration,
+                passengerName,
+                passengerPhone
         );
     }
 
