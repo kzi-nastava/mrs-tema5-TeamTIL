@@ -18,10 +18,11 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * Pretpostavke o test podacima u bazi:
  *   - TEST korisnik (user@tiltaxi.com) ima sledeće vožnje:
- *       a) Bar jednu "Completed" vožnju završenu unutar poslednjih 3 dana — NIJE ocenjena
- *       b) Bar jednu "Completed" vožnju koja je VEĆ ocenjena
- *       c) Bar jednu "Canceled" vožnju
- *       d) Bar jednu "Completed" vožnju završenu PRE više od 3 dana — NIJE ocenjena (istekao rok)
+ *       a) Bar 1 "Completed" vožnju koja je VEĆ ocenjena
+ *       a) Bar 4 "Completed" vožnje završene unutar poslednjih 3 dana — NIJE ocenjena
+ *       c) Bar 1 "Canceled" vožnju
+ *       d) Bar 1 "Completed" vožnju završenu PRE više od 3 dana — NIJE ocenjena (istekao rok)
+ *       (startRideTime ne bi smeo drastično odstupati od endRideTime, da bi testovi bili validni)
  *
  * Pokriveni scenariji:
  *   Happy path:

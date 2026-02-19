@@ -46,6 +46,8 @@ class RideServiceTest {
     @Mock private PriceConfigRepository priceConfigRepository;
     @Mock private PanicNotificationRepository panicNotificationRepository;
     @Mock private DriverRepository driverRepository;
+    @Mock private NotificationService notificationService;
+    @Mock private EmailService emailService;
 
     private RideService rideService;
 
@@ -68,6 +70,8 @@ class RideServiceTest {
         ReflectionTestUtils.setField(rideService, "priceConfigRepository",      priceConfigRepository);
         ReflectionTestUtils.setField(rideService, "panicNotificationRepository",panicNotificationRepository);
         ReflectionTestUtils.setField(rideService, "driverRepository",           driverRepository);
+        ReflectionTestUtils.setField(rideService, "notificationService", notificationService);
+        ReflectionTestUtils.setField(rideService, "emailService", emailService);
 
         // --- Korisnik ---
         passenger = new RegisteredUser();
