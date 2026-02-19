@@ -18,6 +18,7 @@ import com.example.uberproject.api.RetrofitClient;
 import com.example.uberproject.api.AuthApi;
 import com.example.uberproject.dto.request.ResetPasswordRequestDTO;
 import com.example.uberproject.dto.response.ResetPasswordResponseDTO;
+import com.example.uberproject.fragments.home.HomeFragment;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -45,7 +46,7 @@ public class ResetPasswordFragment extends Fragment {
         }
 
         initViews(view);
-        setupClickListeners();
+        setupClickListeners(view);
 
         return view;
     }
@@ -56,12 +57,20 @@ public class ResetPasswordFragment extends Fragment {
         buttonResetPassword = view.findViewById(R.id.btnResetPassword);
     }
 
-    private void setupClickListeners() {
+    private void setupClickListeners(View view) {
         buttonResetPassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 handleResetPassword();
             }
+        });
+
+        // Logo container
+        android.widget.LinearLayout logoContainer = view.findViewById(R.id.logoContainer);
+        logoContainer.setOnClickListener(v -> {
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new HomeFragment())
+                    .commit();
         });
     }
 

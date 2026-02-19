@@ -1,7 +1,7 @@
 package com.example.uberproject.fragments.forms;
-
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
@@ -17,6 +17,7 @@ import com.example.uberproject.api.AuthApi;
 import com.example.uberproject.api.RetrofitClient;
 import com.example.uberproject.dto.request.LoginRequestDTO;
 import com.example.uberproject.dto.response.LoginResponseDTO;
+import com.example.uberproject.fragments.home.HomeFragment;
 import com.example.uberproject.utils.AuthGuard;
 import com.example.uberproject.utils.TokenManager;
 import retrofit2.Call;
@@ -44,6 +45,8 @@ public class LoginFragment extends Fragment {
         btnLogin = view.findViewById(R.id.btnLogin);
         tvForgotPassword = view.findViewById(R.id.tvForgotPassword);
 
+        LinearLayout logoContainer = view.findViewById(R.id.logoContainer);
+
         // Set click listeners
         btnLogin.setOnClickListener(v -> {
             handleLogin();
@@ -54,6 +57,13 @@ public class LoginFragment extends Fragment {
             getParentFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, fragment)
                     .addToBackStack(null)
+                    .commit();
+        });
+
+        // Logo click - navigate to home/main screen
+        logoContainer.setOnClickListener(v -> {
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new HomeFragment())
                     .commit();
         });
 
