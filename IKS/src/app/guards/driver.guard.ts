@@ -20,6 +20,5 @@ export const driverGuard: CanActivateFn = () => {
     router.navigate(['/']);
   }
 
-  router.navigate(['/']);
   return false;
 };

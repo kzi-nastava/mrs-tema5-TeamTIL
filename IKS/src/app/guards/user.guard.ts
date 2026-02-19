@@ -20,6 +20,5 @@ export const userGuard: CanActivateFn = () => {
     router.navigate(['/']);
   }
 
-  router.navigate(['/']);
   return false;
 };
