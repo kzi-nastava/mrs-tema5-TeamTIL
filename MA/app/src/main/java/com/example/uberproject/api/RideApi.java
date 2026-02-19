@@ -32,6 +32,9 @@ public interface RideApi {
     @GET("rides/assigned")
     Call<List<AssignedRideDTO>> getDriverAssignedRides(@Query("driverEmail") String driverEmail);
 
+    @GET("rides/user/{email}")
+    Call<List<AssignedRideDTO>> getUserActiveRides(@Path("email") String email, @Query("status") String status);
+
     @PUT("rides/{rideId}/cancel")
     Call<RideCancelResponseDTO> cancelRide(@Path("rideId") Integer rideId, @Body RideCancelRequestDTO request);
 

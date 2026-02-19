@@ -113,6 +113,327 @@
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
 
+
+        <!-- Active Ride Card: visible only when user/driver has an active or requested ride -->
+        <LinearLayout
+            android:id="@+id/activeRideCardInclude"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/bg_card_active_ride"
+            android:orientation="vertical"
+            android:padding="14dp"
+            android:visibility="gone">
+
+            <!-- Header row: "Active Ride" label + status badge -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Active Ride"
+                    android:textColor="@color/accent_yellow"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/montserrat_bold_font" />
+
+                <TextView
+                    android:id="@+id/tvActiveRideStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="In Progress"
+                    android:textColor="@color/text_white"
+                    android:background="@drawable/status_in_progress_bg"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/montserrat_semibold_font" />
+            </LinearLayout>
+
+            <!-- Time row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_calendar"
+                    app:tint="@color/text_white"
+                    android:contentDescription="Time"
+                    android:layout_marginEnd="6dp" />
+
+                <TextView
+                    android:id="@+id/tvActiveRideTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="@color/text_white"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/montserrat_regular_font" />
+            </LinearLayout>
+
+            <!-- Location row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="10dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_location"
+                    app:tint="@color/accent_yellow"
+                    android:contentDescription="Location"
+                    android:layout_marginEnd="6dp" />
+
+                <TextView
+                    android:id="@+id/tvActiveRideLocations"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="@color/text_white"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/montserrat_semibold_font"
+                    android:ellipsize="end"
+                    android:maxLines="1" />
+            </LinearLayout>
+
+            <!-- Price + Distance row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvActiveRidePrice"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="@color/accent_yellow"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/montserrat_bold_font" />
+
+                <TextView
+                    android:id="@+id/tvActiveRideDistance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#AAAAAA"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/montserrat_regular_font" />
+            </LinearLayout>
+
+            <!-- Expandable Details Section -->
+            <LinearLayout
+                android:id="@+id/expandedDetailsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginTop="12dp">
+
+                <!-- Passenger Info -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <ImageView
+                        android:id="@+id/ivPassengerPhoto"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_user_placeholder"
+                        android:background="@drawable/bg_tabs_outline"
+                        android:contentDescription="Passenger" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Passenger"
+                            android:textColor="@color/text_gray"
+                            android:textSize="10sp"
+                            android:fontFamily="@font/montserrat_regular_font" />
+
+                        <TextView
+                            android:id="@+id/tvPassengerEmail"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="John Doe"
+                            android:textColor="@color/text_white"
+                            android:textSize="12sp"
+                            android:fontFamily="@font/montserrat_semibold_font"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Ride Details Grid -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="End time"
+                            android:textColor="@color/text_gray"
+                            android:textSize="12sp"
+                            android:fontFamily="@font/montserrat_regular_font" />
+
+                        <TextView
+                            android:id="@+id/tvEstimatedEndTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="16:45"
+                            android:textColor="@color/text_white"
+                            android:textSize="12sp"
+                            android:fontFamily="@font/montserrat_semibold_font" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="Duration"
+                            android:textColor="@color/text_gray"
+                            android:textSize="12sp"
+                            android:fontFamily="@font/montserrat_regular_font" />
+
+                        <TextView
+                            android:id="@+id/tvDuration"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="15 min"
+                            android:textColor="@color/text_white"
+                            android:textSize="12sp"
+                            android:fontFamily="@font/montserrat_semibold_font" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Action Buttons for In Progress rides -->
+                <LinearLayout
+                    android:id="@+id/actionButtonsLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:layout_marginTop="12dp">
+
+                    <!-- Row 1: Open ride + Stop ride -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/btnOpenRide"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="48dp"
+                            android:text="Open ride"
+                            android:textColor="#000000"
+                            android:background="@drawable/button_yellow_rounded"
+                            android:textAllCaps="false"
+                            android:textSize="12sp"
+                            android:fontFamily="@font/montserrat_semibold_font"
+                            android:layout_marginEnd="8dp" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/btnStopRide"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="48dp"
+                            android:text="Stop ride"
+                            android:textColor="@color/text_white"
+                            android:background="@drawable/button_purple_rounded"
+                            android:textAllCaps="false"
+                            android:textSize="12sp"
+                            android:fontFamily="@font/montserrat_semibold_font" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Upcoming ride buttons -->
+                <LinearLayout
+                    android:id="@+id/upcomingButtonsLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:layout_marginTop="12dp">
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnStartRide"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="48dp"
+                        android:text="Start ride"
+                        android:textColor="#000000"
+                        android:background="@drawable/button_yellow_rounded"
+                        android:textAllCaps="false"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/montserrat_semibold_font"
+                        android:layout_marginEnd="8dp" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnCancelRide"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="48dp"
+                        android:text="Cancel ride"
+                        android:textColor="@color/text_white"
+                        android:background="@drawable/bg_purple_tint"
+                        android:textAllCaps="false"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/montserrat_semibold_font" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
         <!-- Map fragment -->
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/map_fragment_container"

@@ -36,6 +36,7 @@
     <string name="repeat_password_hint">Repeat password</string>
 
     <!-- Navigation Menu -->
+    <string name="home">Home</string>
     <string name="book_an_uber">Book an Uber</string>
     <string name="ride_history">Ride History</string>
     <string name="favorite_rides">Favorite Rides</string>

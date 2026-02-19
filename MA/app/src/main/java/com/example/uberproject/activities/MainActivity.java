@@ -84,8 +84,12 @@ public class MainActivity extends AppCompatActivity {
             int itemId = item.getItemId();
             String userRole = AuthGuard.getUserRole(this);
 
+            // HOME - COMMON FOR ALL USERS
+            if (itemId == R.id.nav_home) {
+                loadFragment(new HomeFragment());
+            }
             // REGISTERED USER ITEMS
-            if (itemId == R.id.book_an_uber) {
+            else if (itemId == R.id.book_an_uber) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
                     showLoginFragment();
@@ -236,7 +240,8 @@ public class MainActivity extends AppCompatActivity {
         // Prvo sakrij sve items
         hideAllMenuItems(menu);
 
-        // Prikaži logout ako je ulogovan
+        // Prikaži Home i Logout za sve
+        showItem(menu, R.id.nav_home);
         MenuItem logoutItem = menu.findItem(R.id.nav_logout);
         if (logoutItem != null) {
             logoutItem.setVisible(isLoggedIn);
@@ -263,9 +268,7 @@ public class MainActivity extends AppCompatActivity {
     private void hideAllMenuItems(Menu menu) {
         for (int i = 0; i < menu.size(); i++) {
             MenuItem item = menu.getItem(i);
-            if (item.getItemId() != R.id.nav_logout) {
-                item.setVisible(false);
-            }
+            item.setVisible(false);
         }
     }
 

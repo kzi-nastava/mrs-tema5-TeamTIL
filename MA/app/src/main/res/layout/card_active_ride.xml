@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activeRideCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="12dp"
+    android:layout_marginBottom="4dp"
+    android:background="@drawable/bg_card_active_ride"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <!-- Header: label + status badge -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Active Ride"
+            android:textColor="@color/accent_yellow"
+            android:textSize="13sp"
+            android:fontFamily="@font/montserrat_bold_font"
+            android:letterSpacing="0.05" />
+
+        <TextView
+            android:id="@+id/tvActiveRideStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="In Progress"
+            android:textColor="@color/text_white"
+            android:background="@drawable/status_in_progress_bg"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:textSize="11sp"
+            android:fontFamily="@font/montserrat_semibold_font" />
+    </LinearLayout>
+
+    <!-- Time row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_calendar"
+            app:tint="@color/text_white"
+            android:contentDescription="Time"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/tvActiveRideTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="20 Feb 2026, 21:00"
+            android:textColor="@color/text_white"
+            android:textSize="12sp"
+            android:fontFamily="@font/montserrat_regular_font" />
+    </LinearLayout>
+
+    <!-- Location row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="10dp">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_location"
+            app:tint="@color/accent_yellow"
+            android:contentDescription="Location"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/tvActiveRideLocations"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Stražilovska → Bulevar Petra I"
+            android:textColor="@color/text_white"
+            android:textSize="13sp"
+            android:fontFamily="@font/montserrat_semibold_font"
+            android:ellipsize="end"
+            android:maxLines="1" />
+    </LinearLayout>
+
+    <!-- Price + Distance row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvActiveRidePrice"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="520 RSD"
+            android:textColor="@color/accent_yellow"
+            android:textSize="14sp"
+            android:fontFamily="@font/montserrat_bold_font" />
+
+        <TextView
+            android:id="@+id/tvActiveRideDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="3.2 km"
+            android:textColor="#AAAAAA"
+            android:textSize="12sp"
+            android:fontFamily="@font/montserrat_regular_font" />
+    </LinearLayout>
+
+</LinearLayout>
+
