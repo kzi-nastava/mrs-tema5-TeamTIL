@@ -135,7 +135,7 @@ export class ActiveRides implements OnInit, OnDestroy {
   }
 
   getStatusLabel(status: string): string {
-    return status === 'IN_PROGRESS' ? 'ongoing' : 'upcoming'; // TODO ne valja
+    return status === 'IN_PROGRESS' ? 'ongoing' : 'upcoming';
   }
 
   getAvatarSrc(pic: string | null): string | null {
