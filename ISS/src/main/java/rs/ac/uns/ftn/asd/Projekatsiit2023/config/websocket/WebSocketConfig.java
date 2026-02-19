@@ -13,10 +13,13 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private final RideTrackingHandler rideTrackingHandler;
     private final NotificationHandler notificationHandler;
 
+    private final ChatHandler chatHandler;
+
     @Autowired
-    public WebSocketConfig(RideTrackingHandler rideTrackingHandler, NotificationHandler notificationHandler) {
+    public WebSocketConfig(RideTrackingHandler rideTrackingHandler, NotificationHandler notificationHandler, ChatHandler chatHandler) {
         this.rideTrackingHandler = rideTrackingHandler;
         this.notificationHandler = notificationHandler;
+        this.chatHandler = chatHandler;
     }
 
     @Override
@@ -25,6 +28,12 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 .setAllowedOrigins("*");
 
         registry.addHandler(notificationHandler, "/ws/notifications")
+                .setAllowedOrigins("*");
+
+        registry.addHandler(chatHandler, "/ws/chat")
+                .setAllowedOrigins("*");
+
+        registry.addHandler(chatHandler, "/ws/chat/admin")
                 .setAllowedOrigins("*");
     }
 }
