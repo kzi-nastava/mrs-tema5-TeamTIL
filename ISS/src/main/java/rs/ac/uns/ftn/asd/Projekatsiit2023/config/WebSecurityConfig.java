@@ -77,6 +77,11 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/rides/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/api/price-config/**").hasRole("ADMINISTRATOR")
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
+                ).permitAll()
                 .anyRequest().authenticated()
         );
 

@@ -395,5 +395,96 @@ public class RideHistoryFilterSortE2ETest extends BaseE2ETest {
                     "All rides should be from today only");
         }
     }
+
+    @Test
+    @Order(15)
+    @DisplayName("15. Rides are sorted by date in descending order (newest first)")
+    public void testRidesSortedByDateDescending() {
+        loginAsTestUser();
+
+        rideHistoryPage.navigateTo();
+        rideHistoryPage.waitForPageLoad();
+
+        int count = rideHistoryPage.getRideCount();
+        assertTrue(count > 0, "Should have rides to test sorting");
+
+        if (count > 1) {
+            assertTrue(rideHistoryPage.areRidesSortedByDate(false),
+                    "Rides should be sorted by date in descending order (newest first)");
+        }
+    }
+
+    @Test
+    @Order(16)
+    @DisplayName("16. Rides are sorted by date after applying filters")
+    public void testRidesSortedAfterFiltering() {
+        loginAsTestUser();
+
+        rideHistoryPage.navigateTo();
+        rideHistoryPage.waitForPageLoad();
+
+        rideHistoryPage.clickQuickFilter("Last month");
+
+        int count = rideHistoryPage.getRideCount();
+
+        if (count > 1) {
+            assertTrue(rideHistoryPage.areRidesSortedByDate(false),
+                    "Filtered rides should remain sorted by date in descending order");
+        }
+    }
+
+    @Test
+    @Order(17)
+    @DisplayName("17. Rides sorted by date after status filter")
+    public void testSortingAfterStatusFilter() {
+        loginAsTestUser();
+
+        rideHistoryPage.navigateTo();
+        rideHistoryPage.waitForPageLoad();
+
+        rideHistoryPage.waitForFiltersSection();
+        rideHistoryPage.selectStatus("Completed");
+        rideHistoryPage.clickApplyFilters();
+
+        int count = rideHistoryPage.getRideCount();
+
+        if (count > 1) {
+            assertTrue(rideHistoryPage.areRidesSortedByDate(false),
+                    "Rides should be sorted by date even after status filtering");
+        }
+    }
+
+    @Test
+    @Order(18)
+    @DisplayName("18. Rides default sorting by date is maintained throughout session")
+    public void testDefaultSortingMaintained() {
+        loginAsTestUser();
+
+        rideHistoryPage.navigateTo();
+        rideHistoryPage.waitForPageLoad();
+
+        int count = rideHistoryPage.getRideCount();
+
+        if (count > 1) {
+            assertTrue(rideHistoryPage.areRidesSortedByDate(false),
+                    "Initial load should have rides sorted by date descending");
+
+            // Apply a filter
+            rideHistoryPage.clickQuickFilter("Last 7 days");
+
+            if (rideHistoryPage.getRideCount() > 1) {
+                assertTrue(rideHistoryPage.areRidesSortedByDate(false),
+                        "After quick filter, rides should still be sorted by date");
+            }
+
+            // Apply another filter
+            rideHistoryPage.clickQuickFilter("All");
+
+            if (rideHistoryPage.getRideCount() > 1) {
+                assertTrue(rideHistoryPage.areRidesSortedByDate(false),
+                        "After resetting filter, rides should still be sorted by date");
+            }
+        }
+    }
 }
 
