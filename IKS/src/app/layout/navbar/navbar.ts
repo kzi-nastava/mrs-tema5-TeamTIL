@@ -99,6 +99,7 @@ export class NavbarComponent implements OnInit {
             { label: 'Driver Registration', route: '/driver-registration' },
             { label: 'Price Config', route: '/price-config' },
             { label: 'Ride History', route: '/admin-ride-history' },
+            { label: 'Active Rides', route: '/active-rides' },
             { label: 'Reports', route: '/report' },
             { label: 'Support', route: '/support' },
           ];
@@ -108,7 +109,8 @@ export class NavbarComponent implements OnInit {
             { label: 'Driver Registration', route: '/driver-registration', icon: 'fas fa-user-plus' },
             { label: 'Price Config', route: '/price-config', icon: 'fas fa-dollar-sign' },
             { label: 'Ride History', route: '/admin-ride-history', icon: 'fas fa-calendar-alt' },
-            { label: '🚨 Panic Alerts', route: '/admin-panic-alerts', icon: 'fas fa-exclamation-triangle' },
+            { label: 'Panic Alerts', route: '/admin-panic-alerts', icon: 'fas fa-exclamation-triangle' },
+            { label: 'Active Rides', route: '/active-rides', icon: 'fas fa-car' },
             { label: 'Reports', route: '/report', icon: 'fas fa-chart-line' },
             { label: 'Support', route: '/support', icon: 'fas fa-question-circle' },
             { label: 'Change Password', route: '/change-password', icon: 'fas fa-key' },
