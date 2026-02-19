@@ -434,11 +434,19 @@ public class RideService {
         // Notifikacija putniku da je voznja prihvacena
         notificationService.sendRideAcceptedNotification(passenger, savedRide);
 
-// Notifikacija vozacu o novoj voznji
+        // Notifikacija vozacu o novoj voznji
         notificationService.sendRideDriverNotification(savedRide);
 
-// Podsjetnici 15, 10 i 5 minuta pre voznje
+        // Podsetnici 15, 10 i 5 minuta pre voznje
         scheduleRideReminders(savedRide, passenger.getEmail());
+
+        // Notifikacija i mejl ulinkovanih putnika
+        if (savedRide.getCoPassengers() != null) {
+            for (RegisteredUser coPassenger : savedRide.getCoPassengers()) {
+                notificationService.sendRideCoPassengerAddedNotification(coPassenger, savedRide);
+                emailService.sendRideAcceptedEmail(coPassenger.getEmail(), savedRide);
+            }
+        }
 
         return new RideCreatedResponseDTO(
                 savedRide.getId(),
@@ -1064,6 +1072,13 @@ public class RideService {
         Ride ride = rideRepository.findById(rideId).orElseThrow();
         notificationService.sendRideFinishedNotification(ride.getPassenger(), ride);
         emailService.sendRideFinishedEmail(ride.getPassenger().getEmail(), ride);
+
+        if (ride.getCoPassengers() != null) {
+            for (RegisteredUser coPassenger : ride.getCoPassengers()) {
+                notificationService.sendRideFinishedNotification(coPassenger, ride);
+                emailService.sendRideFinishedEmailToCoPassenger(coPassenger.getEmail(), ride);
+            }
+        }
 
         return response;
     }
