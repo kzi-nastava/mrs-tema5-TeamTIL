@@ -1,5 +1,6 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +46,7 @@ public class DriverController {
     }*/
 
     @PostMapping
-    public ResponseEntity<Map<String, String>> registerDriver(@RequestBody DriverRegistrationRequestDTO request) {
+    public ResponseEntity<Map<String, String>> registerDriver(@Valid @RequestBody DriverRegistrationRequestDTO request) {
         driverService.registerDriver(request);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Driver registration successful. Activation email sent to: " + request.getEmail());
