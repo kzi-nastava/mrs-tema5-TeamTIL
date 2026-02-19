@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.enumeration.UserType;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -19,7 +19,7 @@ public class Message {
     private String content;
 
     @Column(name = "timestamp")
-    private LocalTime timestamp;
+    private LocalDateTime timestamp;
 
     @Column(name = "user_type")
     @Enumerated(EnumType.STRING)

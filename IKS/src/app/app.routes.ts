@@ -21,6 +21,7 @@ import { PriceConfig } from './price-config/price-config';
 import { adminGuard } from './guards/admin.guard';
 import { driverGuard } from './guards/driver.guard';
 import { userGuard } from './guards/user.guard';
+import { Support } from './support/support';
 
 export const routes: Routes = [
   // Routes with layout (navbar + footer)
@@ -44,6 +45,7 @@ export const routes: Routes = [
       { path: 'vehicle-registration', component: VehicleRegistrationComponent, canActivate: [adminGuard] },
       { path: 'track-ride/:id', component: TrackRide, canActivate: [authGuard] },
       { path: 'report', component: RideReportComponent, canActivate: [authGuard] },
+      { path: 'support', component: Support, canActivate: [authGuard] },
       // Public routes can be added here (book, favorites, support, etc.)
       { path: 'change-password', component: ChangePasswordComponent },
       { path: 'new-password', component: NewPasswordComponent },
