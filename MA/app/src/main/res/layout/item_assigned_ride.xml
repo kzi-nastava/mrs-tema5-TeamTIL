@@ -235,28 +235,48 @@
             android:id="@+id/actionButtonsLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:gravity="center"
             android:visibility="gone"
             android:layout_marginTop="12dp">
 
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btnOpenRide"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="48dp"
-                android:text="Open ride"
-                android:textColor="#000000"
-                android:background="@drawable/button_yellow_rounded"
-                android:textAllCaps="false"
-                android:textSize="12sp"
-                android:fontFamily="@font/montserrat_semibold_font"
-                android:layout_marginEnd="8dp" />
+            <!-- Row 1: Open ride + Stop ride -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
 
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnOpenRide"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="48dp"
+                    android:text="Open ride"
+                    android:textColor="#000000"
+                    android:background="@drawable/button_yellow_rounded"
+                    android:textAllCaps="false"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/montserrat_semibold_font"
+                    android:layout_marginEnd="8dp" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnStopRide"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="48dp"
+                    android:text="Stop ride"
+                    android:textColor="@color/text_white"
+                    android:background="@drawable/button_purple_rounded"
+                    android:textAllCaps="false"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/montserrat_semibold_font" />
+            </LinearLayout>
+
+            <!-- Row 2: End ride (placeholder) -->
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnEndRide"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+                android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="End ride"
                 android:textColor="@color/text_white"

@@ -30,6 +30,7 @@ public class AssignedRidesAdapter extends RecyclerView.Adapter<AssignedRidesAdap
     public interface OnRideActionListener {
         void onOpenRide(AssignedRideDTO ride);
         void onStartRide(AssignedRideDTO ride);
+        void onStopRide(AssignedRideDTO ride);
         void onEndRide(AssignedRideDTO ride);
         void onCancelRide(AssignedRideDTO ride);
     }
@@ -134,9 +135,12 @@ public class AssignedRidesAdapter extends RecyclerView.Adapter<AssignedRidesAdap
             if (listener != null) listener.onOpenRide(ride);
         });
 
-        holder.btnEndRide.setOnClickListener(v -> {
-            if (listener != null) listener.onEndRide(ride);
+        holder.btnStopRide.setOnClickListener(v -> {
+            if (listener != null) listener.onStopRide(ride);
         });
+
+        // btnEndRide - placeholder, ne radi ništa za sada
+        holder.btnEndRide.setOnClickListener(null);
 
         holder.btnStartRide.setOnClickListener(v -> {
             if (listener != null) listener.onStartRide(ride);
@@ -180,7 +184,7 @@ public class AssignedRidesAdapter extends RecyclerView.Adapter<AssignedRidesAdap
         LinearLayout expandedDetailsLayout, actionButtonsLayout, upcomingButtonsLayout;
         ImageView ivPassengerPhoto;
         TextView tvPassengerEmail, tvEstimatedEndTime, tvDuration, tvPrice, tvDistance;
-        Button btnOpenRide, btnEndRide, btnStartRide, btnCancelRide;
+        Button btnOpenRide, btnStopRide, btnEndRide, btnStartRide, btnCancelRide;
 
         public RideViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -198,6 +202,7 @@ public class AssignedRidesAdapter extends RecyclerView.Adapter<AssignedRidesAdap
             tvPrice = itemView.findViewById(R.id.tvPrice);
             tvDistance = itemView.findViewById(R.id.tvDistance);
             btnOpenRide = itemView.findViewById(R.id.btnOpenRide);
+            btnStopRide = itemView.findViewById(R.id.btnStopRide);
             btnEndRide = itemView.findViewById(R.id.btnEndRide);
             btnStartRide = itemView.findViewById(R.id.btnStartRide);
             btnCancelRide = itemView.findViewById(R.id.btnCancelRide);

@@ -34,7 +34,6 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -258,13 +257,13 @@ public class DriverAssignedRidesFragment extends Fragment implements AssignedRid
     }
 
     @Override
-    public void onEndRide(AssignedRideDTO ride) {
-        // Create RideStopRequestDTO with end location and current time
-        Location endLocation = new Location(0.0, 0.0, ride.getEndLocation());
-        RideStopRequestDTO stopRequest = new RideStopRequestDTO(
-                endLocation,
-                LocalDateTime.now()
-        );
+    public void onStopRide(AssignedRideDTO ride) {
+        // Zakucane koordinate centra Novog Sada (tracking nije implementiran)
+        Location endLocation = new Location(45.2517, 19.8369, ride.getEndLocation());
+        String nowStr = new java.text.SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+                .format(new java.util.Date());
+        RideStopRequestDTO stopRequest = new RideStopRequestDTO(endLocation, nowStr);
 
         rideApi.stopRide(ride.getId(), stopRequest).enqueue(new Callback<RideStopResponseDTO>() {
             @Override
@@ -284,6 +283,11 @@ public class DriverAssignedRidesFragment extends Fragment implements AssignedRid
                 Toast.makeText(requireContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void onEndRide(AssignedRideDTO ride) {
+        // TODO: implementirati end ride
     }
 
     @Override

@@ -11,10 +11,11 @@
     android:padding="12dp">
 
     <ImageView
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@drawable/ic_person_placeholder"
-        app:tint="@color/text_white"/>
+        android:id="@+id/ivDriverPhoto"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/ic_user_placeholder"
+        android:scaleType="centerCrop" />
 
     <LinearLayout
         android:layout_width="wrap_content"
