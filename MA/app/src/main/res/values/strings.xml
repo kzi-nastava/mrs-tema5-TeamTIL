@@ -124,6 +124,8 @@
     <string name="reason_for_cancellation">Reason for cancellation</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
+    <string name="driver">Driver</string>
+    <string name="passenger">Passenger</string>
 
     <string-array name="vehicle_types">
         <item>Standard</item>

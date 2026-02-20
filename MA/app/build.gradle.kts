@@ -14,6 +14,7 @@ if (localPropertiesFile.exists()) {
 }
 
 val apiHost = localProperties.getProperty("API_HOST") ?: "http://10.0.2.2:8080/"
+val wsHost = localProperties.getProperty("WS_HOST") ?: "ws://10.0.2.2:8080"
 
 android {
     namespace = "com.example.uberproject"
@@ -31,6 +32,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "API_HOST", "\"$apiHost\"")
+        buildConfigField("String", "WS_HOST", "\"$wsHost\"")
     }
 
     buildTypes {
