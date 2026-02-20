@@ -1,16 +1,20 @@
 package com.example.uberproject.api;
 
+import com.example.uberproject.dto.request.InconsistencyReportRequestDTO;
 import com.example.uberproject.dto.response.AssignedRideDTO;
 import com.example.uberproject.dto.request.RideCancelRequestDTO;
 import com.example.uberproject.dto.request.RideRequestDTO;
 import com.example.uberproject.dto.request.RideStopRequestDTO;
 import com.example.uberproject.dto.request.PanicRequestDTO;
 import com.example.uberproject.dto.response.DriverRideHistoryResponseDTO;
+import com.example.uberproject.dto.response.InconsistencyReportResponseDTO;
 import com.example.uberproject.dto.response.RideCreatedResponseDTO;
 import com.example.uberproject.dto.response.RideHistoryResponseDTO;
 import com.example.uberproject.dto.response.RideCancelResponseDTO;
 import com.example.uberproject.dto.response.RideStopResponseDTO;
 import com.example.uberproject.dto.response.PanicResponseDTO;
+import com.example.uberproject.dto.response.RideTrackingResponseDTO;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -48,6 +52,19 @@ public interface RideApi {
 
     @POST("panic")
     Call<PanicResponseDTO> createPanic(@Body PanicRequestDTO request);
+
+    @GET("rides/{rideId}/tracking")
+    Call<RideTrackingResponseDTO> getRideTracking(@Path("rideId") Integer rideId);
+
+    @POST("rides/{rideId}/report")
+    Call<InconsistencyReportResponseDTO> reportInconsistency(
+            @Path("rideId") Integer rideId,
+            @Body InconsistencyReportRequestDTO request
+    );
+
+    @PUT("rides/{rideId}/start")
+    Call<Void> startRide(@Path("rideId") Integer rideId);
+
 
 }
 

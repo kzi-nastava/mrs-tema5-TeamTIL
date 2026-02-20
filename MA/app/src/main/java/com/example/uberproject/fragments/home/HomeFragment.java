@@ -1,7 +1,5 @@
 package com.example.uberproject.fragments.home;
 
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,6 +26,7 @@ import com.example.uberproject.dto.request.RideStopRequestDTO;
 import com.example.uberproject.dto.response.RideStopResponseDTO;
 import com.example.uberproject.dto.response.RideCancelResponseDTO;
 import com.example.uberproject.fragments.map.MapFragment;
+import com.example.uberproject.fragments.tracking.TrackRideFragment;
 import com.example.uberproject.model.Location;
 import com.example.uberproject.utils.AuthGuard;
 import com.example.uberproject.utils.TokenManager;
@@ -35,7 +34,6 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -490,14 +488,38 @@ public class HomeFragment extends Fragment {
         });
 
         btnStartRide.setOnClickListener(v -> {
-            if (currentRide != null) {
-                userRole = AuthGuard.getUserRole(requireContext());
-                if ("DRIVER".equalsIgnoreCase(userRole)) {
-                    Toast.makeText(requireContext(), "Starting ride...", Toast.LENGTH_SHORT).show();
-                    // Implementacija za start ride
-                } else if ("REGISTERED_USER".equalsIgnoreCase(userRole)) {
-                    // Za korisnika, startRide postaje "Open Ride" - samo notify
-                    Toast.makeText(requireContext(), "Opening ride...", Toast.LENGTH_SHORT).show();
+            if (currentRide == null) return;
+            userRole = AuthGuard.getUserRole(requireContext());
+
+            if ("DRIVER".equalsIgnoreCase(userRole)) {
+                // Pozovi backend da startuje vožnju (ovo pokreće simulaciju!)
+                rideApi.startRide(currentRide.getRideId()).enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                        if (!isAdded()) return;
+                        if (response.isSuccessful()) {
+                            Toast.makeText(requireContext(), "Ride started!", Toast.LENGTH_SHORT).show();
+                            loadActiveRideIfNeeded(); // Refresh kartice
+                        } else {
+                            Toast.makeText(requireContext(), "Failed to start ride (Code: " + response.code() + ")", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    @Override
+                    public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                        if (!isAdded()) return;
+                        Toast.makeText(requireContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+            } else if ("REGISTERED_USER".equalsIgnoreCase(userRole)) {
+                // Korisnik otvara TrackRide
+                if (currentRide.getRideId() != null) {
+                    TrackRideFragment trackFragment = TrackRideFragment.newInstance(currentRide.getRideId());
+                    requireActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragment_container, trackFragment)
+                            .addToBackStack(null)
+                            .commit();
                 }
             }
         });
