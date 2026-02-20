@@ -9,6 +9,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.AssignedRideDTO;
@@ -209,11 +212,44 @@ public class RideController {
 
     // 2.6.2 Track ride location
     @GetMapping("/{rideId}/tracking")
-    @PreAuthorize("hasAnyRole('REGISTERED_USER', 'DRIVER')")
-    public ResponseEntity<RideTrackingDTO> trackRide(@PathVariable Integer rideId) {
+    @PreAuthorize("hasAnyRole('REGISTERED_USER', 'DRIVER', 'ADMINISTRATOR')")
+    public ResponseEntity<RideTrackingDTO> trackRide(@PathVariable Integer rideId, Principal principal) {
         if (rideId <= 0) {
             return ResponseEntity.badRequest().build();
         }
+
+        Ride ride = rideRepository.findById(rideId).orElse(null);
+        if (ride == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Vožnja mora biti IN_PROGRESS za obične korisnike
+        if (!RideStatus.IN_PROGRESS.equals(ride.getRideStatus())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        // Admin ima pristup svemu
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role -> role.equals("ROLE_ADMINISTRATOR"));
+
+        // Provera da li je korisnik povezan sa vožnjom (vozač, putnik ili ulinkovani putnik)
+        if (!isAdmin) {
+
+            String email = principal.getName();
+            boolean isDriver = ride.getDriver() != null
+                    && ride.getDriver().getEmail().equals(email);
+            boolean isPassenger = ride.getPassenger() != null
+                    && ride.getPassenger().getEmail().equals(email);
+            boolean isCoPassenger = ride.getCoPassengers() != null
+                    && ride.getCoPassengers().stream().anyMatch(p -> p.getEmail().equals(email));
+
+            if (!isDriver && !isPassenger && !isCoPassenger) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+
         RideTrackingDTO response = rideService.getRideTracking(rideId);
         return ResponseEntity.ok(response);
     }

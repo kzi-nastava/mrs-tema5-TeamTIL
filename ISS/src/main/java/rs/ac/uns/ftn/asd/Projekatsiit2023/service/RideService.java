@@ -1,5 +1,6 @@
 package rs.ac.uns.ftn.asd.Projekatsiit2023.service;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -40,6 +41,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.springframework.scheduling.annotation.Scheduled;
+import rs.ac.uns.ftn.asd.Projekatsiit2023.service.ride_simulation.RideSimulationService;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -67,6 +70,9 @@ public class RideService {
     private DriverRepository driverRepository;
     @Autowired
     private RideRatingRepository rideRatingRepository;
+    @Autowired
+    @Lazy
+    private RideSimulationService rideSimulationService;
     private final RideRepository rideRepository;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -128,6 +134,9 @@ public class RideService {
         ride.setRideStatus(RideStatus.IN_PROGRESS);
         ride.setStartTime(LocalDateTime.now());
         Ride savedRide = rideRepository.save(ride);
+
+        // Pokreni simulaciju kretanja vozila
+        rideSimulationService.startSimulation(rideId);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
         return new RideStartResponseDTO(
@@ -602,25 +611,39 @@ public class RideService {
         if (RideStatus.FINISHED.equals(ride.getRideStatus())) {
             throw new RuntimeException("Ride is already finished");
         }
+
+        // Koristi stvarnu poziciju vozila iz simulacije
+        double[] simPos = rideSimulationService.getCurrentPosition(rideId);
+        if (simPos != null) {
+            actualEndLocation.setLatitude(simPos[0]);
+            actualEndLocation.setLongitude(simPos[1]);
+            if (actualEndLocation.getAddress() == null || actualEndLocation.getAddress().isBlank()) {
+                actualEndLocation.setAddress("Stopped at: " +
+                        String.format("%.4f, %.4f", simPos[0], simPos[1]));
+            }
+        }
+
         Route route = ride.getRoute();
         VehicleType vehicleType = ride.getDriver().getVehicle().getType();
-        double finalPrice = calculateFinalPrice(
-                vehicleType,
-                ride.getStartLocation(),
-                actualEndLocation
-        );
+        double finalPrice = calculateFinalPrice(vehicleType, ride.getStartLocation(), actualEndLocation);
+
         actualEndLocation.setRoute(route);
         Location endLocation = locationService.findOrSaveLocation(actualEndLocation, route);
         if (endLocation != null) {
             route.getLocations().add(endLocation);
         }
         routeService.save(route);
+
         ride.setRideStatus(RideStatus.FINISHED);
         ride.setEndLocation(endLocation);
         ride.setEndTime(actualEndTime);
         ride.setTotalPrice(finalPrice);
         ride.setRoute(route);
         rideRepository.save(ride);
+
+        // Zaustavi simulaciju i obavesti klijente
+        rideSimulationService.stopSimulation(rideId);
+
         long durationMinutes = 0;
         if (ride.getStartTime() != null && ride.getEndTime() != null) {
             durationMinutes = ChronoUnit.MINUTES.between(ride.getStartTime(), ride.getEndTime());
@@ -1011,6 +1034,17 @@ public class RideService {
             throw new RuntimeException("Ride cannot be ended, current status: " + ride.getRideStatus());
         }
 
+        // Koristi stvarnu poziciju vozila iz simulacije (ako postoji)
+        double[] simPos = rideSimulationService.getCurrentPosition(rideId);
+        if (simPos != null) {
+            actualEndLocation.setLatitude(simPos[0]);
+            actualEndLocation.setLongitude(simPos[1]);
+            // Adresu uzimamo iz krajnje lokacije rute (za simulaciju je to dovoljno)
+            if (actualEndLocation.getAddress() == null || actualEndLocation.getAddress().isBlank()) {
+                actualEndLocation.setAddress(ride.getEndLocation().getAddress());
+            }
+        }
+
         Route route = ride.getRoute();
         VehicleType vehicleType = ride.getDriver().getVehicle().getType();
 
@@ -1036,6 +1070,9 @@ public class RideService {
         rideRepository.save(ride);
 
         long durationMinutes = ChronoUnit.MINUTES.between(ride.getStartTime(), ride.getEndTime());
+
+        // Zaustavi simulaciju i obavesti klijente
+        rideSimulationService.stopSimulation(rideId);
 
         Driver driver = ride.getDriver();
         Optional<Ride> nextRide = rideRepository.findNextRideByDriverId(
