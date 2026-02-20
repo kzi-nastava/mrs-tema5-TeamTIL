@@ -1,6 +1,11 @@
 package com.example.uberproject.fragments.map;
 
+import android.animation.AnimatorInflater;
+import android.media.MediaPlayer;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,14 +18,18 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.uberproject.R;
 import com.example.uberproject.api.PublicApi;
 import com.example.uberproject.api.RetrofitClient;
+import com.example.uberproject.api.RideApi;
 import com.example.uberproject.dto.request.RideEstimationRequestDTO;
+import com.example.uberproject.dto.request.PanicRequestDTO;
 import com.example.uberproject.dto.response.RideEstimationResponseDTO;
 import com.example.uberproject.dto.response.VehicleStatusResponseDTO;
+import com.example.uberproject.dto.response.PanicResponseDTO;
 import com.example.uberproject.utils.GeocodingService;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
@@ -35,8 +44,15 @@ import retrofit2.Response;
 
 public class MapFragment extends Fragment {
 
+    private static final String TAG = "MapFragment";
+
     private WebView webView;
     private Button btnEstimateRide;
+    private Button btnPanic;
+    private RideApi rideApi;
+    private Integer currentRideId;
+    private Double currentUserLat;
+    private Double currentUserLon;
 
     @Nullable
     @Override
@@ -47,6 +63,9 @@ public class MapFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         webView = view.findViewById(R.id.webViewMap);
         btnEstimateRide = view.findViewById(R.id.btnEstimateRide);
+        btnPanic = view.findViewById(R.id.btnPanic);
+
+        rideApi = RetrofitClient.getInstance(requireContext()).create(RideApi.class);
 
         File cachePath = new File(requireContext().getCacheDir(), "osmdroid");
         Configuration.getInstance().setOsmdroidBasePath(cachePath);
@@ -67,6 +86,9 @@ public class MapFragment extends Fragment {
         });
 
         btnEstimateRide.setOnClickListener(v -> showRideEstimationForm());
+
+        // Setup panic button
+        btnPanic.setOnClickListener(v -> handlePanicClick());
 
         return view;
     }
@@ -270,6 +292,128 @@ public class MapFragment extends Fragment {
         sb.append("]");
         String js = "drawRoute(" + sb.toString() + ",'" + estimatedTime + "')";
         webView.post(() -> webView.evaluateJavascript(js, null));
+    }
+
+    public void showPanicButton(Integer rideId, Double lat, Double lon) {
+        this.currentRideId = rideId;
+        this.currentUserLat = lat;
+        this.currentUserLon = lon;
+        if (btnPanic != null) {
+            btnPanic.setVisibility(View.VISIBLE);
+            btnPanic.setEnabled(true);
+            btnPanic.setAlpha(1.0f); // Ensure fully opaque
+            btnPanic.setScaleX(1.0f);
+            btnPanic.setScaleY(1.0f);
+
+            // Start pulse animation (scale only, no alpha)
+            try {
+                android.animation.Animator animator = android.animation.AnimatorInflater.loadAnimator(
+                    requireContext(), R.animator.pulse_animation);
+                if (animator != null) {
+                    animator.setTarget(btnPanic);
+                    animator.start();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error loading pulse animation", e);
+            }
+
+            Log.d(TAG, "Panic button shown with pulsing animation for ride: " + rideId);
+        }
+    }
+
+    public void hidePanicButton() {
+        this.currentRideId = null;
+        this.currentUserLat = null;
+        this.currentUserLon = null;
+        if (btnPanic != null) {
+            btnPanic.setVisibility(View.GONE);
+        }
+    }
+
+    private void handlePanicClick() {
+        if (currentRideId == null) {
+            Toast.makeText(requireContext(), "No active ride", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Show confirmation dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Emergency Alert")
+                .setMessage("Are you sure you want to trigger a panic alert? This will notify emergency services.")
+                .setPositiveButton("YES, EMERGENCY!", (dialog, which) -> triggerPanic())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void triggerPanic() {
+        if (currentRideId == null || currentUserLat == null || currentUserLon == null) {
+            Toast.makeText(requireContext(), "Missing location data", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Create panic request
+        PanicRequestDTO request = new PanicRequestDTO(
+                currentRideId,
+                1, // locationId - trebalo bi da bude iz mape
+                currentUserLat,
+                currentUserLon
+        );
+
+        Log.d(TAG, "Sending panic request for ride " + currentRideId + " at " + currentUserLat + "," + currentUserLon);
+
+        rideApi.createPanic(request).enqueue(new Callback<PanicResponseDTO>() {
+            @Override
+            public void onResponse(@NonNull Call<PanicResponseDTO> call, @NonNull Response<PanicResponseDTO> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    PanicResponseDTO panicResponse = response.body();
+                    Log.d(TAG, "Panic alert sent successfully. Panic ID: " + panicResponse.getId());
+
+                    // Play sound and show notification
+                    playPanicSound();
+                    showPanicConfirmation(panicResponse);
+
+                    // Mark panic button as triggered
+                    btnPanic.setEnabled(false);
+                    btnPanic.setAlpha(0.5f);
+                } else {
+                    Toast.makeText(requireContext(), "Failed to send panic alert", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Panic request failed: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<PanicResponseDTO> call, @NonNull Throwable t) {
+                Toast.makeText(requireContext(), "Error sending panic alert: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Panic request error", t);
+            }
+        });
+    }
+
+    private void playPanicSound() {
+        try {
+            // Use system notification sound (alarm sound)
+            Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+            MediaPlayer mediaPlayer = MediaPlayer.create(requireContext(), alarmUri);
+            if (mediaPlayer != null) {
+                mediaPlayer.setVolume(1.0f, 1.0f);
+                mediaPlayer.start();
+                mediaPlayer.setOnCompletionListener(MediaPlayer::release);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error playing panic sound", e);
+        }
+    }
+
+    private void showPanicConfirmation(PanicResponseDTO panicResponse) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("🚨 PANIC ALERT SENT 🚨")
+                .setMessage("Emergency services have been notified.\n\n" +
+                        "Vehicle: " + panicResponse.getVehicleName() + "\n" +
+                        "License Plate: " + panicResponse.getVehicleLicensePlate() + "\n" +
+                        "Location: " + panicResponse.getLocationAddress() + "\n" +
+                        "Time: " + panicResponse.getTimestamp())
+                .setPositiveButton("OK", null)
+                .show();
     }
 }
 

@@ -4,11 +4,13 @@ import com.example.uberproject.dto.response.AssignedRideDTO;
 import com.example.uberproject.dto.request.RideCancelRequestDTO;
 import com.example.uberproject.dto.request.RideRequestDTO;
 import com.example.uberproject.dto.request.RideStopRequestDTO;
+import com.example.uberproject.dto.request.PanicRequestDTO;
 import com.example.uberproject.dto.response.DriverRideHistoryResponseDTO;
 import com.example.uberproject.dto.response.RideCreatedResponseDTO;
 import com.example.uberproject.dto.response.RideHistoryResponseDTO;
 import com.example.uberproject.dto.response.RideCancelResponseDTO;
 import com.example.uberproject.dto.response.RideStopResponseDTO;
+import com.example.uberproject.dto.response.PanicResponseDTO;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -32,6 +34,9 @@ public interface RideApi {
     @GET("rides/assigned")
     Call<List<AssignedRideDTO>> getDriverAssignedRides(@Query("driverEmail") String driverEmail);
 
+    @GET("rides/user/{email}")
+    Call<List<AssignedRideDTO>> getUserActiveRides(@Path("email") String email, @Query("status") String status);
+
     @PUT("rides/{rideId}/cancel")
     Call<RideCancelResponseDTO> cancelRide(@Path("rideId") Integer rideId, @Body RideCancelRequestDTO request);
 
@@ -40,6 +45,10 @@ public interface RideApi {
 
     @POST("rides")
     Call<RideCreatedResponseDTO> createRide(@Body RideRequestDTO request);
+
+    @POST("panic")
+    Call<PanicResponseDTO> createPanic(@Body PanicRequestDTO request);
+
 }
 
 

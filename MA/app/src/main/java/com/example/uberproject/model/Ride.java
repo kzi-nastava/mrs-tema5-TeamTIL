@@ -11,6 +11,25 @@ public class Ride implements java.io.Serializable {
     private String status;
     private String dateTime;
     private Boolean panicSent;
+    // Driver info
+    private String driverFirstName;
+    private String driverLastName;
+    private String driverPhoneNumber;
+    private String driverProfilePictureUrl;
+    // Ride details
+    private String startTime;
+    private String estimatedEndTime;
+    private Double distance;
+    private Double duration;
+    // Passenger info
+    private String passengerFirstName;
+    private String passengerLastName;
+    private String passengerPhoneNumber;
+    private String passengerProfilePictureUrl;
+    private String passengerEmail;
+    // Vehicle info
+    private String vehicleModel;
+    private String vehicleLicensePlate;
 
     public Ride() {}
 
@@ -62,6 +81,38 @@ public class Ride implements java.io.Serializable {
 
     public Boolean getPanicSent() { return panicSent; }
     public void setPanicSent(Boolean panicSent) { this.panicSent = panicSent; }
+
+    public String getDriverFirstName() { return driverFirstName; }
+    public void setDriverFirstName(String driverFirstName) { this.driverFirstName = driverFirstName; }
+    public String getDriverLastName() { return driverLastName; }
+    public void setDriverLastName(String driverLastName) { this.driverLastName = driverLastName; }
+    public String getDriverPhoneNumber() { return driverPhoneNumber; }
+    public void setDriverPhoneNumber(String driverPhoneNumber) { this.driverPhoneNumber = driverPhoneNumber; }
+    public String getDriverProfilePictureUrl() { return driverProfilePictureUrl; }
+    public void setDriverProfilePictureUrl(String url) { this.driverProfilePictureUrl = url; }
+    public String getStartTime() { return startTime; }
+    public void setStartTime(String startTime) { this.startTime = startTime; }
+    public String getEstimatedEndTime() { return estimatedEndTime; }
+    public void setEstimatedEndTime(String estimatedEndTime) { this.estimatedEndTime = estimatedEndTime; }
+    public Double getDistance() { return distance; }
+    public void setDistance(Double distance) { this.distance = distance; }
+    public Double getDuration() { return duration; }
+    public void setDuration(Double duration) { this.duration = duration; }
+
+    public String getPassengerFirstName() { return passengerFirstName; }
+    public void setPassengerFirstName(String v) { this.passengerFirstName = v; }
+    public String getPassengerLastName() { return passengerLastName; }
+    public void setPassengerLastName(String v) { this.passengerLastName = v; }
+    public String getPassengerPhoneNumber() { return passengerPhoneNumber; }
+    public void setPassengerPhoneNumber(String v) { this.passengerPhoneNumber = v; }
+    public String getPassengerProfilePictureUrl() { return passengerProfilePictureUrl; }
+    public void setPassengerProfilePictureUrl(String v) { this.passengerProfilePictureUrl = v; }
+    public String getPassengerEmail() { return passengerEmail; }
+    public void setPassengerEmail(String v) { this.passengerEmail = v; }
+    public String getVehicleModel() { return vehicleModel; }
+    public void setVehicleModel(String v) { this.vehicleModel = v; }
+    public String getVehicleLicensePlate() { return vehicleLicensePlate; }
+    public void setVehicleLicensePlate(String v) { this.vehicleLicensePlate = v; }
 
     @Override
     public boolean equals(Object o) {

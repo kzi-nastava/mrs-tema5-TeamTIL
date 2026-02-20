@@ -5,6 +5,9 @@ public class RideHistoryResponseDTO {
     private Integer routeId;
     private String passengerEmail;
     private String passengerFirstName;
+    private String passengerLastName;
+    private String passengerProfilePictureUrl;
+    private String passengerPhoneNumber;
     private String driverEmail;
     private String driverFirstName;
     private String driverLastName;
@@ -19,18 +22,26 @@ public class RideHistoryResponseDTO {
     private Double distance;
     private Double duration;
     private Boolean panicSent;
+    private Boolean rated;
+    private String vehicleModel;
+    private String vehicleLicensePlate;
 
     public RideHistoryResponseDTO() {}
 
     public RideHistoryResponseDTO(Integer id, String passengerEmail, String passengerFirstName,
+                                  String passengerLastName, String passengerProfilePictureUrl, String passengerPhoneNumber,
                                   String driverEmail, String driverFirstName, String driverLastName,
                                   String driverProfilePictureUrl, String driverPhoneNumber,
                                   String startLocation, String endLocation, String status,
                                   String startTime, String estimatedEndTime, Double price,
-                                  Double distance, Double duration, Boolean panicSent) {
+                                  Double distance, Double duration, Boolean panicSent, Boolean rated,
+                                  String vehicleModel, String vehicleLicensePlate) {
         this.id = id;
         this.passengerEmail = passengerEmail;
         this.passengerFirstName = passengerFirstName;
+        this.passengerLastName = passengerLastName;
+        this.passengerProfilePictureUrl = passengerProfilePictureUrl;
+        this.passengerPhoneNumber = passengerPhoneNumber;
         this.driverEmail = driverEmail;
         this.driverFirstName = driverFirstName;
         this.driverLastName = driverLastName;
@@ -45,6 +56,9 @@ public class RideHistoryResponseDTO {
         this.distance = distance;
         this.duration = duration;
         this.panicSent = panicSent;
+        this.rated = rated;
+        this.vehicleModel = vehicleModel;
+        this.vehicleLicensePlate = vehicleLicensePlate;
     }
 
     public Integer getId() { return id; }
@@ -57,6 +71,12 @@ public class RideHistoryResponseDTO {
     public void setPassengerEmail(String passengerEmail) { this.passengerEmail = passengerEmail; }
     public String getPassengerFirstName() { return passengerFirstName; }
     public void setPassengerFirstName(String passengerFirstName) { this.passengerFirstName = passengerFirstName; }
+    public String getPassengerLastName() { return passengerLastName; }
+    public void setPassengerLastName(String passengerLastName) { this.passengerLastName = passengerLastName; }
+    public String getPassengerProfilePictureUrl() { return passengerProfilePictureUrl; }
+    public void setPassengerProfilePictureUrl(String passengerProfilePictureUrl) { this.passengerProfilePictureUrl = passengerProfilePictureUrl; }
+    public String getPassengerPhoneNumber() { return passengerPhoneNumber; }
+    public void setPassengerPhoneNumber(String passengerPhoneNumber) { this.passengerPhoneNumber = passengerPhoneNumber; }
     public String getDriverEmail() { return driverEmail; }
     public void setDriverEmail(String driverEmail) { this.driverEmail = driverEmail; }
     public String getDriverFirstName() { return driverFirstName; }
@@ -85,4 +105,10 @@ public class RideHistoryResponseDTO {
     public void setDuration(Double duration) { this.duration = duration; }
     public Boolean getPanicSent() { return panicSent; }
     public void setPanicSent(Boolean panicSent) { this.panicSent = panicSent; }
+    public Boolean getRated() { return rated; }
+    public void setRated(Boolean rated) { this.rated = rated; }
+    public String getVehicleModel() { return vehicleModel; }
+    public void setVehicleModel(String vehicleModel) { this.vehicleModel = vehicleModel; }
+    public String getVehicleLicensePlate() { return vehicleLicensePlate; }
+    public void setVehicleLicensePlate(String vehicleLicensePlate) { this.vehicleLicensePlate = vehicleLicensePlate; }
 }

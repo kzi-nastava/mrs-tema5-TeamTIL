@@ -244,6 +244,30 @@ public class UserRideHistoryFragment extends Fragment {
             String status = mapStatus(dto.getStatus());
             String dateTime = formatDateTime(dto.getStartTime());
 
+            Ride ride = new Ride(dto.getId(), dto.getRouteId(),
+                    dto.getStartLocation(), dto.getEndLocation(),
+                    price, status, dateTime, dto.getPanicSent());
+
+            // Driver
+            ride.setDriverFirstName(dto.getDriverFirstName());
+            ride.setDriverLastName(dto.getDriverLastName());
+            ride.setDriverPhoneNumber(dto.getDriverPhoneNumber());
+            ride.setDriverProfilePictureUrl(dto.getDriverProfilePictureUrl());
+            // Passenger
+            ride.setPassengerFirstName(dto.getPassengerFirstName());
+            ride.setPassengerLastName(dto.getPassengerLastName());
+            ride.setPassengerPhoneNumber(dto.getPassengerPhoneNumber());
+            ride.setPassengerProfilePictureUrl(dto.getPassengerProfilePictureUrl());
+            ride.setPassengerEmail(dto.getPassengerEmail());
+            // Times & details
+            ride.setStartTime(dto.getStartTime());
+            ride.setEstimatedEndTime(dto.getEstimatedEndTime());
+            ride.setDistance(dto.getDistance());
+            ride.setDuration(dto.getDuration());
+            // Vehicle
+            ride.setVehicleModel(dto.getVehicleModel());
+            ride.setVehicleLicensePlate(dto.getVehicleLicensePlate());
+
             Ride ride = new Ride(
                     dto.getId(),
                     dto.getRouteId(),

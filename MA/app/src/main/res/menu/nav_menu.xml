@@ -3,6 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
+    <!-- COMMON HOME ITEM FOR ALL USERS -->
+    <group android:checkableBehavior="none">
+        <item android:id="@+id/nav_home"
+            android:title="@string/home"
+            android:icon="@drawable/ic_home"
+            android:orderInCategory="1" />
+    </group>
+
     <!-- REGISTERED USER MENU ITEMS -->
     <group android:checkableBehavior="single"
         android:id="@+id/menu_registered_user">
@@ -55,6 +63,7 @@
     <!-- ADMIN MENU ITEMS -->
     <group android:checkableBehavior="single"
         android:id="@+id/menu_admin">
+
         <item android:id="@+id/nav_register_driver"
             android:title="@string/driver_registration"
             android:icon="@drawable/ic_person_placeholder"

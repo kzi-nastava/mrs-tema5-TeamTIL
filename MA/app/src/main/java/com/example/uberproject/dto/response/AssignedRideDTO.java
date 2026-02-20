@@ -8,6 +8,11 @@ public class AssignedRideDTO {
     private String passengerLastName;
     private String passengerProfilePictureUrl;
     private String passengerPhoneNumber;
+    private String driverFirstName;
+    private String driverLastName;
+    private String driverEmail;
+    private String driverProfilePictureUrl;
+    private String driverPhoneNumber;
     private String startLocation;
     private String endLocation;
     private String status;
@@ -36,6 +41,10 @@ public class AssignedRideDTO {
 
     // Getters and Setters
     public Integer getId() {
+        return id;
+    }
+
+    public Integer getRideId() {
         return id;
     }
 
@@ -89,6 +98,46 @@ public class AssignedRideDTO {
 
     public void setPassengerPhoneNumber(String passengerPhoneNumber) {
         this.passengerPhoneNumber = passengerPhoneNumber;
+    }
+
+    public String getDriverFirstName() {
+        return driverFirstName;
+    }
+
+    public void setDriverFirstName(String driverFirstName) {
+        this.driverFirstName = driverFirstName;
+    }
+
+    public String getDriverLastName() {
+        return driverLastName;
+    }
+
+    public void setDriverLastName(String driverLastName) {
+        this.driverLastName = driverLastName;
+    }
+
+    public String getDriverEmail() {
+        return driverEmail;
+    }
+
+    public void setDriverEmail(String driverEmail) {
+        this.driverEmail = driverEmail;
+    }
+
+    public String getDriverProfilePictureUrl() {
+        return driverProfilePictureUrl;
+    }
+
+    public void setDriverProfilePictureUrl(String driverProfilePictureUrl) {
+        this.driverProfilePictureUrl = driverProfilePictureUrl;
+    }
+
+    public String getDriverPhoneNumber() {
+        return driverPhoneNumber;
+    }
+
+    public void setDriverPhoneNumber(String driverPhoneNumber) {
+        this.driverPhoneNumber = driverPhoneNumber;
     }
 
     public String getStartLocation() {

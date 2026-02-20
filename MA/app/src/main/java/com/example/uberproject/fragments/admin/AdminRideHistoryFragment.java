@@ -176,18 +176,38 @@ public class AdminRideHistoryFragment extends Fragment {
     private void convertToRideModel(List<RideHistoryResponseDTO> rideHistoryList) {
         allRides.clear();
 
-        for (RideHistoryResponseDTO rideDto : rideHistoryList) {
-            String from = rideDto.getStartLocation();
-            String to = rideDto.getEndLocation();
-            String price = rideDto.getPrice() != null ? String.format("%.2f RSD", rideDto.getPrice()) : "N/A";
-            String status = rideDto.getStatus();
-            String dateTime = formatDateTime(rideDto.getStartTime());
-            Boolean panicSent = rideDto.getPanicSent();
+        for (RideHistoryResponseDTO dto : rideHistoryList) {
+            String price    = dto.getPrice() != null ? String.format("%.0f RSD", dto.getPrice()) : "N/A";
+            String status   = dto.getStatus();
+            String dateTime = formatDateTime(dto.getStartTime());
 
-            Ride ride = new Ride(rideDto.getId(), from, to, price, status, dateTime, panicSent);
+            Ride ride = new Ride(dto.getId(), dto.getRouteId(),
+                    dto.getStartLocation(), dto.getEndLocation(),
+                    price, status, dateTime, dto.getPanicSent());
+
+            // Driver
+            ride.setDriverFirstName(dto.getDriverFirstName());
+            ride.setDriverLastName(dto.getDriverLastName());
+            ride.setDriverPhoneNumber(dto.getDriverPhoneNumber());
+            ride.setDriverProfilePictureUrl(dto.getDriverProfilePictureUrl());
+            // Passenger
+            ride.setPassengerFirstName(dto.getPassengerFirstName());
+            ride.setPassengerLastName(dto.getPassengerLastName());
+            ride.setPassengerPhoneNumber(dto.getPassengerPhoneNumber());
+            ride.setPassengerProfilePictureUrl(dto.getPassengerProfilePictureUrl());
+            ride.setPassengerEmail(dto.getPassengerEmail());
+            // Times & details
+            ride.setStartTime(dto.getStartTime());
+            ride.setEstimatedEndTime(dto.getEstimatedEndTime());
+            ride.setDistance(dto.getDistance());
+            ride.setDuration(dto.getDuration());
+            // Vehicle
+            ride.setVehicleModel(dto.getVehicleModel());
+            ride.setVehicleLicensePlate(dto.getVehicleLicensePlate());
+
             allRides.add(ride);
-
-            Log.d(TAG, "Converted ride: " + from + " -> " + to + " | " + status + " | Panic: " + panicSent);
+            Log.d(TAG, "Converted ride: " + dto.getStartLocation() + " -> " + dto.getEndLocation()
+                    + " | " + status + " | Panic: " + dto.getPanicSent());
         }
     }
 
