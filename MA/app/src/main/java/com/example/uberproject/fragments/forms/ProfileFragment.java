@@ -112,7 +112,7 @@ public class ProfileFragment extends Fragment {
         TextView headerName = getView().findViewById(R.id.headerName);
         TextView headerEmail = getView().findViewById(R.id.headerEmail);
 
-        if (headerName != null) headerName.setText(name + " " + surname);
+        if (headerName != null) headerName.setText(name);
         if (headerEmail != null) headerEmail.setText(email);
 
         if (photoUrl != null && !photoUrl.isEmpty() && imgProfile != null) {
@@ -205,6 +205,17 @@ public class ProfileFragment extends Fragment {
                     );
                     isDriverActive = currentDriverData.getIsActive();
                     updateStatusButtonUI(btnStatus);
+
+                    TextView tvBlockedBanner = view.findViewById(R.id.tvBlockedBanner);
+                    if (tvBlockedBanner != null) {
+                        if (Boolean.TRUE.equals(currentDriverData.getIsBlocked())) {
+                            String reason = currentDriverData.getBlockReason();
+                            tvBlockedBanner.setText("Account Blocked:  " + (reason != null ? reason : ""));
+                            tvBlockedBanner.setVisibility(View.VISIBLE);
+                        } else {
+                            tvBlockedBanner.setVisibility(View.GONE);
+                        }
+                    }
                 }
             }
 
@@ -316,38 +327,32 @@ public class ProfileFragment extends Fragment {
 
     private void setupAdminLogic(View view) {
         TextView tabInfo = view.findViewById(R.id.tabInfo);
-        TextView tabUpdates = view.findViewById(R.id.tabDriverUpdates);
         TextView tabBlocking = view.findViewById(R.id.tabBlocking);
         TextView tabPanic = view.findViewById(R.id.tabPanic);
 
         tabInfo.setOnClickListener(v -> {
             loadInfoFragment();
-            updateTabStyles(tabInfo, tabUpdates, tabBlocking, tabPanic);
+            updateTabStyles(tabInfo, tabBlocking, tabPanic);
             btnEdit.setVisibility(View.VISIBLE);
         });
 
-        tabUpdates.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Driver Updates", Toast.LENGTH_SHORT).show();
-            updateTabStyles(tabUpdates, tabInfo, tabBlocking, tabPanic);
-            btnEdit.setVisibility(View.GONE);
-            setChangePhotoVisible(false);
-        });
-
         tabBlocking.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Blocking", Toast.LENGTH_SHORT).show();
-            updateTabStyles(tabBlocking, tabInfo, tabUpdates, tabPanic);
+            getChildFragmentManager().beginTransaction()
+                    .replace(R.id.profileContentContainer, new BlockingFragment())
+                    .commit();
+            updateTabStyles(tabBlocking, tabInfo, tabPanic);
             btnEdit.setVisibility(View.GONE);
             setChangePhotoVisible(false);
         });
 
         tabPanic.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Panic notifications", Toast.LENGTH_SHORT).show();
-            updateTabStyles(tabPanic, tabInfo, tabUpdates, tabBlocking);
+            updateTabStyles(tabPanic, tabInfo, tabBlocking);
             btnEdit.setVisibility(View.GONE);
             setChangePhotoVisible(false);
         });
 
-        updateTabStyles(tabInfo, tabUpdates, tabBlocking, tabPanic);
+        updateTabStyles(tabInfo, tabBlocking, tabPanic);
     }
 
     private void setupPassengerLogic(View view) {

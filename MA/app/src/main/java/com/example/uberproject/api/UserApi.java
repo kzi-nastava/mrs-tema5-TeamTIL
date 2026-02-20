@@ -7,6 +7,10 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.PUT;
+import com.example.uberproject.dto.request.BlockUserRequestDTO;
+import com.example.uberproject.dto.response.UserListItemDTO;
+import retrofit2.http.POST;
+import java.util.List;
 
 public interface UserApi {
     @GET("users/my-profile")
@@ -23,4 +27,13 @@ public interface UserApi {
 
     @GET("drivers/active-hours")
     Call<ActiveHoursResponseDTO> getActiveHours();
+
+    @GET("accounts/drivers")
+    Call<List<UserListItemDTO>> getAllDrivers();
+
+    @GET("accounts/users")
+    Call<List<UserListItemDTO>> getAllUsers();
+
+    @POST("accounts/block")
+    Call<Void> blockUser(@Body BlockUserRequestDTO request);
 }

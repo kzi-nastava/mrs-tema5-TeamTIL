@@ -135,6 +135,25 @@
                 app:layout_constraintTop_toBottomOf="@id/profileImageContainer"
                 app:layout_constraintStart_toStartOf="parent" />
 
+            <TextView
+                android:id="@+id/tvBlockedBanner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_banner_red"
+                android:drawableStart="@android:drawable/ic_dialog_alert"
+                android:drawablePadding="8dp"
+                android:drawableTint="@color/white"
+                android:gravity="center_vertical"
+                android:padding="14dp"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/tvHoursActive"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
             <LinearLayout
                 android:id="@+id/tabsContainer"
                 android:layout_width="match_parent"
@@ -144,7 +163,7 @@
                 android:orientation="horizontal"
                 android:padding="4dp"
                 android:weightSum="2"
-                app:layout_constraintTop_toBottomOf="@id/tvHoursActive">
+                app:layout_constraintTop_toBottomOf="@id/tvBlockedBanner">
 
                 <TextView
                     android:id="@+id/tabInfo"

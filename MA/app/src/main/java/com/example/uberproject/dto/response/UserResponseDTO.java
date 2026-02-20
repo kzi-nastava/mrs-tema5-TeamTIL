@@ -8,6 +8,8 @@ public class UserResponseDTO {
     private String phoneNumber;
     private String address;
     private String profilePictureUrl;
+    private Boolean isBlocked;
+    private String blockReason;
 
     public UserResponseDTO() {}
 
@@ -31,4 +33,10 @@ public class UserResponseDTO {
 
     public String getProfilePictureUrl() { return profilePictureUrl; }
     public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
+
+    public Boolean getIsBlocked() { return isBlocked; }
+    public void setIsBlocked(Boolean isBlocked) { this.isBlocked = isBlocked; }
+
+    public String getBlockReason() { return blockReason; }
+    public void setBlockReason(String blockReason) { this.blockReason = blockReason; }
 }
