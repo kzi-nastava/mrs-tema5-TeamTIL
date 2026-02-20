@@ -91,8 +91,8 @@ public class RideService {
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(role -> role.equals("ROLE_REGISTERED_USER"));
         if (isRegisteredUser) {
-            if (ride.getScheduledTime().isAfter(LocalDateTime.now().minusMinutes(10))) {
-                throw new RuntimeException("Rides can’t be canceled less than 10 minutes before they start.");
+            if (ride.getScheduledTime().isBefore(LocalDateTime.now().plusMinutes(10))) {
+                throw new RuntimeException("Rides can't be canceled less than 10 minutes before they start.");
             }
             ride.setCancellationReason("User cancelled");
             ride.setCanceledBy(UserType.REGISTERED_USER);

@@ -9,6 +9,30 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
+    <!-- Panic Button - visible only during active ride -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnPanic"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="100dp"
+        android:layout_marginEnd="20dp"
+        android:text="🚨"
+        android:textColor="@android:color/white"
+        android:textSize="32sp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:insetLeft="0dp"
+        android:insetRight="0dp"
+        android:visibility="gone"
+        android:elevation="8dp"
+        android:stateListAnimator="@null"
+        app:backgroundTint="#FF0000"
+        app:cornerRadius="40dp"
+        style="@style/Widget.MaterialComponents.Button"/>
+
+
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnEstimateRide"
         android:layout_width="wrap_content"

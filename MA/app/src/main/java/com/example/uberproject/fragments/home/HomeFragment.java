@@ -1,5 +1,7 @@
 package com.example.uberproject.fragments.home;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,11 +27,15 @@ import com.example.uberproject.dto.request.RideCancelRequestDTO;
 import com.example.uberproject.dto.request.RideStopRequestDTO;
 import com.example.uberproject.dto.response.RideStopResponseDTO;
 import com.example.uberproject.dto.response.RideCancelResponseDTO;
+import com.example.uberproject.fragments.map.MapFragment;
+import com.example.uberproject.model.Location;
 import com.example.uberproject.utils.AuthGuard;
 import com.example.uberproject.utils.TokenManager;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -50,6 +56,7 @@ public class HomeFragment extends Fragment {
     private TextView tvActiveRideDistance;
     private LinearLayout expandedDetailsLayout;
     private ImageView ivPassengerPhoto;
+    private TextView tvPersonLabel;
     private TextView tvPassengerEmail;
     private TextView tvEstimatedEndTime;
     private TextView tvDuration;
@@ -81,6 +88,7 @@ public class HomeFragment extends Fragment {
         tvActiveRideDistance = view.findViewById(R.id.tvActiveRideDistance);
         expandedDetailsLayout = view.findViewById(R.id.expandedDetailsLayout);
         ivPassengerPhoto = view.findViewById(R.id.ivPassengerPhoto);
+        tvPersonLabel = view.findViewById(R.id.tvPersonLabel);
         tvPassengerEmail = view.findViewById(R.id.tvPassengerEmail);
         tvEstimatedEndTime = view.findViewById(R.id.tvEstimatedEndTime);
         tvDuration = view.findViewById(R.id.tvDuration);
@@ -158,14 +166,17 @@ public class HomeFragment extends Fragment {
                 hideCard();
                 return;
             }
-            rideApi.getUserActiveRides(email, null).enqueue(new Callback<List<AssignedRideDTO>>() {
+            rideApi.getUserActiveRides(email, "IN_PROGRESS,REQUESTED").enqueue(new Callback<List<AssignedRideDTO>>() {
                 @Override
                 public void onResponse(@NonNull Call<List<AssignedRideDTO>> call,
                                        @NonNull Response<List<AssignedRideDTO>> response) {
                     if (!isAdded()) return;
+                    Log.d(TAG, "User active rides response - Code: " + response.code() + ", Body: " + (response.body() != null ? response.body().size() : "null"));
                     if (response.isSuccessful() && response.body() != null) {
+                        Log.d(TAG, "Successfully loaded " + response.body().size() + " user active rides");
                         showActiveDriverRide(response.body());
                     } else {
+                        Log.e(TAG, "Failed to load user active rides - Code: " + response.code());
                         hideCard();
                     }
                 }
@@ -188,6 +199,17 @@ public class HomeFragment extends Fragment {
         AssignedRideDTO activeRide = null;
         AssignedRideDTO requestedRide = null;
 
+        Log.d(TAG, "showActiveDriverRide: Received " + rides.size() + " rides");
+        for (int i = 0; i < rides.size(); i++) {
+            AssignedRideDTO ride = rides.get(i);
+            Log.d(TAG, "Ride " + i + ": ID=" + ride.getRideId() + ", Status=" + ride.getStatus());
+            Log.d(TAG, "  - passengerFirstName=" + ride.getPassengerFirstName());
+            Log.d(TAG, "  - passengerEmail=" + ride.getPassengerEmail());
+            Log.d(TAG, "  - driverFirstName=" + ride.getDriverFirstName());
+            Log.d(TAG, "  - driverEmail=" + ride.getDriverEmail());
+            Log.d(TAG, "  - accountEmail=" + ride.getAccountEmail());
+        }
+
         for (AssignedRideDTO ride : rides) {
             if ("IN_PROGRESS".equalsIgnoreCase(ride.getStatus())) {
                 activeRide = ride;
@@ -203,10 +225,13 @@ public class HomeFragment extends Fragment {
         }
 
         if (activeRide == null) {
+            Log.d(TAG, "No active or requested ride found");
             hideCard();
+            hidePanicButton();
             return;
         }
 
+        Log.d(TAG, "Using ride: ID=" + activeRide.getRideId() + ", Status=" + activeRide.getStatus());
         currentRide = activeRide;
         isExpanded = false;
         expandedDetailsLayout.setVisibility(View.GONE);
@@ -219,6 +244,13 @@ public class HomeFragment extends Fragment {
                 activeRide.getPrice(),
                 activeRide.getDistance()
         );
+
+        // Show panic button immediately if ride is IN_PROGRESS (don't wait for expansion)
+        if ("IN_PROGRESS".equalsIgnoreCase(activeRide.getStatus())) {
+            showMapFragmentPanicButton();
+        } else {
+            hidePanicButton();
+        }
     }
 
     private void populateCard(String status, String startTime,
@@ -310,12 +342,58 @@ public class HomeFragment extends Fragment {
         // Ride details (ista za obe uloge)
         tvEstimatedEndTime.setText(formatTime(currentRide.getEstimatedEndTime()));
         tvDuration.setText(String.format(Locale.getDefault(), "%.0f min", currentRide.getDuration() != null ? currentRide.getDuration() : 0));
+
+        // Show panic button only for IN_PROGRESS rides
+        if ("IN_PROGRESS".equalsIgnoreCase(currentRide.getStatus())) {
+            showMapFragmentPanicButton();
+        } else {
+            hideMapFragmentPanicButton();
+        }
+    }
+
+    private void showMapFragmentPanicButton() {
+        try {
+            // MapFragment je child fragment od HomeFragment, koristi getChildFragmentManager
+            Fragment fragment = getChildFragmentManager().findFragmentById(R.id.map_fragment_container);
+            if (fragment instanceof MapFragment && currentRide != null && currentRide.getRideId() != null) {
+                MapFragment mapFragment = (MapFragment) fragment;
+                // Use fixed coordinates for now - in real app, use actual location
+                mapFragment.showPanicButton(currentRide.getRideId(), 45.2517, 19.8369);
+                Log.d(TAG, "Panic button shown for ride: " + currentRide.getRideId());
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Could not show panic button: " + e.getMessage());
+        }
+    }
+
+    private void hideMapFragmentPanicButton() {
+        try {
+            Fragment fragment = getChildFragmentManager().findFragmentById(R.id.map_fragment_container);
+            if (fragment instanceof MapFragment) {
+                MapFragment mapFragment = (MapFragment) fragment;
+                mapFragment.hidePanicButton();
+                Log.d(TAG, "Panic button hidden");
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Could not hide panic button: " + e.getMessage());
+        }
+    }
+
+    private void hidePanicButton() {
+        hideMapFragmentPanicButton();
     }
 
     private void showPassengerInfo() {
         // Za drivera - prikazuj podatke o putniku
+        if (tvPersonLabel != null) tvPersonLabel.setText("Passenger");
         String passengerName = (currentRide.getPassengerFirstName() != null ? currentRide.getPassengerFirstName() : "")
                 + " " + (currentRide.getPassengerLastName() != null ? currentRide.getPassengerLastName() : "");
+
+        Log.d(TAG, "showPassengerInfo - passengerFirstName: " + currentRide.getPassengerFirstName());
+        Log.d(TAG, "showPassengerInfo - passengerLastName: " + currentRide.getPassengerLastName());
+        Log.d(TAG, "showPassengerInfo - passengerEmail: " + currentRide.getPassengerEmail());
+        Log.d(TAG, "showPassengerInfo - accountEmail: " + currentRide.getAccountEmail());
+
         if (passengerName.trim().isEmpty()) {
             tvPassengerEmail.setText(currentRide.getPassengerEmail() != null ? currentRide.getPassengerEmail() : currentRide.getAccountEmail());
         } else {
@@ -336,8 +414,15 @@ public class HomeFragment extends Fragment {
 
     private void showDriverInfo() {
         // Za korisnika - prikazuj podatke o vozaču
+        if (tvPersonLabel != null) tvPersonLabel.setText("Driver");
         String driverName = (currentRide.getDriverFirstName() != null ? currentRide.getDriverFirstName() : "")
                 + " " + (currentRide.getDriverLastName() != null ? currentRide.getDriverLastName() : "");
+
+        Log.d(TAG, "showDriverInfo - driverFirstName: " + currentRide.getDriverFirstName());
+        Log.d(TAG, "showDriverInfo - driverLastName: " + currentRide.getDriverLastName());
+        Log.d(TAG, "showDriverInfo - driverEmail: " + currentRide.getDriverEmail());
+        Log.d(TAG, "showDriverInfo - accountEmail: " + currentRide.getAccountEmail());
+
         if (driverName.trim().isEmpty()) {
             tvPassengerEmail.setText(currentRide.getDriverEmail() != null ? currentRide.getDriverEmail() : "Driver");
         } else {
@@ -358,7 +443,7 @@ public class HomeFragment extends Fragment {
 
     private void showDriverActionButtons() {
         // Za drivera - prikazuj driver buttons ovisno od statusa
-        // Prikaži Start Ride jer je za drivere
+        btnStartRide.setText("Start ride");
         btnStartRide.setVisibility(View.VISIBLE);
         // Sakrij Open Ride jer je za korisnika
         btnOpenRide.setVisibility(View.GONE);
@@ -369,17 +454,25 @@ public class HomeFragment extends Fragment {
         } else if ("REQUESTED".equalsIgnoreCase(currentRide.getStatus())) {
             actionButtonsLayout.setVisibility(View.GONE);
             upcomingButtonsLayout.setVisibility(View.VISIBLE);
+            btnCancelRide.setVisibility(View.VISIBLE);
         }
     }
 
     private void showUserActionButtons() {
-        // Za korisnika - prikazuj samo Open Ride i Cancel Ride
+        // Za korisnika - prikazuj samo Open Ride i/ili Cancel Ride
         actionButtonsLayout.setVisibility(View.GONE);
         upcomingButtonsLayout.setVisibility(View.VISIBLE);
-        // Sakrij Start Ride dugme jer je za drivere
-        btnStartRide.setVisibility(View.GONE);
-        // Prikaži Open Ride dugme umjesto Start Ride
-        btnOpenRide.setVisibility(View.VISIBLE);
+
+        if ("IN_PROGRESS".equalsIgnoreCase(currentRide.getStatus())) {
+            // Prikaži Open Ride i Cancel Ride
+            btnStartRide.setVisibility(View.VISIBLE);
+            btnStartRide.setText("Open ride");
+            btnCancelRide.setVisibility(View.VISIBLE);
+        } else {
+            // REQUESTED - samo Cancel Ride
+            btnStartRide.setVisibility(View.GONE);
+            btnCancelRide.setVisibility(View.VISIBLE);
+        }
     }
 
     private void setupButtonListeners() {
@@ -426,18 +519,54 @@ public class HomeFragment extends Fragment {
     }
 
     private void showCancelRideDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Cancel Ride");
-        builder.setMessage("Are you sure you want to cancel this ride?");
-        builder.setPositiveButton("Yes", (dialog, which) -> cancelRide());
-        builder.setNegativeButton("No", null);
-        builder.show();
+        userRole = AuthGuard.getUserRole(requireContext());
+
+        if ("DRIVER".equalsIgnoreCase(userRole)) {
+            // Driver mora unijeti razlog - prikaži dialog s poljem za unos
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_cancel_ride, null);
+
+            TextInputEditText etReason = dialogView.findViewById(R.id.etCancelReason);
+            androidx.appcompat.widget.AppCompatButton btnDialogCancel = dialogView.findViewById(R.id.btnDialogCancel);
+            androidx.appcompat.widget.AppCompatButton btnDialogConfirm = dialogView.findViewById(R.id.btnDialogConfirm);
+
+            final AlertDialog dialog = builder
+                    .setView(dialogView)
+                    .create();
+
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+            }
+
+            btnDialogCancel.setOnClickListener(v -> dialog.dismiss());
+
+            btnDialogConfirm.setOnClickListener(v -> {
+                String reason = etReason.getText() != null ? etReason.getText().toString().trim() : "";
+                if (reason.isEmpty()) {
+                    Toast.makeText(requireContext(), "Please provide a reason for cancellation", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                dialog.dismiss();
+                cancelRideWithReason(reason);
+            });
+
+            dialog.show();
+        } else {
+            // Korisnik - direktno otkazivanje bez unosa razloga
+            cancelRideWithReason("User cancelled");
+        }
     }
 
     private void stopRide() {
         if (currentRide == null) return;
 
-        RideStopRequestDTO request = new RideStopRequestDTO();
+        // Fixed coordinates for Novi Sad center (tracking not implemented)
+        Location endLocation = new Location(45.2517, 19.8369, currentRide.getEndLocation());
+        String nowStr = new SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                .format(new Date());
+        RideStopRequestDTO request = new RideStopRequestDTO(endLocation, nowStr);
+
         rideApi.stopRide(currentRide.getRideId(), request).enqueue(new Callback<RideStopResponseDTO>() {
             @Override
             public void onResponse(@NonNull Call<RideStopResponseDTO> call, @NonNull Response<RideStopResponseDTO> response) {
@@ -459,27 +588,49 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private void cancelRide() {
-        if (currentRide == null) return;
-
-        userRole = AuthGuard.getUserRole(requireContext());
-        RideCancelRequestDTO request = new RideCancelRequestDTO();
-
-        // Za korisnika - postavi razlog "User cancelled"
-        if ("REGISTERED_USER".equalsIgnoreCase(userRole)) {
-            request.setCancellationReason("User cancelled");
+    private void cancelRideWithReason(String reason) {
+        if (currentRide == null) {
+            Toast.makeText(requireContext(), "No ride selected", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "ERROR: currentRide is null!");
+            return;
         }
-        // Za drivera - ostaje prazno (može biti npr. "Driver cancelled" ako trebate)
+
+        if (currentRide.getRideId() == null) {
+            Toast.makeText(requireContext(), "Ride ID is null", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "ERROR: currentRide.getRideId() is null!");
+            return;
+        }
+
+        RideCancelRequestDTO request = new RideCancelRequestDTO(reason);
+
+        Log.d(TAG, "========================================");
+        Log.d(TAG, "CANCEL RIDE REQUEST DETAILS:");
+        Log.d(TAG, "Ride ID: " + currentRide.getRideId());
+        Log.d(TAG, "Reason: " + reason);
+        Log.d(TAG, "Request.CancellationReason: " + request.getCancellationReason());
+        Log.d(TAG, "Ride Status: " + currentRide.getStatus());
+        Log.d(TAG, "Passenger Email: " + currentRide.getPassengerEmail());
+        Log.d(TAG, "Account Email: " + currentRide.getAccountEmail());
+        Log.d(TAG, "========================================");
 
         rideApi.cancelRide(currentRide.getRideId(), request).enqueue(new Callback<RideCancelResponseDTO>() {
             @Override
             public void onResponse(@NonNull Call<RideCancelResponseDTO> call, @NonNull Response<RideCancelResponseDTO> response) {
                 if (!isAdded()) return;
+                Log.d(TAG, "Cancel ride response - Code: " + response.code() + ", IsSuccessful: " + response.isSuccessful());
                 if (response.isSuccessful()) {
+                    RideCancelResponseDTO body = response.body();
+                    Log.d(TAG, "Cancel successful - Response: " + (body != null ? body.getMessage() : "null body"));
                     Toast.makeText(requireContext(), "Ride cancelled successfully", Toast.LENGTH_SHORT).show();
                     loadActiveRideIfNeeded();
                 } else {
-                    Toast.makeText(requireContext(), "Failed to cancel ride", Toast.LENGTH_SHORT).show();
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "No error body";
+                        Log.e(TAG, "Cancel ride failed - Code: " + response.code() + ", Error: " + errorBody);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error reading error body", e);
+                    }
+                    Toast.makeText(requireContext(), "Failed to cancel ride (Code: " + response.code() + ")", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -487,7 +638,7 @@ public class HomeFragment extends Fragment {
             public void onFailure(@NonNull Call<RideCancelResponseDTO> call, @NonNull Throwable t) {
                 if (!isAdded()) return;
                 Log.e(TAG, "Failed to cancel ride", t);
-                Toast.makeText(requireContext(), "Error cancelling ride", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Error cancelling ride: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

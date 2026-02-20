@@ -84,4 +84,8 @@ dependencies {
     // Glide za učitavanje slika iz URL-a
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
+    // WebSocket za real-time panic notifikacije
+    implementation("org.java-websocket:Java-WebSocket:1.5.4")
+    implementation("com.google.code.gson:gson:2.10.1")
 }
