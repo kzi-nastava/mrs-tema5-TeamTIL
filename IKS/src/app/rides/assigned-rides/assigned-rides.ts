@@ -30,171 +30,165 @@ type TabFilter = 'Today' | 'Next 7 days' | 'All upcoming';
   styleUrl: './assigned-rides.css',
 })
 export class AssignedRides implements OnInit, OnDestroy {
-    showCancelModal = false;
-    cancelReason = '';
-    rideToCancel: Ride | null = null;
-    tabs: TabFilter[] = ['Today', 'Next 7 days', 'All upcoming'];
-    activeTab: TabFilter = 'Today';
-    rides: Ride[] = [];
-    selectedRide: Ride | null = null;
-    private subscriptions: Subscription = new Subscription();
+  showCancelModal = false;
+  cancelReason = '';
+  rideToCancel: Ride | null = null;
+  tabs: TabFilter[] = ['Today', 'Next 7 days', 'All upcoming'];
+  activeTab: TabFilter = 'Today';
+  rides: Ride[] = [];
+  selectedRide: Ride | null = null;
+  private subscriptions: Subscription = new Subscription();
+  
+  constructor(private rideService: RideService, private authService: AuthService, private cdr: ChangeDetectorRef, private router: Router) {}
+
+  openCancelModal(ride: Ride) {
+    this.rideToCancel = ride;
+    this.cancelReason = '';
+    this.showCancelModal = true;
+  }
+
+  closeCancelModal() {
+    this.showCancelModal = false;
+    this.rideToCancel = null;
+    this.cancelReason = '';
+  }
+
+  confirmCancelRide() {
+    if (!this.rideToCancel) return;
+    this.rideService.cancelRide(this.rideToCancel.id, this.cancelReason).subscribe({
+      next: () => {
+        this.closeCancelModal();
+        this.loadRides();
+      },
+      error: (err: any) => {
+        alert('Greška pri otkazivanju vožnje!');
+      }
+    });
+  }
+
+  ngOnInit(): void {
+    const userSub = this.authService.currentUser$.subscribe(user => {
+      if (user && user.userType === 'DRIVER') {
+        this.loadRides();
+      } else {
+        this.rides = [];
+        this.cdr.detectChanges();
+      }
+    });
     
-    constructor(private rideService: RideService, private authService: AuthService, private cdr: ChangeDetectorRef, private router: Router) {}
+    this.subscriptions.add(userSub);
+  }
 
-    openCancelModal(ride: Ride) {
-      this.rideToCancel = ride;
-      this.cancelReason = '';
-      this.showCancelModal = true;
-    }
-
-    closeCancelModal() {
-      this.showCancelModal = false;
-      this.rideToCancel = null;
-      this.cancelReason = '';
-    }
-
-    confirmCancelRide() {
-      if (!this.rideToCancel) return;
-      this.rideService.cancelRide(this.rideToCancel.id, this.cancelReason).subscribe({
-        next: () => {
-          this.closeCancelModal();
-          this.loadRides();
+  private loadRides(): void {
+    const currentUserSub = this.authService.currentUser$.subscribe(user => {
+      if (!user || !user.email) return;
+      
+      // /assigned endpoint već vraća samo aktivne voznje (IN_PROGRESS, REQUESTED)
+      const ridesSub = this.rideService.getActiveAssignedRides(user.email).subscribe({
+        next: (ridesFromBackend) => {
+          console.log('[AssignedRides] Active assigned rides loaded:', ridesFromBackend);
+          this.formatAndDisplayRides(ridesFromBackend);
         },
-        error: (err: any) => {
-          alert('Greška pri otkazivanju vožnje!');
-        }
-      });
-    }
-
-    ngOnInit(): void {
-      const userSub = this.authService.currentUser$.subscribe(user => {
-        if (user && user.userType === 'DRIVER') {
-          this.loadRides();
-        } else {
+        error: (error) => {
+          console.error('[AssignedRides] Error fetching active rides:', error);
           this.rides = [];
           this.cdr.detectChanges();
         }
       });
       
-      this.subscriptions.add(userSub);
-    }
+      this.subscriptions.add(ridesSub);
+    });
+    
+    this.subscriptions.add(currentUserSub);
+  }
 
-    private loadRides(): void {
-      const currentUserSub = this.authService.currentUser$.subscribe(user => {
-        if (!user || !user.email) return;
-        
-        // /assigned endpoint već vraća samo aktivne voznje (IN_PROGRESS, REQUESTED)
-        const ridesSub = this.rideService.getActiveAssignedRides(user.email).subscribe({
-          next: (ridesFromBackend) => {
-            console.log('[AssignedRides] Active assigned rides loaded:', ridesFromBackend);
-            this.formatAndDisplayRides(ridesFromBackend);
-          },
-          error: (error) => {
-            console.error('[AssignedRides] Error fetching active rides:', error);
-            this.rides = [];
-            this.cdr.detectChanges();
-          }
-        });
-        
-        this.subscriptions.add(ridesSub);
-      });
-      
-      this.subscriptions.add(currentUserSub);
-    }
+  private formatAndDisplayRides(ridesFromBackend: any[]): void {
+    this.rides = ridesFromBackend.map((ride: any) => {
+      // Formatiranje datuma/vremena
+      let formattedDate = '';
+      let formattedStartTime = '';
+      if (ride.startTime) {
+        try {
+          const dateObj = new Date(ride.startTime);
+          formattedDate = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+          formattedStartTime = dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        } catch {}
+      }
+      // Formatiranje distance
+      let formattedDistance = '-';
+      if (ride.distance !== undefined && ride.distance !== null) {
+        formattedDistance = Number(ride.distance).toFixed(2) + ' km';
+      }
+      // Formatiranje cene
+      let formattedPrice = '-';
+      if (ride.price !== undefined && ride.price !== null) {
+        formattedPrice = Math.round(Number(ride.price)) + ' RSD';
+      }
+      // Formatiranje trajanja
+      let formattedDuration = '-';
+      if (ride.duration !== undefined && ride.duration !== null) {
+        formattedDuration = Number(ride.duration).toFixed(2);
+      }
+      // Formatiranje estimated end time
+      let formattedEndTime = '';
+      if (ride.estimatedEndTime) {
+        try {
+          const endDateObj = new Date(ride.estimatedEndTime);
+          formattedEndTime = endDateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + endDateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        } catch {}
+      }
+      // Formatiranje statusa
+      let status = 'Upcoming';
+      const statusValue = ride.status?.toUpperCase();
+      if (statusValue === 'IN_PROGRESS' || statusValue === 'ONGOING') status = 'In progress';
+      else if (statusValue === 'COMPLETED') status = 'Completed';
+      else if (statusValue === 'CANCELLED') status = 'Cancelled';
+      else if (statusValue === 'REQUESTED' || statusValue === 'PENDING') status = 'Requested';
+      // Passenger
+      let passengerName = ride.passengerName || ride.passengerEmail || '-';
+      let passengerPhone = ride.passengerPhone || '';
+      return {
+        id: ride.id,
+        from: ride.startLocation || '-',
+        to: ride.endLocation || '-',
+        price: formattedPrice,
+        status: status,
+        date: formattedDate,
+        startTime: formattedStartTime,
+        approximatedEndTime: formattedEndTime,
+        distance: formattedDistance,
+        duration: formattedDuration,
+        nextRideIn: ride.nextRideIn || '',
+        passenger: { name: passengerName, phone: passengerPhone }
+      };
+    });
+    this.cdr.detectChanges();
+  }
 
-    private formatAndDisplayRides(ridesFromBackend: any[]): void {
-      this.rides = ridesFromBackend.map((ride: any) => {
-        // Formatiranje datuma/vremena
-        let formattedDate = '';
-        let formattedStartTime = '';
-        if (ride.startTime) {
-          try {
-            const dateObj = new Date(ride.startTime);
-            formattedDate = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-            formattedStartTime = dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-          } catch {}
-        }
-        // Formatiranje distance
-        let formattedDistance = '-';
-        if (ride.distance !== undefined && ride.distance !== null) {
-          formattedDistance = Number(ride.distance).toFixed(2) + ' km';
-        }
-        // Formatiranje cene
-        let formattedPrice = '-';
-        if (ride.price !== undefined && ride.price !== null) {
-          formattedPrice = Math.round(Number(ride.price)) + ' RSD';
-        }
-        // Formatiranje trajanja
-        let formattedDuration = '-';
-        if (ride.duration !== undefined && ride.duration !== null) {
-          formattedDuration = Number(ride.duration).toFixed(2);
-        }
-        // Formatiranje estimated end time
-        let formattedEndTime = '';
-        if (ride.estimatedEndTime) {
-          try {
-            const endDateObj = new Date(ride.estimatedEndTime);
-            formattedEndTime = endDateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + endDateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-          } catch {}
-        }
-        // Formatiranje statusa
-        let status = 'Upcoming';
-        const statusValue = ride.status?.toUpperCase();
-        if (statusValue === 'IN_PROGRESS' || statusValue === 'ONGOING') status = 'In progress';
-        else if (statusValue === 'COMPLETED') status = 'Completed';
-        else if (statusValue === 'CANCELLED') status = 'Cancelled';
-        else if (statusValue === 'REQUESTED' || statusValue === 'PENDING') status = 'Requested';
-        // Passenger
-        let passengerName = ride.passengerName || ride.passengerEmail || '-';
-        let passengerPhone = ride.passengerPhone || '';
-        return {
-          id: ride.id,
-          from: ride.startLocation || '-',
-          to: ride.endLocation || '-',
-          price: formattedPrice,
-          status: status,
-          date: formattedDate,
-          startTime: formattedStartTime,
-          approximatedEndTime: formattedEndTime,
-          distance: formattedDistance,
-          duration: formattedDuration,
-          nextRideIn: ride.nextRideIn || '',
-          passenger: { name: passengerName, phone: passengerPhone }
-        };
-      });
-      this.cdr.detectChanges();
-    }
+  setActiveTab(tab: TabFilter) {
+    this.activeTab = tab;
+  }
 
-    setActiveTab(tab: TabFilter) {
-      this.activeTab = tab;
-      // TODO: Filter rides based on selected tab
-    }
+  selectRide(ride: Ride) {
+    this.selectedRide = ride;
+  }
 
-    selectRide(ride: Ride) {
-      this.selectedRide = ride;
-    }
+  openRide(ride: Ride) {
+    console.log('Opening ride:', ride);
+    if (!ride) return;
+    this.router.navigate(['/track-ride', ride.id]);
+  }
 
-    openRide(ride: Ride) {
-      console.log('Opening ride:', ride);
-      if (!ride) return;
-      this.router.navigate(['/track-ride', ride.id]);
-    }
-
-    startRide(ride: Ride) {
-  this.rideService.startRide(ride.id).subscribe({
-    next: () => {
-      alert('Ride started successfully!');
-      this.router.navigate(['/track-ride', ride.id]);
-    },
-    error: (err: any) => {
-      alert('Failed to start ride: ' + (err?.error?.error || 'error'));
-    }
-  });
-}
-
-  cancelRide(ride: Ride) {
-    console.log('Canceling ride:', ride);
-    // TODO: Cancel ride logic
+  startRide(ride: Ride) {
+    this.rideService.startRide(ride.id).subscribe({
+      next: () => {
+        alert('Ride started successfully!');
+        this.router.navigate(['/track-ride', ride.id]);
+      },
+      error: (err: any) => {
+        alert('Failed to start ride: ' + (err?.error?.error || 'error'));
+      }
+    });
   }
 
   pauseRide(ride: Ride) {

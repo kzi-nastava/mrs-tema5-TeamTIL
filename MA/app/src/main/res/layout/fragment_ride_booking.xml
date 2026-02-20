@@ -5,7 +5,8 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@drawable/bg_bottom_sheet"
-    android:paddingBottom="24dp">
+    android:paddingBottom="24dp"
+    android:importantForAutofill="noExcludeDescendants">
 
     <!-- HEADER -->
     <LinearLayout
@@ -18,7 +19,7 @@
         <ImageView
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:src="@mipmap/ic_launcher"
+            android:src="@drawable/tiltaxi_logo"
             android:contentDescription="Logo" />
 
         <TextView
@@ -35,11 +36,10 @@
             android:id="@+id/btnClose"
             android:layout_width="28dp"
             android:layout_height="28dp"
-            android:src="@drawable/ic_clear"
+            android:src="@drawable/ic_close"
             android:contentDescription="Close"
             android:clickable="true"
-            android:focusable="true"
-            app:tint="#FF4444" />
+            android:focusable="true"/>
     </LinearLayout>
 
     <!-- DIVIDER -->
@@ -94,10 +94,11 @@
                     android:textColor="@color/text_white"
                     android:textColorHint="@color/text_gray"
                     android:textSize="14sp"
-                    android:fontFamily="@font/montserrat_regular_font"
-                    android:inputType="text"
+                    android:inputType="textNoSuggestions"
                     android:singleLine="true"
-                    android:imeOptions="actionNext" />
+                    android:imeOptions="actionNext"
+                    android:importantForAutofill="no"
+                    android:autofillHints="" />
             </LinearLayout>
 
             <!-- STOPS CONTAINER -->
@@ -156,7 +157,7 @@
                 <TextView
                     android:layout_width="28dp"
                     android:layout_height="28dp"
-                    android:background="@drawable/bg_location_circle_end"
+                    android:background="@drawable/bg_location_circle"
                     android:gravity="center"
                     android:text="E"
                     android:textColor="@color/text_white"
@@ -175,9 +176,11 @@
                     android:textColorHint="@color/text_gray"
                     android:textSize="14sp"
                     android:fontFamily="@font/montserrat_regular_font"
-                    android:inputType="text"
+                    android:inputType="textNoSuggestions"
                     android:singleLine="true"
-                    android:imeOptions="actionDone" />
+                    android:imeOptions="actionDone"
+                    android:importantForAutofill="no"
+                    android:autofillHints=""/>
             </LinearLayout>
 
             <!-- ===== DATE & TIME ===== -->
@@ -494,7 +497,9 @@
                     android:textSize="14sp"
                     android:fontFamily="@font/montserrat_regular_font"
                     android:inputType="textEmailAddress"
-                    android:singleLine="true" />
+                    android:singleLine="true"
+                    android:importantForAutofill="no"
+                    android:autofillHints=""/>
 
                 <TextView
                     android:id="@+id/btnAddPassenger"

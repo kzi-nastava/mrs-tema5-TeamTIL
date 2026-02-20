@@ -78,7 +78,7 @@
             android:visibility="gone" />
     </LinearLayout>
 
-    <!-- ROW 3: Datum + Cijena -->
+    <!-- ROW 3: Datum + Cena -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

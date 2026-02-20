@@ -2,7 +2,7 @@ package com.example.uberproject.dto.response;
 
 public class RideHistoryResponseDTO {
     private Integer id;
-    private Integer routeId;          // ← NOVO: potrebno za favorite
+    private Integer routeId;
     private String passengerEmail;
     private String passengerFirstName;
     private String passengerLastName;
@@ -64,7 +64,6 @@ public class RideHistoryResponseDTO {
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 
-    // ← NOVO
     public Integer getRouteId() { return routeId; }
     public void setRouteId(Integer routeId) { this.routeId = routeId; }
 

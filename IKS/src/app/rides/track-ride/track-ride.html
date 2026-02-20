@@ -1,96 +1,146 @@
 <div class="history-container">
-  <main class="history-main map-mode">
-    <div class="ride-route-header">
-      <mat-icon class="route-pin">location_on</mat-icon>
-      <h1>{{ shortenAddress(selectedRide?.startAddress) }} → {{ shortenAddress(selectedRide?.endAddress) }}</h1>
-    </div>
 
-    <div class="ride-map-wrapper">
-      <app-map-view></app-map-view>
-
-      <div class="panic-btn-container">
-        <button class="panic-btn" (click)="onPanicClick()" [disabled]="!selectedRide || !rideId">
-          <span class="panic-icon-svg">&#128680;</span>
-          <span class="panic-text panic-text-block">PANIC</span>
-        </button>
+  <!-- ── Loading state ─────────────────────────────────────────────────── -->
+  @if (isLoading) {
+    <div class="state-overlay">
+      <div class="state-card">
+        <p>Loading ride...</p>
       </div>
     </div>
-  </main>
+  }
 
-  <aside class="details-sidebar" [class.open]="selectedRide">
-    @if (selectedRide) {
-      <div class="sidebar-header">
-        <h2>Ride Details</h2>
+  <!-- ── Access denied state ───────────────────────────────────────────── -->
+  @if (!isLoading && accessDenied) {
+    <div class="state-overlay">
+      <div class="state-card">
+        <mat-icon class="state-icon denied">lock</mat-icon>
+        <h2>Access denied</h2>
+        <p>This ride is not active or you don't have access to it.</p>
+        <button mat-raised-button color="primary" (click)="goBack()">Go back</button>
+      </div>
+    </div>
+  }
+
+  <!-- ── Ride ended overlay (live, while page is still open) ──────────── -->
+  @if (!isLoading && !accessDenied && rideEnded) {
+    <div class="state-overlay ride-ended-overlay">
+      <div class="state-card">
+        <mat-icon class="state-icon ended">flag</mat-icon>
+        <h2>Ride completed</h2>
+        <p>The driver has ended this ride.</p>
+        <button mat-raised-button color="primary" (click)="goBack()">Go home</button>
+      </div>
+    </div>
+  }
+
+  <!-- ── Normal tracking view ──────────────────────────────────────────── -->
+  @if (!isLoading && !accessDenied) {
+    <main class="history-main map-mode">
+      <div class="ride-route-header">
+        <mat-icon class="route-pin">location_on</mat-icon>
+        <h1>{{ shortenAddress(selectedRide?.startAddress) }} → {{ shortenAddress(selectedRide?.endAddress) }}</h1>
       </div>
 
-      <div class="live-ride-indicator">
-        <span class="dot"></span>
-        <span class="text">Ride is live</span>
-        <div class="line"></div>
-      </div>
+      <div class="ride-map-wrapper">
+        <app-map-view></app-map-view>
 
-      <div class="details-body minimal">
-        <!-- PASSENGER vidi info o Driveru -->
-        @if (isPassenger) {
-          <div class="detail-item">
-            <label>Driver</label>
-            <div class="driver-info">
-              <div class="driver-avatar">
-                <i class="fas fa-user"></i>
-              </div>
-              <div class="driver-details">
-                <p class="driver-name">{{ selectedRide.driverName }}</p>
-                <p class="driver-phone">{{ selectedRide.driverPhone }}</p>
-              </div>
-            </div>
+        <div class="panic-btn-container">
+          <button
+            class="panic-btn"
+            (click)="onPanicClick()"
+            [disabled]="!selectedRide || !rideId || rideEnded">
+            <span class="panic-icon-svg">&#128680;</span>
+            <span class="panic-text panic-text-block">PANIC</span>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <aside class="details-sidebar" [class.open]="selectedRide">
+      @if (selectedRide) {
+        <div class="sidebar-header">
+          <h2>Ride Details</h2>
+        </div>
+
+        @if (!rideEnded) {
+          <div class="live-ride-indicator">
+            <span class="dot"></span>
+            <span class="text">Ride is live</span>
+            <div class="line"></div>
           </div>
         }
 
-        <!-- DRIVER vidi info o Passengeru -->
-        @if (isDriver) {
-          <div class="detail-item">
-            <label>Passenger</label>
-            <div class="driver-info">
-              <div class="driver-avatar">
-                <i class="fas fa-user"></i>
-              </div>
-              <div class="driver-details">
-                <p class="driver-name">{{ selectedRide.passengerName }}</p>
-                <p class="driver-phone">{{ selectedRide.passengerPhone }}</p>
+        <div class="details-body minimal">
+
+          <!-- PASSENGER sees driver info -->
+          @if (isPassenger) {
+            <div class="detail-item">
+              <label>Driver</label>
+              <div class="driver-info">
+                <div class="driver-avatar"><i class="fas fa-user"></i></div>
+                <div class="driver-details">
+                  <p class="driver-name">{{ selectedRide.driverName }}</p>
+                  <p class="driver-phone">{{ selectedRide.driverPhone }}</p>
+                </div>
               </div>
             </div>
+          }
+
+          <!-- DRIVER sees passenger info -->
+          @if (isDriver) {
+            <div class="detail-item">
+              <label>Passenger</label>
+              <div class="driver-info">
+                <div class="driver-avatar"><i class="fas fa-user"></i></div>
+                <div class="driver-details">
+                  <p class="driver-name">{{ selectedRide.passengerName }}</p>
+                  <p class="driver-phone">{{ selectedRide.passengerPhone }}</p>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- ADMIN sees both -->
+          @if (isAdmin) {
+            <div class="detail-item">
+              <label>Driver</label>
+              <p>{{ selectedRide.driverName }} · {{ selectedRide.driverPhone }}</p>
+            </div>
+            <div class="detail-item">
+              <label>Passenger</label>
+              <p>{{ selectedRide.passengerName }} · {{ selectedRide.passengerPhone }}</p>
+            </div>
+          }
+
+          <div class="detail-item">
+            <label>Start time</label>
+            <p>{{ selectedRide.startTime }}</p>
           </div>
+
+          <div class="detail-item">
+            <label>ETA</label>
+            <p class="eta">
+              {{ eta }}
+              <span class="eta-muted">(in {{ etaMin }} min)</span>
+            </p>
+          </div>
+
+          <div class="detail-item">
+            <label>Current price</label>
+            <p class="price-value">{{ currentPrice }} RSD</p>
+          </div>
+        </div>
+
+        @if (isPassenger && !rideEnded) {
+          <button
+            mat-stroked-button
+            color="accent"
+            class="report-btn"
+            (click)="openReportDriver(selectedRide)">
+            Report driver
+          </button>
         }
-
-        <div class="detail-item">
-          <label>Start time</label>
-          <p>{{ selectedRide.startTime }}</p>
-        </div>
-
-        <div class="detail-item">
-          <label>ETA</label>
-          <p class="eta">
-            {{ eta }}
-            <span class="eta-muted">(in {{ etaMin }} min)</span>
-          </p>
-        </div>
-
-        <div class="detail-item">
-          <label>Current price</label>
-          <p class="price-value">{{ currentPrice }} RSD</p>
-        </div>
-      </div>
-
-      @if (isPassenger) {
-        <button
-          mat-stroked-button
-          color="accent"
-          class="report-btn"
-          (click)="openReportDriver(selectedRide)"
-        >
-          Report driver
-        </button>
       }
-    }
-  </aside>
+    </aside>
+  }
 </div>

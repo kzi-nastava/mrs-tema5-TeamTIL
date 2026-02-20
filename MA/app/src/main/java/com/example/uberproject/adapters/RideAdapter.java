@@ -24,7 +24,7 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
     private OnRideClickListener listener;
     private OnFavoriteClickListener favoriteListener;
 
-    // Čuva routeId-eve koji su označeni kao omiljeni
+    // cuva routeIdjeve koji su oznaceni kao omiljeni
     private Set<Integer> favoriteRouteIds = new HashSet<>();
 
     public RideAdapter(List<Ride> rides, OnRideClickListener listener) {
@@ -36,7 +36,6 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         this.favoriteListener = favoriteListener;
     }
 
-    /** Postavi koji routeId-evi su već omiljeni (poziva se nakon učitavanja favorita iz API-ja) */
     public void setFavoriteRouteIds(Set<Integer> ids) {
         this.favoriteRouteIds = new HashSet<>(ids);
         notifyDataSetChanged();
@@ -79,7 +78,7 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
             holder.ivFavoriteStar.setVisibility(View.VISIBLE);
 
             boolean isFav = favoriteRouteIds.contains(routeId);
-            // Puna zvezdica = omiljena, prazna = nije
+            // puna zvezdica = omiljena, prazna = nije
             holder.ivFavoriteStar.setImageResource(
                     isFav ? R.drawable.ic_star_filled2 : R.drawable.ic_star_outline2
             );
@@ -99,11 +98,10 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
                 }
             });
         } else {
-            // Nema routeId - sakrij zvezdicu
+            // nema routeId - sakrij zvezdicu
             holder.ivFavoriteStar.setVisibility(View.GONE);
         }
 
-        // Klik na cijelu karticu
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onRideClick(ride);
         });

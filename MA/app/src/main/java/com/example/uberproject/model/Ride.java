@@ -33,7 +33,7 @@ public class Ride implements java.io.Serializable {
 
     public Ride() {}
 
-    // Postojeći konstruktor (zadržan radi kompatibilnosti)
+
     public Ride(Integer id, String from, String to, String price,
                 String status, String dateTime, Boolean panicSent) {
         this.id = id;
@@ -45,7 +45,7 @@ public class Ride implements java.io.Serializable {
         this.panicSent = panicSent;
     }
 
-    // Novi konstruktor sa routeId
+
     public Ride(Integer id, Integer routeId, String from, String to, String price,
                 String status, String dateTime, Boolean panicSent) {
         this.id = id;

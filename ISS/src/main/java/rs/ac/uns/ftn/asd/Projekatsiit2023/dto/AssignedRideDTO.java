@@ -20,4 +20,6 @@ public class AssignedRideDTO {
     private Double price;
     private Double distance;
     private Double duration;
+    private String passengerName;
+    private String passengerPhone;
 }

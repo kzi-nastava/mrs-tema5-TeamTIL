@@ -106,7 +106,7 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         tvFavoritesArrow   = view.findViewById(R.id.tvFavoritesArrow);
     }
 
-    // ---- API: Load favorites ----
+    // ucitaj omiljene
     private void loadFavoritesFromApi() {
         RouteApi routeApi = RetrofitClient.getInstance(requireContext()).create(RouteApi.class);
         routeApi.getFavoriteRoutes().enqueue(new Callback<List<FavoriteRouteDTO>>() {
@@ -125,7 +125,7 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         });
     }
 
-    // ---- CALENDAR ----
+    // kalendar
     private void initCalendar() {
         Calendar cal = Calendar.getInstance();
         selectedDay = cal.get(Calendar.DAY_OF_MONTH);
@@ -181,16 +181,16 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         return tv;
     }
 
-    // ---- TIME ----
+    // vreme
     private void setupTimeControls(View view) {
         Calendar cal = Calendar.getInstance();
         currentHour = cal.get(Calendar.HOUR_OF_DAY);
-        currentMinute = (cal.get(Calendar.MINUTE) / 5) * 5;
+        currentMinute = cal.get(Calendar.MINUTE);
         updateTimeDisplay();
         view.findViewById(R.id.btnHourPlus).setOnClickListener(v -> { currentHour = (currentHour+1)%24; updateTimeDisplay(); });
         view.findViewById(R.id.btnHourMinus).setOnClickListener(v -> { currentHour = (currentHour+23)%24; updateTimeDisplay(); });
-        view.findViewById(R.id.btnMinutePlus).setOnClickListener(v -> { currentMinute = (currentMinute+5)%60; updateTimeDisplay(); });
-        view.findViewById(R.id.btnMinuteMinus).setOnClickListener(v -> { currentMinute = (currentMinute+55)%60; updateTimeDisplay(); });
+        view.findViewById(R.id.btnMinutePlus).setOnClickListener(v -> { currentMinute = (currentMinute + 1) % 60; updateTimeDisplay(); });
+        view.findViewById(R.id.btnMinuteMinus).setOnClickListener(v -> { currentMinute = (currentMinute + 59) % 60; updateTimeDisplay(); });
         view.findViewById(R.id.btnPrevMonth).setOnClickListener(v -> {
             selectedMonth--; if (selectedMonth<0){selectedMonth=11;selectedYear--;} selectedDay=1; renderCalendar();});
         view.findViewById(R.id.btnNextMonth).setOnClickListener(v -> {
@@ -202,7 +202,7 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         tvMinute.setText(String.format("%02d", currentMinute));
     }
 
-    // ---- VEHICLE ----
+    // vozilo
     private void setupVehicleTypeButtons() {
         btnVehicleStandard.setOnClickListener(v -> selectVehicle("STANDARD"));
         btnVehicleLuxury.setOnClickListener(v -> selectVehicle("LUXURY"));
@@ -226,7 +226,7 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         }
     }
 
-    // ---- FAVORITES ----
+    // omiljene
     private void setupFavoriteRoutes() {
         requireView().findViewById(R.id.btnToggleFavorites).setOnClickListener(v -> {
             favoritesExpanded = !favoritesExpanded;
@@ -254,7 +254,7 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
                     fav.getEstimatedTimeMin() != null ? fav.getEstimatedTimeMin() : 0.0);
             ((TextView) card.findViewById(R.id.tvRouteInfo)).setText(info);
 
-            // Putanja sa eventualnim stopovima
+            // putanja sa eventualnim stopovima
             String path;
             if (fav.getIntermediateStops() != null && !fav.getIntermediateStops().isEmpty()) {
                 path = fav.getStartLocation() + " → "
@@ -266,11 +266,11 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
             ((TextView) card.findViewById(R.id.tvRoutePath)).setText(path);
 
             card.findViewById(R.id.btnChooseRoute).setOnClickListener(vv -> {
-                // Popuni polja u formi
+                // popuni polja u formi
                 etStartLocation.setText(fav.getStartLocation());
                 etEndLocation.setText(fav.getEndLocation());
 
-                // Popuni stopove
+                // popuni stopove
                 llStopsContainer.removeAllViews();
                 stopFields.clear(); stopCoords.clear(); stopCount = 0;
                 if (fav.getIntermediateStops() != null) {
@@ -281,9 +281,9 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
                         }
                     }
                 }
-                // Reset geocoded coords
+                // reset geocoded coords
                 startLat = startLon = endLat = endLon = null;
-                // Zatvori panel
+                // zatvori panel
                 favoritesExpanded = false;
                 llFavoritesContainer.setVisibility(View.GONE);
                 tvFavoritesArrow.setText("▼");
@@ -294,7 +294,7 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         }
     }
 
-    // ---- PASSENGERS ----
+    // ulinkovani putnici
     private void setupPassengers() {
         requireView().findViewById(R.id.btnAddPassenger).setOnClickListener(v -> {
             String email = etPassengerEmail.getText().toString().trim();
@@ -331,7 +331,7 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         llPassengersList.addView(row);
     }
 
-    // ---- STOPS ----
+    // stanice
     private void setupAddStop(View view) {
         view.findViewById(R.id.btnAddStop).setOnClickListener(v -> addStopField());
     }
@@ -359,6 +359,7 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         et.setHint("Add stop"); et.setTextColor(0xFFFFFFFF);
         et.setHintTextColor(0xFF9E9E9E); et.setTextSize(14f);
         et.setBackground(null); et.setSingleLine(true);
+        et.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
         LinearLayout.LayoutParams etLp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f);
         etLp.setMarginStart(dpToPx(10));
         et.setLayoutParams(etLp);
@@ -375,7 +376,7 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         llStopsContainer.addView(row);
     }
 
-    // ---- REQUEST RIDE ----
+    // request ride
     private void setupRequestRide(View view) {
         view.findViewById(R.id.btnRequestRide).setOnClickListener(v -> {
             String startAddr = etStartLocation.getText().toString().trim();
@@ -385,11 +386,16 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
             if (endAddr.isEmpty()) {
                 Toast.makeText(getContext(), "Please enter ending location", Toast.LENGTH_SHORT).show(); return; }
 
-            // Validacija: max 5 sati unapred
+            // Validacija: max 5 sati unapred i ne moze u proslost
             Calendar now = Calendar.getInstance();
             Calendar scheduled = Calendar.getInstance();
             scheduled.set(selectedYear, selectedMonth, selectedDay, currentHour, currentMinute, 0);
             long diffMinutes = (scheduled.getTimeInMillis() - now.getTimeInMillis()) / 60000;
+
+            if (diffMinutes < 0) {
+                Toast.makeText(getContext(), "Scheduled time must be in the future!", Toast.LENGTH_LONG).show();
+                return;
+            }
             if (diffMinutes > 5 * 60) {
                 Toast.makeText(getContext(), "You can schedule a ride at most 5 hours in advance", Toast.LENGTH_LONG).show();
                 return;
@@ -470,8 +476,7 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
                 if (response.isSuccessful() && response.body() != null) {
                     RideCreatedResponseDTO result = response.body();
                     Toast.makeText(getContext(),
-                            "Ride booked! Driver: " + result.getDriverName()
-                                    + "\nPrice: " + String.format("%.0f RSD", result.getPrice()),
+                            "Ride booked! Driver: " + result.getDriverName(),
                             Toast.LENGTH_LONG).show();
                     dismiss();
                     if (getActivity() instanceof OnRideBookedListener) {

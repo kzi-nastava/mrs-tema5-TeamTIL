@@ -13,19 +13,15 @@ import retrofit2.http.Path;
 
 public interface RouteApi {
 
-    // GET /api/route/favorites - Lista omiljenih ruta ulogovanog korisnika
     @GET("route/favorites")
     Call<List<FavoriteRouteDTO>> getFavoriteRoutes();
 
-    // POST /api/route/{routeId}/favorite - Dodaj u omiljene
     @POST("route/{routeId}/favorite")
     Call<AddToFavoritesResponseDTO> addToFavorites(@Path("routeId") Integer routeId);
 
-    // DELETE /api/route/{routeId}/favorite - Ukloni iz omiljenih
     @DELETE("route/{routeId}/favorite")
     Call<AddToFavoritesResponseDTO> removeFromFavorites(@Path("routeId") Integer routeId);
 
-    // GET /api/route/{routeId}/favorite/check - Provjeri je li omiljena
     @GET("route/{routeId}/favorite/check")
     Call<Boolean> isFavorite(@Path("routeId") Integer routeId);
 }

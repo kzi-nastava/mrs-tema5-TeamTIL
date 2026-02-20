@@ -8,7 +8,7 @@ public class RideRequestDTO {
     private String vehicleType;
     private Boolean babyFriendly;
     private Boolean petFriendly;
-    private String scheduledTime; // ISO format: "2026-02-19T14:30:00"
+    private String scheduledTime;
 
     public RideRequestDTO() {}
 
