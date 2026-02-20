@@ -40,7 +40,6 @@ public interface RideApi {
 
     @POST("rides")
     Call<RideCreatedResponseDTO> createRide(@Body RideRequestDTO request);
-
 }
 
 

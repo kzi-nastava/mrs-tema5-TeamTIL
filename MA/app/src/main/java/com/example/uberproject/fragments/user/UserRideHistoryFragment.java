@@ -55,7 +55,7 @@ public class UserRideHistoryFragment extends Fragment {
     private List<Ride> allRides = new ArrayList<>();
     private List<RideHistoryResponseDTO> rideHistoryData = new ArrayList<>();
 
-    // Favorites - čuvamo routeId-eve koji su omiljeni
+    //favorites - cuvamo routeIdjeve koji su omiljeni
     private Set<Integer> favoriteRouteIds = new HashSet<>();
 
     private Chip chipLast7Days, chipLastMonth, chipCompletedOnly, chipCanceledOnly, chipAll;
@@ -96,7 +96,7 @@ public class UserRideHistoryFragment extends Fragment {
                     .commit();
         });
 
-        // Postavi listener za zvezdice
+        // postavi lisener za zvezdice
         rideAdapter.setFavoriteListener(new RideAdapter.OnFavoriteClickListener() {
             @Override
             public void onAddToFavorites(Integer routeId) {
@@ -111,14 +111,14 @@ public class UserRideHistoryFragment extends Fragment {
 
         ridesRecyclerView.setAdapter(rideAdapter);
 
-        // Učitaj ride history i favorite paralelno
+        // ucitaj ride history i favorite paralelno
         loadRideHistory();
         loadFavoriteRouteIds();
 
         return view;
     }
 
-    // ---- API: Učitaj ride history ----
+    // ride history
     private void loadRideHistory() {
         TokenManager tokenManager = TokenManager.getInstance(requireContext());
         String userEmail = tokenManager.getUserEmail();
@@ -137,7 +137,7 @@ public class UserRideHistoryFragment extends Fragment {
                     rideHistoryData = response.body();
                     convertToRideModel(rideHistoryData);
                     rideAdapter.setRides(allRides);
-                    // Primijeni favourite stanje ako je već učitano
+                    // primijeni favourite stanje ako je vec ucitano
                     rideAdapter.setFavoriteRouteIds(favoriteRouteIds);
                 } else {
                     Log.e(TAG, "Error loading ride history: " + response.code());
@@ -153,7 +153,7 @@ public class UserRideHistoryFragment extends Fragment {
         });
     }
 
-    // ---- API: Učitaj koje rute su omiljene ----
+    // fav routes
     private void loadFavoriteRouteIds() {
         RouteApi routeApi = RetrofitClient.getInstance(requireContext()).create(RouteApi.class);
         routeApi.getFavoriteRoutes().enqueue(new Callback<List<FavoriteRouteDTO>>() {
@@ -167,7 +167,7 @@ public class UserRideHistoryFragment extends Fragment {
                             favoriteRouteIds.add(fav.getRouteId());
                         }
                     }
-                    // Obavijesti adapter da osvježi zvezdice
+                    // obavesti adapter da osvezi zvezdice
                     rideAdapter.setFavoriteRouteIds(favoriteRouteIds);
                     Log.d(TAG, "Loaded " + favoriteRouteIds.size() + " favorite routes");
                 }
@@ -180,7 +180,7 @@ public class UserRideHistoryFragment extends Fragment {
         });
     }
 
-    // ---- API: Dodaj u omiljene ----
+    // dodaj u omiljene
     private void addToFavorites(Integer routeId) {
         RouteApi routeApi = RetrofitClient.getInstance(requireContext()).create(RouteApi.class);
         routeApi.addToFavorites(routeId).enqueue(new Callback<AddToFavoritesResponseDTO>() {
@@ -192,7 +192,7 @@ public class UserRideHistoryFragment extends Fragment {
                     favoriteRouteIds.add(routeId);
                     rideAdapter.setFavoriteRouteIds(favoriteRouteIds);
                 } else {
-                    // Rollback - ukloni iz lokalnog seta jer API nije uspio
+                    // rollback - ukloni iz lokalnog seta jer API nije uspeo
                     favoriteRouteIds.remove(routeId);
                     rideAdapter.setFavoriteRouteIds(favoriteRouteIds);
                     Toast.makeText(getContext(), "Failed to add to favorites", Toast.LENGTH_SHORT).show();
@@ -208,7 +208,7 @@ public class UserRideHistoryFragment extends Fragment {
         });
     }
 
-    // ---- API: Ukloni iz omiljenih ----
+    // ukloni iz omiljenih
     private void removeFromFavorites(Integer routeId) {
         RouteApi routeApi = RetrofitClient.getInstance(requireContext()).create(RouteApi.class);
         routeApi.removeFromFavorites(routeId).enqueue(new Callback<AddToFavoritesResponseDTO>() {
@@ -220,7 +220,7 @@ public class UserRideHistoryFragment extends Fragment {
                     favoriteRouteIds.remove(routeId);
                     rideAdapter.setFavoriteRouteIds(favoriteRouteIds);
                 } else {
-                    // Rollback
+                    // rollback
                     favoriteRouteIds.add(routeId);
                     rideAdapter.setFavoriteRouteIds(favoriteRouteIds);
                     Toast.makeText(getContext(), "Failed to remove from favorites", Toast.LENGTH_SHORT).show();
@@ -236,7 +236,6 @@ public class UserRideHistoryFragment extends Fragment {
         });
     }
 
-    // ---- Konverzija DTO -> model ----
     private void convertToRideModel(List<RideHistoryResponseDTO> list) {
         allRides.clear();
         for (RideHistoryResponseDTO dto : list) {
@@ -245,10 +244,9 @@ public class UserRideHistoryFragment extends Fragment {
             String status = mapStatus(dto.getStatus());
             String dateTime = formatDateTime(dto.getStartTime());
 
-            // Koristi novi konstruktor sa routeId
             Ride ride = new Ride(
                     dto.getId(),
-                    dto.getRouteId(),   // ← routeId za zvezdicu
+                    dto.getRouteId(),
                     dto.getStartLocation(),
                     dto.getEndLocation(),
                     price,
@@ -272,14 +270,12 @@ public class UserRideHistoryFragment extends Fragment {
     private String formatDateTime(String startTime) {
         if (startTime == null || startTime.isEmpty()) return "N/A";
         try {
-            // Backend šalje "dd MMM yyyy, HH:mm" format
             return startTime;
         } catch (Exception e) {
             return startTime;
         }
     }
 
-    // ---- FILTERI I CHIPOVI (nepromijenjeno) ----
     private void setChipListeners() {
         View.OnClickListener chipClickListener = v -> {
             chipLast7Days.setSelected(false);
@@ -386,7 +382,6 @@ public class UserRideHistoryFragment extends Fragment {
     private Date parseRideDate(String rideDateStr) {
         if (rideDateStr == null || rideDateStr.isEmpty()) return null;
         try {
-            // Backend format: "dd MMM yyyy, HH:mm"
             return new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.ENGLISH).parse(rideDateStr);
         } catch (ParseException e) {
             try {
