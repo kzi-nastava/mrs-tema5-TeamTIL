@@ -375,10 +375,7 @@ public class UserRideHistoryFragment extends Fragment implements SensorEventList
             // Vehicle
             ride.setVehicleModel(dto.getVehicleModel());
             ride.setVehicleLicensePlate(dto.getVehicleLicensePlate());
-<<<<<<< HEAD
-=======
 
->>>>>>> a404ad05c77a39bf89f1f90a56c77b658a2f7379
             allRides.add(ride);
         }
     }
