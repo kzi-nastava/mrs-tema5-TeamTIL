@@ -499,7 +499,13 @@ public class HomeFragment extends Fragment {
                         if (!isAdded()) return;
                         if (response.isSuccessful()) {
                             Toast.makeText(requireContext(), "Ride started!", Toast.LENGTH_SHORT).show();
-                            loadActiveRideIfNeeded(); // Refresh kartice
+                            TrackRideFragment trackFragment = TrackRideFragment.newInstance(currentRide.getRideId());
+                            requireActivity().getSupportFragmentManager()
+                                    .beginTransaction()
+                                    .replace(R.id.fragment_container, trackFragment)
+                                    .addToBackStack(null)
+                                    .commit();
+                            //loadActiveRideIfNeeded(); // Refresh kartice
                         } else {
                             Toast.makeText(requireContext(), "Failed to start ride (Code: " + response.code() + ")", Toast.LENGTH_SHORT).show();
                         }

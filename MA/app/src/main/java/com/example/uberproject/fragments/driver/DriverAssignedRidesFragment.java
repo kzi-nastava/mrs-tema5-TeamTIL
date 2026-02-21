@@ -267,7 +267,13 @@ public class DriverAssignedRidesFragment extends Fragment implements AssignedRid
                 if (!isAdded()) return;
                 if (response.isSuccessful()) {
                     Toast.makeText(requireContext(), "Ride started!", Toast.LENGTH_SHORT).show();
-                    loadAssignedRides();
+                    TrackRideFragment trackFragment = TrackRideFragment.newInstance(ride.getRideId());
+                    requireActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragment_container, trackFragment)
+                            .addToBackStack(null)
+                            .commit();
+                    //loadAssignedRides();
                 } else {
                     Toast.makeText(requireContext(), "Failed to start ride: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
