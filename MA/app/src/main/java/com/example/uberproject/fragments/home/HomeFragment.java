@@ -20,11 +20,14 @@ import com.bumptech.glide.Glide;
 import com.example.uberproject.R;
 import com.example.uberproject.api.RetrofitClient;
 import com.example.uberproject.api.RideApi;
+import com.example.uberproject.dto.request.RideEndRequestDTO;
 import com.example.uberproject.dto.response.AssignedRideDTO;
 import com.example.uberproject.dto.request.RideCancelRequestDTO;
 import com.example.uberproject.dto.request.RideStopRequestDTO;
+import com.example.uberproject.dto.response.RideEndResponseDTO;
 import com.example.uberproject.dto.response.RideStopResponseDTO;
 import com.example.uberproject.dto.response.RideCancelResponseDTO;
+import com.example.uberproject.fragments.driver.DriverAssignedRidesFragment;
 import com.example.uberproject.fragments.map.MapFragment;
 import com.example.uberproject.fragments.tracking.TrackRideFragment;
 import com.example.uberproject.model.Location;
@@ -64,6 +67,7 @@ public class HomeFragment extends Fragment {
     private Button btnStopRide;
     private Button btnStartRide;
     private Button btnCancelRide;
+    private Button btnEndRide;
 
     private boolean isExpanded = false;
     private AssignedRideDTO currentRide;
@@ -96,6 +100,7 @@ public class HomeFragment extends Fragment {
         btnStopRide = view.findViewById(R.id.btnStopRide);
         btnStartRide = view.findViewById(R.id.btnStartRide);
         btnCancelRide = view.findViewById(R.id.btnCancelRide);
+        btnEndRide = view.findViewById(R.id.btnEndRide);
 
         rideApi = RetrofitClient.getInstance(requireContext()).create(RideApi.class);
 
@@ -533,6 +538,47 @@ public class HomeFragment extends Fragment {
         btnCancelRide.setOnClickListener(v -> {
             if (currentRide != null) {
                 showCancelRideDialog();
+            }
+        });
+
+        btnEndRide.setOnClickListener( v -> {
+            if(currentRide != null){
+                RideEndRequestDTO request = new RideEndRequestDTO();
+                request.setActualEndLocation(new Location(45.2671, 19.8335, "Trg slobode 1, Novi Sad"));
+
+                RideApi api = RetrofitClient.getInstance(requireContext()).create(RideApi.class);
+                api.endRide(currentRide.getId(), request).enqueue(new Callback<>() {
+                    @Override
+                    public void onResponse(@NonNull Call<RideEndResponseDTO> call, @NonNull Response<RideEndResponseDTO> response) {
+                        RideEndResponseDTO body = response.body();
+
+                        if (body != null) {
+                            hideCard();
+                            hidePanicButton();
+                            if (body.getHasNextRide()) {
+                                Toast.makeText(getContext(), "Ride ended successfully! Next ride: " + body.getNextRideFrom()
+                                        + " -> " + body.getNextRideTo() + " at " + body.getNextRideScheduledTime(), Toast.LENGTH_SHORT).show();
+                                requireActivity().getSupportFragmentManager()
+                                        .beginTransaction()
+                                        .replace(R.id.fragment_container, new DriverAssignedRidesFragment())
+                                        .addToBackStack(null)
+                                        .commit();
+                            } else {
+                                Toast.makeText(getContext(), "Ride ended successfully! Price: " + body.getFinalPrice()
+                                        + " RSD, Duration: " + body.getDuration() + " at " + body.getNextRideScheduledTime(), Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Log.e(TAG, "Error ending ride: " + response.code());
+                            Toast.makeText(requireContext(), "Failed to end ride", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<RideEndResponseDTO> call, Throwable throwable) {
+                        Log.e(TAG, "Report network error", throwable);
+                        Toast.makeText(getContext(), "Network error: " + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }

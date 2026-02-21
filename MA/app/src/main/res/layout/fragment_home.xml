@@ -393,6 +393,18 @@
                             android:textAllCaps="false"
                             android:textSize="12sp"
                             android:fontFamily="@font/montserrat_semibold_font" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/btnEndRide"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="48dp"
+                            android:text="End ride"
+                            android:textColor="@color/text_white"
+                            android:background="@drawable/button_purple_rounded"
+                            android:textAllCaps="false"
+                            android:textSize="12sp"
+                            android:fontFamily="@font/montserrat_semibold_font" />
                     </LinearLayout>
                 </LinearLayout>
 

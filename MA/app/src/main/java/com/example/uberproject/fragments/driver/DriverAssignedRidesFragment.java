@@ -23,9 +23,11 @@ import com.example.uberproject.R;
 import com.example.uberproject.adapters.AssignedRidesAdapter;
 import com.example.uberproject.api.RideApi;
 import com.example.uberproject.api.RetrofitClient;
+import com.example.uberproject.dto.request.RideEndRequestDTO;
 import com.example.uberproject.dto.response.AssignedRideDTO;
 import com.example.uberproject.dto.request.RideCancelRequestDTO;
 import com.example.uberproject.dto.request.RideStopRequestDTO;
+import com.example.uberproject.dto.response.RideEndResponseDTO;
 import com.example.uberproject.dto.response.RideStopResponseDTO;
 import com.example.uberproject.dto.response.RideCancelResponseDTO;
 import com.example.uberproject.fragments.tracking.TrackRideFragment;
@@ -317,7 +319,39 @@ public class DriverAssignedRidesFragment extends Fragment implements AssignedRid
 
     @Override
     public void onEndRide(AssignedRideDTO ride) {
-        // TODO: implementirati end ride
+        if (ride == null) return;
+
+        RideEndRequestDTO request = new RideEndRequestDTO();
+        request.setActualEndLocation(new Location(45.2671, 19.8335, "Trg slobode 1, Novi Sad"));
+
+        RideApi api = RetrofitClient.getInstance(requireContext()).create(RideApi.class);
+        api.endRide(ride.getId(), request).enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<RideEndResponseDTO> call, @NonNull Response<RideEndResponseDTO> response) {
+                RideEndResponseDTO body = response.body();
+
+                if (body != null) {
+                    if (body.getHasNextRide()) {
+                        Toast.makeText(getContext(), "Ride ended successfully! Next ride: " + body.getNextRideFrom()
+                                + " -> " + body.getNextRideTo() + " at " + body.getNextRideScheduledTime(), Toast.LENGTH_SHORT).show();
+                        loadAssignedRides();
+                    } else {
+                        Toast.makeText(getContext(), "Ride ended successfully! Price: " + body.getFinalPrice()
+                                + " RSD, Duration: " + body.getDuration() + " at " + body.getNextRideScheduledTime(), Toast.LENGTH_SHORT).show();
+                        loadAssignedRides();
+                    }
+                } else {
+                    Log.e(TAG, "Error ending ride: " + response.code());
+                    Toast.makeText(requireContext(), "Failed to end ride", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RideEndResponseDTO> call, Throwable throwable) {
+                Log.e(TAG, "Report network error", throwable);
+                Toast.makeText(getContext(), "Network error: " + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
