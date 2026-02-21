@@ -352,7 +352,7 @@ public class UserRideHistoryFragment extends Fragment implements SensorEventList
             String status = mapStatus(dto.getStatus());
             String dateTime = formatDateTime(dto.getStartTime());
 
-            Ride ride = new Ride(dto.getId(), dto.getRouteId(),
+           Ride ride = new Ride(dto.getId(), dto.getRouteId(),
                     dto.getStartLocation(), dto.getEndLocation(),
                     price, status, dateTime, dto.getPanicSent());
 
@@ -375,6 +375,10 @@ public class UserRideHistoryFragment extends Fragment implements SensorEventList
             // Vehicle
             ride.setVehicleModel(dto.getVehicleModel());
             ride.setVehicleLicensePlate(dto.getVehicleLicensePlate());
+<<<<<<< HEAD
+=======
+
+>>>>>>> a404ad05c77a39bf89f1f90a56c77b658a2f7379
             allRides.add(ride);
         }
     }

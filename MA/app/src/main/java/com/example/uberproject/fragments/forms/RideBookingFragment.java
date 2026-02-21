@@ -21,9 +21,11 @@ import com.example.uberproject.R;
 import com.example.uberproject.api.RetrofitClient;
 import com.example.uberproject.api.RideApi;
 import com.example.uberproject.api.RouteApi;
+import com.example.uberproject.api.UserApi;
 import com.example.uberproject.dto.request.RideRequestDTO;
 import com.example.uberproject.dto.response.FavoriteRouteDTO;
 import com.example.uberproject.dto.response.RideCreatedResponseDTO;
+import com.example.uberproject.dto.response.UserResponseDTO;
 import com.example.uberproject.utils.GeocodingService;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
@@ -106,7 +108,6 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         tvFavoritesArrow   = view.findViewById(R.id.tvFavoritesArrow);
     }
 
-    // ucitaj omiljene
     private void loadFavoritesFromApi() {
         RouteApi routeApi = RetrofitClient.getInstance(requireContext()).create(RouteApi.class);
         routeApi.getFavoriteRoutes().enqueue(new Callback<List<FavoriteRouteDTO>>() {
@@ -125,7 +126,6 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         });
     }
 
-    // kalendar
     private void initCalendar() {
         Calendar cal = Calendar.getInstance();
         selectedDay = cal.get(Calendar.DAY_OF_MONTH);
@@ -181,7 +181,6 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         return tv;
     }
 
-    // vreme
     private void setupTimeControls(View view) {
         Calendar cal = Calendar.getInstance();
         currentHour = cal.get(Calendar.HOUR_OF_DAY);
@@ -202,7 +201,6 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         tvMinute.setText(String.format("%02d", currentMinute));
     }
 
-    // vozilo
     private void setupVehicleTypeButtons() {
         btnVehicleStandard.setOnClickListener(v -> selectVehicle("STANDARD"));
         btnVehicleLuxury.setOnClickListener(v -> selectVehicle("LUXURY"));
@@ -226,7 +224,6 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         }
     }
 
-    // omiljene
     private void setupFavoriteRoutes() {
         requireView().findViewById(R.id.btnToggleFavorites).setOnClickListener(v -> {
             favoritesExpanded = !favoritesExpanded;
@@ -254,7 +251,6 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
                     fav.getEstimatedTimeMin() != null ? fav.getEstimatedTimeMin() : 0.0);
             ((TextView) card.findViewById(R.id.tvRouteInfo)).setText(info);
 
-            // putanja sa eventualnim stopovima
             String path;
             if (fav.getIntermediateStops() != null && !fav.getIntermediateStops().isEmpty()) {
                 path = fav.getStartLocation() + " → "
@@ -266,11 +262,8 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
             ((TextView) card.findViewById(R.id.tvRoutePath)).setText(path);
 
             card.findViewById(R.id.btnChooseRoute).setOnClickListener(vv -> {
-                // popuni polja u formi
                 etStartLocation.setText(fav.getStartLocation());
                 etEndLocation.setText(fav.getEndLocation());
-
-                // popuni stopove
                 llStopsContainer.removeAllViews();
                 stopFields.clear(); stopCoords.clear(); stopCount = 0;
                 if (fav.getIntermediateStops() != null) {
@@ -281,9 +274,7 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
                         }
                     }
                 }
-                // reset geocoded coords
                 startLat = startLon = endLat = endLon = null;
-                // zatvori panel
                 favoritesExpanded = false;
                 llFavoritesContainer.setVisibility(View.GONE);
                 tvFavoritesArrow.setText("▼");
@@ -294,7 +285,6 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         }
     }
 
-    // ulinkovani putnici
     private void setupPassengers() {
         requireView().findViewById(R.id.btnAddPassenger).setOnClickListener(v -> {
             String email = etPassengerEmail.getText().toString().trim();
@@ -331,7 +321,6 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         llPassengersList.addView(row);
     }
 
-    // stanice
     private void setupAddStop(View view) {
         view.findViewById(R.id.btnAddStop).setOnClickListener(v -> addStopField());
     }
@@ -376,34 +365,55 @@ public class RideBookingFragment extends BottomSheetDialogFragment {
         llStopsContainer.addView(row);
     }
 
-    // request ride
     private void setupRequestRide(View view) {
         view.findViewById(R.id.btnRequestRide).setOnClickListener(v -> {
-            String startAddr = etStartLocation.getText().toString().trim();
-            String endAddr   = etEndLocation.getText().toString().trim();
-            if (startAddr.isEmpty()) {
-                Toast.makeText(getContext(), "Please enter starting location", Toast.LENGTH_SHORT).show(); return; }
-            if (endAddr.isEmpty()) {
-                Toast.makeText(getContext(), "Please enter ending location", Toast.LENGTH_SHORT).show(); return; }
-
-            // Validacija: max 5 sati unapred i ne moze u proslost
-            Calendar now = Calendar.getInstance();
-            Calendar scheduled = Calendar.getInstance();
-            scheduled.set(selectedYear, selectedMonth, selectedDay, currentHour, currentMinute, 0);
-            long diffMinutes = (scheduled.getTimeInMillis() - now.getTimeInMillis()) / 60000;
-
-            if (diffMinutes < 0) {
-                Toast.makeText(getContext(), "Scheduled time must be in the future!", Toast.LENGTH_LONG).show();
-                return;
-            }
-            if (diffMinutes > 5 * 60) {
-                Toast.makeText(getContext(), "You can schedule a ride at most 5 hours in advance", Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            setButtonLoading(true);
-            geocodeAndSubmit(startAddr, endAddr);
+            UserApi userApi = RetrofitClient.getInstance(requireContext()).create(UserApi.class);
+            userApi.getMyProfile().enqueue(new Callback<UserResponseDTO>() {
+                @Override
+                public void onResponse(@NonNull Call<UserResponseDTO> call,
+                                       @NonNull Response<UserResponseDTO> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        if (Boolean.TRUE.equals(response.body().getIsBlocked())) {
+                            Toast.makeText(getContext(),
+                                    "Your account is blocked. You cannot book a ride.",
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                    }
+                    proceedWithBooking();
+                }
+                @Override
+                public void onFailure(@NonNull Call<UserResponseDTO> call, @NonNull Throwable t) {
+                    proceedWithBooking();
+                }
+            });
         });
+    }
+
+    private void proceedWithBooking() {
+        String startAddr = etStartLocation.getText().toString().trim();
+        String endAddr   = etEndLocation.getText().toString().trim();
+        if (startAddr.isEmpty()) {
+            Toast.makeText(getContext(), "Please enter starting location", Toast.LENGTH_SHORT).show(); return; }
+        if (endAddr.isEmpty()) {
+            Toast.makeText(getContext(), "Please enter ending location", Toast.LENGTH_SHORT).show(); return; }
+
+        Calendar now = Calendar.getInstance();
+        Calendar scheduled = Calendar.getInstance();
+        scheduled.set(selectedYear, selectedMonth, selectedDay, currentHour, currentMinute, 0);
+        long diffMinutes = (scheduled.getTimeInMillis() - now.getTimeInMillis()) / 60000;
+
+        if (diffMinutes < 0) {
+            Toast.makeText(getContext(), "Scheduled time must be in the future!", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (diffMinutes > 5 * 60) {
+            Toast.makeText(getContext(), "You can schedule a ride at most 5 hours in advance", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        setButtonLoading(true);
+        geocodeAndSubmit(startAddr, endAddr);
     }
 
     private void geocodeAndSubmit(String startAddr, String endAddr) {

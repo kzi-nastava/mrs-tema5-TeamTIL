@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_purple_dark_tint"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Handle bar -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="20dp"
+        android:background="#555566"
+        android:alpha="0.7" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/montserrat_semibold_font"
+        android:gravity="center"
+        android:text="Driver Inconsistency Report"
+        android:textColor="@color/text_white"
+        android:textSize="18sp"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Description label -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/montserrat_regular_font"
+        android:text="Please describe the issue you experienced during the ride"
+        android:textColor="@color/text_gray"
+        android:textSize="13sp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Description input -->
+    <EditText
+        android:id="@+id/etReportDescription"
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:background="@drawable/bg_purple_tint"
+        android:fontFamily="@font/montserrat_regular_font"
+        android:gravity="top|start"
+        android:hint="E.g. inappropriate behavior, unsafe driving, route deviation…"
+        android:inputType="textMultiLine"
+        android:padding="12dp"
+        android:textColor="@color/text_white"
+        android:textColorHint="@color/text_gray"
+        android:textSize="13sp"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Optional attachment label -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/montserrat_regular_font"
+        android:text="Optional attachment"
+        android:textColor="@color/text_gray"
+        android:textSize="12sp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Upload button -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnUploadAttachment"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:background="@drawable/bg_purple_tint"
+        android:drawableStart="@drawable/ic_upload"
+        android:drawablePadding="6dp"
+        android:fontFamily="@font/montserrat_regular_font"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:text="Upload image / document"
+        android:textAllCaps="false"
+        android:textColor="@color/text_white"
+        android:textSize="12sp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Attachment name (shown after selection) -->
+    <TextView
+        android:id="@+id/tvAttachmentName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/montserrat_regular_font"
+        android:textColor="#2ECC71"
+        android:textSize="12sp"
+        android:visibility="gone"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Attachment preview (shown after selection) -->
+    <ImageView
+        android:id="@+id/ivAttachmentPreview"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:contentDescription="Attachment preview"
+        android:scaleType="centerCrop"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/text_gray"
+        android:alpha="0.3"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Submit button -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSubmitReport"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/button_yellow_rounded"
+        android:fontFamily="@font/montserrat_semibold_font"
+        android:text="Submit Report"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="15sp"
+        android:layout_marginBottom="8dp" />
+
+</LinearLayout>

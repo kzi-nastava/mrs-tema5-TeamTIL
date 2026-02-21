@@ -28,6 +28,7 @@ import com.example.uberproject.dto.request.RideCancelRequestDTO;
 import com.example.uberproject.dto.request.RideStopRequestDTO;
 import com.example.uberproject.dto.response.RideStopResponseDTO;
 import com.example.uberproject.dto.response.RideCancelResponseDTO;
+import com.example.uberproject.fragments.tracking.TrackRideFragment;
 import com.example.uberproject.model.Location;
 import com.example.uberproject.utils.TokenManager;
 import com.google.android.material.textfield.TextInputEditText;
@@ -246,14 +247,37 @@ public class DriverAssignedRidesFragment extends Fragment implements AssignedRid
 
     @Override
     public void onOpenRide(AssignedRideDTO ride) {
-        Toast.makeText(requireContext(), "Opening ride #" + ride.getId(), Toast.LENGTH_SHORT).show();
+        if (ride.getRideId() != null) {
+            TrackRideFragment trackFragment =
+                    TrackRideFragment.newInstance(ride.getRideId());
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, trackFragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
         // TODO: Navigate to map or ride details
     }
 
     @Override
     public void onStartRide(AssignedRideDTO ride) {
-        Toast.makeText(requireContext(), "Starting ride #" + ride.getId(), Toast.LENGTH_SHORT).show();
-        // TODO: Call API to start ride (if endpoint exists)
+        rideApi.startRide(ride.getRideId()).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (!isAdded()) return;
+                if (response.isSuccessful()) {
+                    Toast.makeText(requireContext(), "Ride started!", Toast.LENGTH_SHORT).show();
+                    loadAssignedRides();
+                } else {
+                    Toast.makeText(requireContext(), "Failed to start ride: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
+                Toast.makeText(requireContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override

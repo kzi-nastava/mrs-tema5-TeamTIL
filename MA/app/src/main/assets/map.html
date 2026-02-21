@@ -49,6 +49,9 @@
     var routeMarkers = [];
     var panicMarkers = [];
 
+    // Marker vozila za track ride (odvojen od ostalih markera)
+    var vehicleMarker = null;
+
     var activeIcon = L.icon({
         iconUrl: 'file:///android_asset/active_driver.png',
         iconSize: [32, 32],
@@ -77,6 +80,12 @@
         popupAnchor: [1, -34],
     });
 
+    var vehicleIcon = L.icon({
+        iconUrl: 'file:///android_asset/active_driver.png',
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+    });
+
     function addMarker(lat, lng, title, available) {
         var icon = available ? activeIcon : inactiveIcon;
         var marker = L.marker([lat, lng], { icon: icon })
@@ -96,6 +105,7 @@
             map.removeLayer(routeLayer);
             routeLayer = null;
         }
+        // vehicleMarker se NE briše ovdje - briše ga samo clearVehicleMarker()
     }
 
     function drawRoute(coords, estimatedTime) {
@@ -135,6 +145,7 @@
 
         map.fitBounds(routeLayer.getBounds(), { padding: [50,50] });
     }
+<<<<<<< HEAD
     function markVehiclePanic(lat, lng, title) {
         // Remove previous panic markers
         panicMarkers.forEach(function(m) { map.removeLayer(m); });
@@ -171,3 +182,31 @@
     }
 
 </script>
+=======
+
+    /**
+     * Pomjera marker vozila bez brisanja rute.
+     * Koristi se iz TrackRideFragment za live tracking.
+     */
+    function updateVehicleMarker(lat, lng) {
+        if (vehicleMarker) {
+            vehicleMarker.setLatLng([lat, lng]);
+        } else {
+            vehicleMarker = L.marker([lat, lng], {
+                icon: vehicleIcon,
+                zIndexOffset: 1000
+            }).addTo(map)
+              .bindPopup('<strong>Vehicle</strong>');
+        }
+    }
+
+    function clearVehicleMarker() {
+        if (vehicleMarker) {
+            map.removeLayer(vehicleMarker);
+            vehicleMarker = null;
+        }
+    }
+</script>
+</body>
+</html>
+>>>>>>> a404ad05c77a39bf89f1f90a56c77b658a2f7379
