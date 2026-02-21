@@ -11,7 +11,6 @@ import rs.ac.uns.ftn.asd.Projekatsiit2023.dto.response.MessageResponseDTO;
 import rs.ac.uns.ftn.asd.Projekatsiit2023.service.ChatService;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -52,7 +51,9 @@ public class ChatController {
         request.setSenderEmail(email);
         MessageResponseDTO savedMsg = chatService.sendMessage(chat.getId(), request);
 
-        // Manually trigger admin notification — same as ChatHandler does for WS path
+        // Broadcast to anyone viewing this chat via WebSocket
+        chatHandler.broadcastToChat(chat.getId(), savedMsg);
+        // Notify admin global sessions (sidebar update)
         chatHandler.notifyAdminsPublic(savedMsg);
 
         return ResponseEntity.ok(chatService.getChatById(chat.getId()));
@@ -63,8 +64,14 @@ public class ChatController {
     public ResponseEntity<MessageResponseDTO> sendMessageRest(
             @PathVariable Integer chatId,
             @RequestBody ChatMessageRequestDTO request) {
+
         MessageResponseDTO saved = chatService.sendMessage(chatId, request);
+
+        // Broadcast to anyone viewing this chat via WebSocket
+        chatHandler.broadcastToChat(chatId, saved);
+        // Notify admin global sessions (sidebar update)
         chatHandler.notifyAdminsPublic(saved);
+
         return ResponseEntity.ok(saved);
     }
 }
