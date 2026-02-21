@@ -133,6 +133,12 @@ public class RideAdapter extends RecyclerView.Adapter<RideAdapter.RideViewHolder
         diffResult.dispatchUpdatesTo(this);
     }
 
+    public void setRidesSorted(List<Ride> newRides) {
+        rides.clear();
+        rides.addAll(newRides);
+        notifyDataSetChanged();
+    }
+
     // ---- INTERFACES ----
     public interface OnRideClickListener {
         void onRideClick(Ride ride);

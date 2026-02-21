@@ -1,9 +1,6 @@
 package com.example.uberproject.fragments.map;
 
 import android.animation.AnimatorInflater;
-import android.media.MediaPlayer;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -321,6 +318,18 @@ public class MapFragment extends Fragment {
         }
     }
 
+    public void markVehiclePanic(double lat, double lng, String title) {
+        if (webView == null) return;
+        String safeTitle = title != null ? title.replace("'", "\\'") : "PANIC";
+        String js = "markVehiclePanic(" + lat + "," + lng + ",'" + safeTitle + "')";
+        webView.post(() -> webView.evaluateJavascript(js, null));
+    }
+
+    public void clearPanicMarkers() {
+        if (webView == null) return;
+        webView.post(() -> webView.evaluateJavascript("clearPanicMarkers()", null));
+    }
+
     public void hidePanicButton() {
         this.currentRideId = null;
         this.currentUserLat = null;
@@ -368,8 +377,7 @@ public class MapFragment extends Fragment {
                     PanicResponseDTO panicResponse = response.body();
                     Log.d(TAG, "Panic alert sent successfully. Panic ID: " + panicResponse.getId());
 
-                    // Play sound and show notification
-                    playPanicSound();
+                    // Show confirmation to sender (no sound - sound is for admin receiving the alert)
                     showPanicConfirmation(panicResponse);
 
                     // Mark panic button as triggered
@@ -389,20 +397,6 @@ public class MapFragment extends Fragment {
         });
     }
 
-    private void playPanicSound() {
-        try {
-            // Use system notification sound (alarm sound)
-            Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-            MediaPlayer mediaPlayer = MediaPlayer.create(requireContext(), alarmUri);
-            if (mediaPlayer != null) {
-                mediaPlayer.setVolume(1.0f, 1.0f);
-                mediaPlayer.start();
-                mediaPlayer.setOnCompletionListener(MediaPlayer::release);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error playing panic sound", e);
-        }
-    }
 
     private void showPanicConfirmation(PanicResponseDTO panicResponse) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());

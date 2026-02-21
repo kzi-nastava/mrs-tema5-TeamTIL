@@ -1,13 +1,20 @@
 package com.example.uberproject.fragments.user;
 
 import android.app.DatePickerDialog;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -28,12 +35,12 @@ import com.example.uberproject.dto.response.RideHistoryResponseDTO;
 import com.example.uberproject.model.Ride;
 import com.example.uberproject.utils.TokenManager;
 import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -44,9 +51,20 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class UserRideHistoryFragment extends Fragment {
+public class UserRideHistoryFragment extends Fragment implements SensorEventListener {
 
     private static final String TAG = "UserRideHistoryFragment";
+
+    // Shake detection constants
+    private static final float SHAKE_THRESHOLD = 12.0f;
+    private static final long SHAKE_COOLDOWN_MS = 1000;
+
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    private long lastShakeTime = 0;
+    private boolean sortAscending = false; // default: newest first (DESC)
+
+    private TextView tvSortIndicator;
 
     private androidx.appcompat.widget.AppCompatButton btnApplyFilters;
     private android.widget.AutoCompleteTextView etFromDate, etToDate;
@@ -54,10 +72,7 @@ public class UserRideHistoryFragment extends Fragment {
     private RideAdapter rideAdapter;
     private List<Ride> allRides = new ArrayList<>();
     private List<RideHistoryResponseDTO> rideHistoryData = new ArrayList<>();
-
-    //favorites - cuvamo routeIdjeve koji su omiljeni
     private Set<Integer> favoriteRouteIds = new HashSet<>();
-
     private Chip chipLast7Days, chipLastMonth, chipCompletedOnly, chipCanceledOnly, chipAll;
 
     @Nullable
@@ -65,6 +80,9 @@ public class UserRideHistoryFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_user_ride_history, container, false);
+
+        // Sort indicator label
+        tvSortIndicator = view.findViewById(R.id.tvSortIndicator);
 
         etFromDate = view.findViewById(R.id.etFromDate);
         etToDate   = view.findViewById(R.id.etToDate);
@@ -111,12 +129,102 @@ public class UserRideHistoryFragment extends Fragment {
 
         ridesRecyclerView.setAdapter(rideAdapter);
 
+        // Init shake sensor
+        sensorManager = (SensorManager) requireContext().getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager != null) {
+            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        }
+
         // ucitaj ride history i favorite paralelno
         loadRideHistory();
         loadFavoriteRouteIds();
 
         return view;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (sensorManager != null && accelerometer != null) {
+            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(this);
+        }
+    }
+
+    // ========= SHAKE SENSOR =========
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() != Sensor.TYPE_ACCELEROMETER) return;
+
+        float x = event.values[0];
+        float y = event.values[1];
+        float z = event.values[2];
+
+        // Remove gravity component and compute total acceleration
+        float acceleration = (float) Math.sqrt(x * x + y * y + z * z) - SensorManager.GRAVITY_EARTH;
+
+        if (acceleration > SHAKE_THRESHOLD) {
+            long now = System.currentTimeMillis();
+            if (now - lastShakeTime > SHAKE_COOLDOWN_MS) {
+                lastShakeTime = now;
+                toggleSortOrder();
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+
+    private void toggleSortOrder() {
+        sortAscending = !sortAscending;
+
+        // Simply reverse the list
+        Collections.reverse(allRides);
+
+        // Check if any filters are active
+        String fromDateStr = etFromDate != null ? etFromDate.getText().toString().trim() : "";
+        String toDateStr   = etToDate   != null ? etToDate.getText().toString().trim()   : "";
+        boolean hasFilters = !fromDateStr.isEmpty() || !toDateStr.isEmpty()
+                || chipCompletedOnly.isSelected() || chipCanceledOnly.isSelected()
+                || chipLast7Days.isSelected() || chipLastMonth.isSelected();
+
+        if (hasFilters) {
+            // Re-apply filters on the reversed list
+            applyFilters();
+        } else {
+            // No filters - show all reversed rides
+            rideAdapter.setRidesSorted(new ArrayList<>(allRides));
+        }
+
+        String label = sortAscending ? "↑ Oldest first" : "↓ Newest first";
+        if (tvSortIndicator != null) {
+            tvSortIndicator.setText("📅 " + label);
+        }
+
+        // Haptic feedback
+        try {
+            Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
+            if (vibrator != null && vibrator.hasVibrator()) {
+                vibrator.vibrate(80);
+            }
+        } catch (Exception ignored) {}
+
+        Toast.makeText(requireContext(), "Sorted: " + label, Toast.LENGTH_SHORT).show();
+    }
+
+    private void sortRidesByDate(List<Ride> rides) {
+        // No longer needed - we just reverse the list
+    }
+
+    // ================================
 
     // ride history
     private void loadRideHistory() {
@@ -267,17 +375,6 @@ public class UserRideHistoryFragment extends Fragment {
             // Vehicle
             ride.setVehicleModel(dto.getVehicleModel());
             ride.setVehicleLicensePlate(dto.getVehicleLicensePlate());
-
-            Ride ride = new Ride(
-                    dto.getId(),
-                    dto.getRouteId(),
-                    dto.getStartLocation(),
-                    dto.getEndLocation(),
-                    price,
-                    status,
-                    dateTime,
-                    dto.getPanicSent()
-            );
             allRides.add(ride);
         }
     }
@@ -309,28 +406,26 @@ public class UserRideHistoryFragment extends Fragment {
             chipAll.setSelected(false);
             ((Chip) v).setSelected(true);
 
-            Calendar calendar = java.util.Calendar.getInstance();
+            SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+            Calendar calendar = Calendar.getInstance();
             etFromDate.setText("");
             etToDate.setText("");
 
             if (v == chipLast7Days) {
+                etToDate.setText(fmt.format(new Date()));
                 calendar.add(Calendar.DAY_OF_MONTH, -7);
-                Date from = calendar.getTime();
-                Date to = new Date();
-                etFromDate.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(from));
-                etToDate.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(to));
+                etFromDate.setText(fmt.format(calendar.getTime()));
                 applyFilters();
             } else if (v == chipLastMonth) {
+                etToDate.setText(fmt.format(new Date()));
                 calendar.add(Calendar.MONTH, -1);
-                Date from = calendar.getTime();
-                Date to = new Date();
-                etFromDate.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(from));
-                etToDate.setText(new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(to));
+                etFromDate.setText(fmt.format(calendar.getTime()));
                 applyFilters();
             } else if (v == chipCompletedOnly || v == chipCanceledOnly) {
                 applyFilters();
             } else if (v == chipAll) {
-                rideAdapter.setRides(allRides);
+                // Show all in current sort order
+                rideAdapter.setRides(new ArrayList<>(allRides));
             }
         };
 
@@ -348,17 +443,20 @@ public class UserRideHistoryFragment extends Fragment {
         Date fromDate = fromDateStr.isEmpty() ? null : parsePickerDate(fromDateStr);
         Date toDate   = toDateStr.isEmpty()   ? null : parsePickerDate(toDateStr);
 
+        // If toDate is set, include the whole day (end of day)
+        if (toDate != null) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(toDate);
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            toDate = cal.getTime();
+        }
+
         List<Ride> filtered = new ArrayList<>();
         for (Ride ride : allRides) {
             boolean match = true;
 
-            Date rideDate = parseRideDate(ride.getDateTime());
-            if (rideDate != null) {
-                if (fromDate != null && rideDate.before(fromDate)) match = false;
-                if (toDate   != null && rideDate.after(toDate))   match = false;
-            } else {
-                match = false;
-            }
 
             if (chipCompletedOnly.isSelected() && !"Finished".equalsIgnoreCase(ride.getStatus())) match = false;
             if (chipCanceledOnly.isSelected()  && !"Canceled".equalsIgnoreCase(ride.getStatus())) match = false;
@@ -376,7 +474,8 @@ public class UserRideHistoryFragment extends Fragment {
         chipCompletedOnly.setSelected(false);
         chipCanceledOnly.setSelected(false);
         chipAll.setSelected(false);
-        rideAdapter.setRides(allRides);
+        // Show all in current sort order
+        rideAdapter.setRides(new ArrayList<>(allRides));
     }
 
     private void setupDatePickers() {
@@ -403,18 +502,6 @@ public class UserRideHistoryFragment extends Fragment {
         });
     }
 
-    private Date parseRideDate(String rideDateStr) {
-        if (rideDateStr == null || rideDateStr.isEmpty()) return null;
-        try {
-            return new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.ENGLISH).parse(rideDateStr);
-        } catch (ParseException e) {
-            try {
-                return new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).parse(rideDateStr.split(",")[0]);
-            } catch (ParseException ex) {
-                return null;
-            }
-        }
-    }
 
     private Date parsePickerDate(String str) {
         if (str == null || str.isEmpty()) return null;
