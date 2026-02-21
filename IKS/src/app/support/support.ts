@@ -180,8 +180,11 @@ export class Support implements OnInit, OnDestroy, AfterViewChecked {
     this.chatService.connectToChat(chatId, this.userEmail);
 
     this.msgSub = this.chatService.message$.subscribe((msg: MessageDTO) => {
+      console.log('MSG RECEIVED:', msg);
+      console.log('TARGET:', this.isAdmin ? this.selectedChat?.id : this.myChat?.id);
       const target = this.isAdmin ? this.selectedChat : this.myChat;
       if (!target || msg.chatId !== target.id) return;
+      console.log('PASSED FILTER');
 
       // Avoid duplicate if we sent it ourselves via HTTP fallback
       const exists = target.messages.some((m) => m.id === msg.id);

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { AdminNotification, ChatDTO, MessageDTO, SendMessageRequest } from '../models/chat-dto.models';
@@ -7,7 +7,7 @@ import { environment } from '../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class ChatService {
   private readonly apiUrl = environment.apiUrl;
-  private readonly wsBase = environment.wsUrl;
+  private readonly wsBase = environment.wsBase;
 
     private chatSocket: WebSocket | null = null;
     private messageSubject = new Subject<MessageDTO>();
@@ -17,7 +17,7 @@ export class ChatService {
     private adminNotifSubject = new Subject<AdminNotification>();
     public adminNotif$ = this.adminNotifSubject.asObservable();
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, private zone: NgZone) { }
     
     getExistingChat(email: string): Observable<ChatDTO | null> {
         return this.http.get<ChatDTO | null>(
@@ -50,7 +50,7 @@ export class ChatService {
         this.chatSocket.onmessage = (event: MessageEvent) => {
             try {
                 const msg: MessageDTO = JSON.parse(event.data);
-                this.messageSubject.next(msg);
+                this.zone.run(() => this.messageSubject.next(msg));
             } catch (e) {
                 console.error('WS chat parse error:', e);
             }
@@ -90,7 +90,7 @@ export class ChatService {
         this.adminSocket.onmessage = (event: MessageEvent) => {
         try {
             const notif: AdminNotification = JSON.parse(event.data);
-            this.adminNotifSubject.next(notif);
+            this.zone.run(() => this.adminNotifSubject.next(notif));
         } catch (e) {
             console.error('WS admin parse error:', e);
         }

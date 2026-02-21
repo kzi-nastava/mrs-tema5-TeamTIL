@@ -18,10 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class ChatHandler extends TextWebSocketHandler {
+
     private final Map<Integer, Set<WebSocketSession>> chatSessions = new ConcurrentHashMap<>();
-
     private final Set<WebSocketSession> adminSessions = ConcurrentHashMap.newKeySet();
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
@@ -49,10 +48,9 @@ public class ChatHandler extends TextWebSocketHandler {
                 rawMessage.getPayload(), ChatMessageRequestDTO.class);
 
         MessageResponseDTO saved = chatService.sendMessage(chatId, request);
-        String json = objectMapper.writeValueAsString(saved);
 
-        // 1. Broadcast to everyone viewing this specific chat
-        broadcastToChat(chatId, json);
+        // 1. Broadcast to everyone viewing this specific chat (including sender)
+        broadcastToChat(chatId, saved);
 
         // 2. Notify all admin global sessions so the sidebar updates
         notifyAdminsPublic(saved);
@@ -73,14 +71,19 @@ public class ChatHandler extends TextWebSocketHandler {
         }
     }
 
-    private void broadcastToChat(Integer chatId, String json) {
+    public void broadcastToChat(Integer chatId, MessageResponseDTO msg) {
         Set<WebSocketSession> sessions = chatSessions.get(chatId);
-        if (sessions == null) return;
-        TextMessage msg = new TextMessage(json);
-        for (WebSocketSession s : sessions) {
-            if (s.isOpen()) {
-                try { s.sendMessage(msg); } catch (IOException e) { e.printStackTrace(); }
+        if (sessions == null || sessions.isEmpty()) return;
+        try {
+            String json = objectMapper.writeValueAsString(msg);
+            TextMessage textMsg = new TextMessage(json);
+            for (WebSocketSession s : sessions) {
+                if (s.isOpen()) {
+                    try { s.sendMessage(textMsg); } catch (IOException e) { e.printStackTrace(); }
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -108,7 +111,6 @@ public class ChatHandler extends TextWebSocketHandler {
 
     private boolean isAdminGlobalSession(WebSocketSession session) {
         if (session.getUri() == null) return false;
-        // Admin connects to /ws/chat/admin (path ends with /admin)
         return session.getUri().getPath().endsWith("/admin");
     }
 
