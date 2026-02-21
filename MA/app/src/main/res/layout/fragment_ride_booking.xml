@@ -36,7 +36,7 @@
             android:id="@+id/btnClose"
             android:layout_width="28dp"
             android:layout_height="28dp"
-            android:src="@drawable/ic_close"
+            android:src="@drawable/ic_close_ic"
             android:contentDescription="Close"
             android:clickable="true"
             android:focusable="true"/>
