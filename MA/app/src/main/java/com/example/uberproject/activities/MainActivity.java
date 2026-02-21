@@ -34,12 +34,15 @@ import com.example.uberproject.api.RideApi;
 import com.example.uberproject.dto.response.AssignedRideDTO;
 import com.example.uberproject.fragments.admin.AdminPanicListFragment;
 import com.example.uberproject.fragments.admin.AdminRideHistoryFragment;
+import com.example.uberproject.fragments.admin.AdminRideStatsFragment;
 import com.example.uberproject.fragments.admin.PriceConfigFragment;
 import com.example.uberproject.fragments.driver.DriverAssignedRidesFragment;
 import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
+import com.example.uberproject.fragments.driver.DriverRideStatsFragment;
 import com.example.uberproject.fragments.forms.DriverRegisterFragment;
 import com.example.uberproject.fragments.home.HomeFragment;
 import com.example.uberproject.fragments.tracking.TrackRideFragment;
+import com.example.uberproject.fragments.user.RideStatsFragment;
 import com.example.uberproject.fragments.user.UserRideHistoryFragment;
 import com.example.uberproject.fragments.forms.ProfileFragment;
 import com.example.uberproject.fragments.forms.LoginFragment;
@@ -133,8 +136,11 @@ public class MainActivity extends AppCompatActivity {
                 }
                 loadFragment(new UserRideHistoryFragment());
             } else if (itemId == R.id.user_reports) {
-                if (!AuthGuard.isUserLoggedIn(this)) { showLoginFragment(); return true; }
-                // TODO loadFragment(new ReportFragment());
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new RideStatsFragment());
+                }
             } else if (itemId == R.id.support) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
@@ -155,8 +161,11 @@ public class MainActivity extends AppCompatActivity {
                     loadFragment(new DriverRideHistoryFragment());
                 }
             } else if (itemId == R.id.driver_reports) {
-                if (!AuthGuard.isUserLoggedIn(this)) { showLoginFragment(); return true; }
-                // TODO: loadFragment(new ReportFragment());
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new DriverRideStatsFragment());
+                }
             } else if (itemId == R.id.driver_support) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
@@ -185,8 +194,11 @@ public class MainActivity extends AppCompatActivity {
                 if (!AuthGuard.isUserLoggedIn(this)) { showLoginFragment(); return true; }
                 // TODO: loadFragment(new ActiveRidesFragment());
             } else if (itemId == R.id.admin_reports) {
-                if (!AuthGuard.isUserLoggedIn(this)) { showLoginFragment(); return true; }
-                // TODO: loadFragment(new ReportFragment());
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new AdminRideStatsFragment());
+                }
             } else if (itemId == R.id.admin_panic_notifications) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();

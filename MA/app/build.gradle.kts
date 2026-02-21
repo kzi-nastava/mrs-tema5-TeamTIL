@@ -90,4 +90,5 @@ dependencies {
     // WebSocket za real-time panic notifikacije
     implementation("org.java-websocket:Java-WebSocket:1.5.4")
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }
