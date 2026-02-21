@@ -139,8 +139,9 @@ public class AssignedRidesAdapter extends RecyclerView.Adapter<AssignedRidesAdap
             if (listener != null) listener.onStopRide(ride);
         });
 
-        // btnEndRide - placeholder, ne radi ništa za sada
-        holder.btnEndRide.setOnClickListener(null);
+        holder.btnEndRide.setOnClickListener(v -> {
+            if (listener != null) listener.onEndRide(ride);
+        });
 
         holder.btnStartRide.setOnClickListener(v -> {
             if (listener != null) listener.onStartRide(ride);

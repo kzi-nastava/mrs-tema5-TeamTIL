@@ -1,6 +1,7 @@
 package com.example.uberproject.api;
 
 import com.example.uberproject.dto.request.InconsistencyReportRequestDTO;
+import com.example.uberproject.dto.request.RideEndRequestDTO;
 import com.example.uberproject.dto.response.AssignedRideDTO;
 import com.example.uberproject.dto.request.RideCancelRequestDTO;
 import com.example.uberproject.dto.request.RideRequestDTO;
@@ -9,6 +10,7 @@ import com.example.uberproject.dto.request.PanicRequestDTO;
 import com.example.uberproject.dto.response.DriverRideHistoryResponseDTO;
 import com.example.uberproject.dto.response.InconsistencyReportResponseDTO;
 import com.example.uberproject.dto.response.RideCreatedResponseDTO;
+import com.example.uberproject.dto.response.RideEndResponseDTO;
 import com.example.uberproject.dto.response.RideHistoryResponseDTO;
 import com.example.uberproject.dto.response.RideCancelResponseDTO;
 import com.example.uberproject.dto.response.RideStatsResponseDTO;
@@ -88,6 +90,8 @@ public interface RideApi {
             @Query("dateTo") String dateTo
     );
 
+    @PUT("rides/{rideId}/end")
+    Call<RideEndResponseDTO> endRide(@Path("rideId") Integer rideId, @Body RideEndRequestDTO request);
 }
 
 
