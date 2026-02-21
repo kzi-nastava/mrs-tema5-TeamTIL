@@ -12,22 +12,30 @@
     </group>
 
     <!-- REGISTERED USER MENU ITEMS -->
-    <group android:checkableBehavior="single"
-        android:id="@+id/menu_registered_user">
+    <group
+        android:id="@+id/menu_registered_user"
+        android:checkableBehavior="single">
+
         <item android:id="@+id/book_an_uber"
             android:title="@string/book_an_uber"
             android:icon="@drawable/ic_vehicle_placeholder"
+            android:orderInCategory="100" />
+
+        <!-- Shown instead of Book an Uber when ride is IN_PROGRESS -->
+        <item android:id="@+id/track_ride"
+            android:title="Track Ride"
+            android:icon="@drawable/ic_location"
             android:orderInCategory="100"
-            android:color="@color/yellow"/>
+            android:visible="false" />
 
         <item android:id="@+id/ride_history"
             android:title="@string/ride_history"
             android:icon="@drawable/ic_calendar_placeholder"
             android:orderInCategory="200" />
 
-        <item android:id="@+id/favorite_rides"
-            android:title="@string/favorite_rides"
-            android:icon="@drawable/favorite_rides"
+        <item android:id="@+id/user_reports"
+            android:title="Reports"
+            android:icon="@drawable/ic_report"
             android:orderInCategory="300" />
 
         <item android:id="@+id/support"
@@ -37,11 +45,13 @@
     </group>
 
     <!-- DRIVER MENU ITEMS -->
-    <group android:checkableBehavior="single"
-        android:id="@+id/menu_driver">
-        <item android:id="@+id/my_vehicle"
-            android:title="@string/my_vehicle"
-            android:icon="@drawable/ic_vehicle_placeholder"
+    <group
+        android:id="@+id/menu_driver"
+        android:checkableBehavior="single">
+
+        <item android:id="@+id/my_rides"
+            android:title="@string/my_rides"
+            android:icon="@drawable/favorite_rides"
             android:orderInCategory="100" />
 
         <item android:id="@+id/driver_ride_history"
@@ -49,9 +59,9 @@
             android:icon="@drawable/ic_calendar_placeholder"
             android:orderInCategory="200" />
 
-        <item android:id="@+id/my_rides"
-            android:title="@string/my_rides"
-            android:icon="@drawable/favorite_rides"
+        <item android:id="@+id/driver_reports"
+            android:title="Reports"
+            android:icon="@drawable/ic_report"
             android:orderInCategory="300" />
 
         <item android:id="@+id/driver_support"
@@ -61,18 +71,34 @@
     </group>
 
     <!-- ADMIN MENU ITEMS -->
-    <group android:checkableBehavior="single"
-        android:id="@+id/menu_admin">
+    <group
+        android:id="@+id/menu_admin"
+        android:checkableBehavior="single">
 
         <item android:id="@+id/nav_register_driver"
             android:title="@string/driver_registration"
             android:icon="@drawable/ic_person_placeholder"
             android:orderInCategory="100" />
 
+        <item android:id="@+id/admin_price_config"
+            android:title="Price Config"
+            android:icon="@drawable/ic_price"
+            android:orderInCategory="150" />
+
         <item android:id="@+id/admin_ride_history"
             android:title="@string/ride_history"
             android:icon="@drawable/ic_calendar_placeholder"
             android:orderInCategory="200" />
+
+        <item android:id="@+id/admin_active_rides"
+            android:title="Active Rides"
+            android:icon="@drawable/ic_vehicle_placeholder"
+            android:orderInCategory="225" />
+
+        <item android:id="@+id/admin_reports"
+            android:title="Reports"
+            android:icon="@drawable/ic_report"
+            android:orderInCategory="240" />
 
         <item android:id="@+id/admin_panic_notifications"
             android:title="Panic Notifications"

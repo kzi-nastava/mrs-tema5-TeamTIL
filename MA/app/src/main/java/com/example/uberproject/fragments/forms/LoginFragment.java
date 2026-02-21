@@ -157,6 +157,7 @@ public class LoginFragment extends Fragment {
             mainActivity.refreshNavigationMenu();
             // Connect panic WebSocket if the logged-in user is admin
             mainActivity.connectPanicWebSocketIfAdmin();
+            mainActivity.onLoginSuccess();
         }
 
         getParentFragmentManager().beginTransaction()
