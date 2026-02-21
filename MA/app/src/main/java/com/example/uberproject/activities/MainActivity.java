@@ -42,6 +42,7 @@ import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
 import com.example.uberproject.fragments.driver.DriverRideStatsFragment;
 import com.example.uberproject.fragments.forms.DriverRegisterFragment;
 import com.example.uberproject.fragments.home.HomeFragment;
+import com.example.uberproject.fragments.support.SupportChatsFragment;
 import com.example.uberproject.fragments.tracking.TrackRideFragment;
 import com.example.uberproject.fragments.user.RideStatsFragment;
 import com.example.uberproject.fragments.user.UserRideHistoryFragment;
@@ -146,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
                 } else {
-                    // TODO: loadFragment(new SupportFragment());
+                    loadFragment(new SupportChatsFragment());
                 }
             // DRIVER ITEMS
             } else if (itemId == R.id.my_rides) {
@@ -171,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
                 } else {
-                    // TODO loadFragment(new SupportFragment());
+                    loadFragment(new SupportChatsFragment());
                 }
             }
             // ADMIN ITEMS
@@ -210,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
                 } else {
-                    loadFragment(new ProfileFragment());
+                    loadFragment(new SupportChatsFragment());
                 }
             // LOGOUT
             } else if (itemId == R.id.nav_logout) {
