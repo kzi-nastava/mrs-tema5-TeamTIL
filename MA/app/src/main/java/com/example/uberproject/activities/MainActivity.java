@@ -15,6 +15,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
@@ -27,12 +29,17 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.bumptech.glide.Glide;
 import com.example.uberproject.R;
+import com.example.uberproject.api.RetrofitClient;
+import com.example.uberproject.api.RideApi;
+import com.example.uberproject.dto.response.AssignedRideDTO;
 import com.example.uberproject.fragments.admin.AdminPanicListFragment;
 import com.example.uberproject.fragments.admin.AdminRideHistoryFragment;
+import com.example.uberproject.fragments.admin.PriceConfigFragment;
 import com.example.uberproject.fragments.driver.DriverAssignedRidesFragment;
 import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
 import com.example.uberproject.fragments.forms.DriverRegisterFragment;
 import com.example.uberproject.fragments.home.HomeFragment;
+import com.example.uberproject.fragments.tracking.TrackRideFragment;
 import com.example.uberproject.fragments.user.UserRideHistoryFragment;
 import com.example.uberproject.fragments.forms.ProfileFragment;
 import com.example.uberproject.fragments.forms.LoginFragment;
@@ -46,11 +53,19 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
 import com.example.uberproject.fragments.forms.RideBookingFragment;
 
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
     private MaterialToolbar toolbar;
     private PanicWebSocketManager panicWebSocketManager;
+
+    private Integer activeRideId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,58 +122,46 @@ public class MainActivity extends AppCompatActivity {
                     bookingSheet.show(getSupportFragmentManager(), "RideBooking");
                     return true;
                 }
+            } else if (itemId == R.id.track_ride) {
+                if (!AuthGuard.isUserLoggedIn(this)) { showLoginFragment(); return true; }
+                if (activeRideId != null) {
+                    loadFragment(TrackRideFragment.newInstance(activeRideId));
+                }
             } else if (itemId == R.id.ride_history) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
-                } else if ("REGISTERED_USER".equalsIgnoreCase(userRole)) {
-                    // Za registered user, otvori UserRideHistoryFragment
-                    loadFragment(new UserRideHistoryFragment());
-                } else if ("DRIVER".equalsIgnoreCase(userRole)) {
-                    // Za driver, otvori DriverRideHistoryFragment
-                    loadFragment(new DriverRideHistoryFragment());
-                } else if ("ADMIN".equalsIgnoreCase(userRole) || "ADMINISTRATOR".equalsIgnoreCase(userRole)) {
-                    // Za admin, otvori AdminRideHistoryFragment
-                    loadFragment(new AdminRideHistoryFragment());
-                } else {
-                    loadFragment(new UserRideHistoryFragment());
                 }
-            } else if (itemId == R.id.favorite_rides) {
-                if (!AuthGuard.isUserLoggedIn(this)) {
-                    showLoginFragment();
-                } else {
-                    loadFragment(new ProfileFragment());
-                }
+                loadFragment(new UserRideHistoryFragment());
+            } else if (itemId == R.id.user_reports) {
+                if (!AuthGuard.isUserLoggedIn(this)) { showLoginFragment(); return true; }
+                // TODO loadFragment(new ReportFragment());
             } else if (itemId == R.id.support) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
                 } else {
-                    loadFragment(new ProfileFragment());
+                    // TODO: loadFragment(new SupportFragment());
                 }
-            }
             // DRIVER ITEMS
-            else if (itemId == R.id.my_vehicle) {
+            } else if (itemId == R.id.my_rides) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
-                } else {
-                    loadFragment(new ProfileFragment());
+                    return true;
                 }
+                loadFragment(new DriverAssignedRidesFragment());
             } else if (itemId == R.id.driver_ride_history) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
                 } else {
                     loadFragment(new DriverRideHistoryFragment());
                 }
-            } else if (itemId == R.id.my_rides) {
-                if (!AuthGuard.isUserLoggedIn(this)) {
-                    showLoginFragment();
-                } else {
-                    loadFragment(new DriverAssignedRidesFragment());
-                }
+            } else if (itemId == R.id.driver_reports) {
+                if (!AuthGuard.isUserLoggedIn(this)) { showLoginFragment(); return true; }
+                // TODO: loadFragment(new ReportFragment());
             } else if (itemId == R.id.driver_support) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
                 } else {
-                    loadFragment(new ProfileFragment());
+                    // TODO loadFragment(new SupportFragment());
                 }
             }
             // ADMIN ITEMS
@@ -169,12 +172,21 @@ public class MainActivity extends AppCompatActivity {
                     hideToolbar();
                     loadFragment(new DriverRegisterFragment());
                 }
+            } else if (itemId == R.id.admin_price_config) {
+                if (!AuthGuard.isUserLoggedIn(this)) { showLoginFragment(); return true; }
+                loadFragment(new PriceConfigFragment());
             } else if (itemId == R.id.admin_ride_history) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
                 } else {
                     loadFragment(new AdminRideHistoryFragment());
                 }
+            } else if (itemId == R.id.admin_active_rides) {
+                if (!AuthGuard.isUserLoggedIn(this)) { showLoginFragment(); return true; }
+                // TODO: loadFragment(new ActiveRidesFragment());
+            } else if (itemId == R.id.admin_reports) {
+                if (!AuthGuard.isUserLoggedIn(this)) { showLoginFragment(); return true; }
+                // TODO: loadFragment(new ReportFragment());
             } else if (itemId == R.id.admin_panic_notifications) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
@@ -187,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     loadFragment(new ProfileFragment());
                 }
+            // LOGOUT
             } else if (itemId == R.id.nav_logout) {
                 disconnectPanicWebSocket();
                 AuthGuard.logout(this);
@@ -207,6 +220,33 @@ public class MainActivity extends AppCompatActivity {
         connectPanicWebSocketIfAdmin();
     }
 
+    private void checkForActiveRide() {
+        String userRole = AuthGuard.getUserRole(this);
+        if (!"REGISTERED_USER".equalsIgnoreCase(userRole)) return;
+
+        String email = TokenManager.getInstance(this).getUserEmail();
+        if (email == null) return;
+
+        RideApi rideApi = RetrofitClient.getInstance(this).create(RideApi.class);
+        rideApi.getUserActiveRides(email, "IN_PROGRESS").enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull Call<List<AssignedRideDTO>> call,
+                                   @NonNull Response<List<AssignedRideDTO>> response) {
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    activeRideId = response.body().get(0).getRideId();
+                } else {
+                    activeRideId = null;
+                }
+                NavigationView nav = findViewById(R.id.nav_view);
+                updateNavigationMenuVisibility(nav);
+            }
+            @Override
+            public void onFailure(@NonNull Call<List<AssignedRideDTO>> call, @NonNull Throwable t) {
+                activeRideId = null;
+            }
+        });
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -214,6 +254,8 @@ public class MainActivity extends AppCompatActivity {
         checkTokenExpiration();
         // Reconnect WebSocket for admin if needed
         connectPanicWebSocketIfAdmin();
+        // Provera da li postoji aktivna voznja
+        checkForActiveRide();
     }
 
     @Override
@@ -299,18 +341,25 @@ public class MainActivity extends AppCompatActivity {
 
     private void showMenuGroup(Menu menu, String groupType) {
         if ("REGISTERED_USER".equalsIgnoreCase(groupType)) {
-            showItem(menu, R.id.book_an_uber);
+            if (activeRideId != null) {
+                showItem(menu, R.id.track_ride);
+            } else {
+                showItem(menu, R.id.book_an_uber);
+            }
             showItem(menu, R.id.ride_history);
-            showItem(menu, R.id.favorite_rides);
+            showItem(menu, R.id.user_reports);
             showItem(menu, R.id.support);
         } else if ("DRIVER".equalsIgnoreCase(groupType)) {
-            showItem(menu, R.id.my_vehicle);
-            showItem(menu, R.id.driver_ride_history);
             showItem(menu, R.id.my_rides);
+            showItem(menu, R.id.driver_ride_history);
+            showItem(menu, R.id.driver_reports);
             showItem(menu, R.id.driver_support);
         } else if ("ADMIN".equalsIgnoreCase(groupType)) {
             showItem(menu, R.id.nav_register_driver);
+            showItem(menu, R.id.admin_price_config);
             showItem(menu, R.id.admin_ride_history);
+            showItem(menu, R.id.admin_active_rides);
+            showItem(menu, R.id.admin_reports);
             showItem(menu, R.id.admin_panic_notifications);
             showItem(menu, R.id.admin_support);
         }
@@ -698,5 +747,14 @@ public class MainActivity extends AppCompatActivity {
                 showLoginFragment();
             }
         }
+    }
+
+    // poziva se nakon uspešnog Logina
+    public void onLoginSuccess() {
+        invalidateOptionsMenu();
+        NavigationView nav = findViewById(R.id.nav_view);
+        updateNavigationMenuVisibility(nav);
+        connectPanicWebSocketIfAdmin();
+        checkForActiveRide();
     }
 }

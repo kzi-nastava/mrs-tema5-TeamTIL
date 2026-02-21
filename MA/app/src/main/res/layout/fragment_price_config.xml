@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/background_gradient">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pricing Configuration"
+            android:textColor="@color/text_white"
+            android:fontFamily="@font/montserrat_bold_font"
+            android:textSize="26sp"
+            android:layout_marginBottom="8dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/text_gray"
+            android:alpha="0.3"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Tabs — bordered container matching web -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_tab_group"
+            android:layout_marginBottom="8dp">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnTabStandard"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Standard"
+                android:textAllCaps="false"
+                android:fontFamily="@font/montserrat_semibold_font"
+                android:textSize="14sp"
+                android:background="@drawable/button_yellow_rounded"
+                app:backgroundTint="@null"
+                android:textColor="@android:color/black"
+                android:stateListAnimator="@null" />
+
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnTabLuxury"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Luxury"
+                android:textAllCaps="false"
+                android:fontFamily="@font/montserrat_semibold_font"
+                android:textSize="14sp"
+                android:background="@android:color/transparent"
+                app:backgroundTint="@null"
+                android:textColor="@color/text_white"
+                android:stateListAnimator="@null" />
+
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnTabVan"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Van"
+                android:textAllCaps="false"
+                android:fontFamily="@font/montserrat_semibold_font"
+                android:textSize="14sp"
+                android:background="@android:color/transparent"
+                app:backgroundTint="@null"
+                android:textColor="@color/text_white"
+                android:stateListAnimator="@null" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Each vehicle has its own pricing configuration"
+            android:textColor="@color/text_gray"
+            android:fontFamily="@font/montserrat_regular_font"
+            android:textSize="13sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Loading -->
+        <ProgressBar
+            android:id="@+id/progressBarPriceConfig"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"
+            android:indeterminateTint="@color/accent_yellow"
+            android:visibility="visible"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="32dp" />
+
+        <!-- Content -->
+        <LinearLayout
+            android:id="@+id/layoutPriceConfigContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_purple_dark_tint"
+            android:padding="24dp"
+            android:visibility="gone">
+
+            <!-- Start Fee row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Start Fee"
+                    android:textColor="@color/text_white"
+                    android:fontFamily="@font/montserrat_bold_font"
+                    android:textSize="18sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <EditText
+                        android:id="@+id/etBasePrice"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal"
+                        android:textColor="@color/text_white"
+                        android:textColorHint="@color/text_gray"
+                        android:fontFamily="@font/montserrat_semibold_font"
+                        android:textSize="18sp"
+                        android:gravity="end"
+                        android:background="@drawable/bg_input_underline"
+                        android:paddingBottom="4dp"
+                        android:hint="0" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" RSD"
+                        android:textColor="@color/text_white"
+                        android:fontFamily="@font/montserrat_semibold_font"
+                        android:textSize="16sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/text_gray"
+                android:alpha="0.2"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Price per km row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Price per km"
+                    android:textColor="@color/text_white"
+                    android:fontFamily="@font/montserrat_bold_font"
+                    android:textSize="18sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <EditText
+                        android:id="@+id/etPricePerKm"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal"
+                        android:textColor="@color/text_white"
+                        android:textColorHint="@color/text_gray"
+                        android:fontFamily="@font/montserrat_semibold_font"
+                        android:textSize="18sp"
+                        android:gravity="end"
+                        android:background="@drawable/bg_input_underline"
+                        android:paddingBottom="4dp"
+                        android:hint="0" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" RSD"
+                        android:textColor="@color/text_white"
+                        android:fontFamily="@font/montserrat_semibold_font"
+                        android:textSize="16sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/text_gray"
+                android:alpha="0.2"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Formula -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total Fare Formula:"
+                android:textColor="@color/text_white"
+                android:fontFamily="@font/montserrat_bold_font"
+                android:textSize="15sp"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total Fare = Start Fee + (Distance in km × Price per km)"
+                android:textColor="@color/text_gray"
+                android:fontFamily="@font/montserrat_regular_font"
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvFormulaExample"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="e.g. 10 km → 0 RSD"
+                android:textColor="@color/accent_yellow"
+                android:fontFamily="@font/montserrat_semibold_font"
+                android:textSize="13sp"
+                android:layout_marginBottom="16dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/text_gray"
+                android:alpha="0.2"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Success / Error messages -->
+            <TextView
+                android:id="@+id/tvSuccessMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:textColor="#81c784"
+                android:fontFamily="@font/montserrat_semibold_font"
+                android:textSize="13sp"
+                android:background="@drawable/bg_success"
+                android:visibility="gone"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/tvErrorMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:textColor="#ef9a9a"
+                android:fontFamily="@font/montserrat_semibold_font"
+                android:textSize="13sp"
+                android:background="@drawable/bg_error"
+                android:visibility="gone"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Changes apply immediately to all new rides"
+                android:textColor="@color/text_gray"
+                android:fontFamily="@font/montserrat_regular_font"
+                android:textSize="12sp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnSaveConfig"
+                android:layout_width="wrap_content"
+                android:layout_height="52dp"
+                android:layout_gravity="center_horizontal"
+                android:paddingStart="48dp"
+                android:paddingEnd="48dp"
+                android:text="Save Changes"
+                android:textAllCaps="false"
+                android:fontFamily="@font/montserrat_bold_font"
+                android:textSize="16sp"
+                android:textColor="#2d1536"
+                android:background="@drawable/button_yellow_rounded" />
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
