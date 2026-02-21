@@ -11,6 +11,7 @@ import com.example.uberproject.dto.response.InconsistencyReportResponseDTO;
 import com.example.uberproject.dto.response.RideCreatedResponseDTO;
 import com.example.uberproject.dto.response.RideHistoryResponseDTO;
 import com.example.uberproject.dto.response.RideCancelResponseDTO;
+import com.example.uberproject.dto.response.RideStatsResponseDTO;
 import com.example.uberproject.dto.response.RideStopResponseDTO;
 import com.example.uberproject.dto.response.PanicResponseDTO;
 import com.example.uberproject.dto.response.RideTrackingResponseDTO;
@@ -65,6 +66,27 @@ public interface RideApi {
     @PUT("rides/{rideId}/start")
     Call<Void> startRide(@Path("rideId") Integer rideId);
 
+    @GET("rides/stats/user/{email}")
+    Call<RideStatsResponseDTO> getUserStats(
+            @Path("email") String email,
+            @Query("dateFrom") String dateFrom,
+            @Query("dateTo") String dateTo
+    );
+
+    @GET("rides/stats/driver/{email}")
+    Call<RideStatsResponseDTO> getDriverStats(
+            @Path("email") String email,
+            @Query("dateFrom") String dateFrom,
+            @Query("dateTo") String dateTo
+    );
+
+    @GET("rides/stats/admin")
+    Call<RideStatsResponseDTO> getAdminStats(
+            @Query("role") String role,
+            @Query("filterEmail") String filterEmail,
+            @Query("dateFrom") String dateFrom,
+            @Query("dateTo") String dateTo
+    );
 
 }
 
