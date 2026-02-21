@@ -1,15 +1,18 @@
 package com.example.uberproject.dto.response;
 
+import com.google.gson.annotations.SerializedName;
 
 public class PanicResponseDTO {
+    @SerializedName(value = "panicId", alternate = {"id"})
     private Integer id;
+
     private Integer rideId;
     private Integer locationId;
     private Integer registeredUserId;
     private Integer driverId;
     private Boolean handled;
-    private String timestamp;
-    private UserType reportedBy;
+    private String timestamp;  // Changed from LocalTime to String
+    private String reportedBy;
 
     // Vehicle information
     private String vehicleName;
@@ -23,7 +26,7 @@ public class PanicResponseDTO {
     public PanicResponseDTO() {}
 
     public PanicResponseDTO(Integer id, Integer rideId, Integer locationId, Integer registeredUserId,
-                            Integer driverId, Boolean handled, String timestamp, UserType reportedBy,
+                            Integer driverId, Boolean handled, String timestamp, String reportedBy,
                             String vehicleName, String vehicleLicensePlate, String locationAddress,
                             Double latitude, Double longitude) {
         this.id = id;
@@ -40,6 +43,9 @@ public class PanicResponseDTO {
         this.latitude = latitude;
         this.longitude = longitude;
     }
+
+    // Convenience alias – backend @JsonProperty exposes "panicId" but field is "id"
+    public Integer getPanicId() { return id; }
 
     public Integer getId() {
         return id;
@@ -98,11 +104,11 @@ public class PanicResponseDTO {
         this.timestamp = timestamp;
     }
 
-    public UserType getReportedBy() {
+    public String getReportedBy() {
         return reportedBy;
     }
 
-    public void setReportedBy(UserType reportedBy) {
+    public void setReportedBy(String reportedBy) {
         this.reportedBy = reportedBy;
     }
 

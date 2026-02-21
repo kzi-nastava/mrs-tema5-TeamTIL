@@ -241,13 +241,43 @@
 
         </LinearLayout>
 
+        <!-- SHAKE SORT INDICATOR -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:id="@+id/tvSortIndicator"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="📅 ↓ Newest first"
+                android:textColor="@color/yellow"
+                android:textSize="13sp"
+                android:fontFamily="@font/montserrat_semibold_font"
+                android:visibility="visible"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📳 Shake to sort"
+                android:textColor="@color/text_gray"
+                android:textSize="11sp"
+                android:fontFamily="@font/montserrat_light_font"/>
+
+        </LinearLayout>
+
         <!-- RIDES LIST -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/ridesRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:paddingTop="16dp" />
+            android:paddingTop="8dp" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

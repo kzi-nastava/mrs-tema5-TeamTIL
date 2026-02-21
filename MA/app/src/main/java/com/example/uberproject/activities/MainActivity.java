@@ -1,8 +1,12 @@
 package com.example.uberproject.activities;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
@@ -19,9 +23,11 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AlertDialog;
 
 import com.bumptech.glide.Glide;
 import com.example.uberproject.R;
+import com.example.uberproject.fragments.admin.AdminPanicListFragment;
 import com.example.uberproject.fragments.admin.AdminRideHistoryFragment;
 import com.example.uberproject.fragments.driver.DriverAssignedRidesFragment;
 import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
@@ -35,6 +41,7 @@ import com.example.uberproject.fragments.forms.ResetPasswordFragment;
 import com.example.uberproject.fragments.forms.NewPasswordFragment;
 import com.example.uberproject.utils.AuthGuard;
 import com.example.uberproject.utils.TokenManager;
+import com.example.uberproject.websocket.PanicWebSocketManager;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
 import com.example.uberproject.fragments.forms.RideBookingFragment;
@@ -43,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
     private MaterialToolbar toolbar;
+    private PanicWebSocketManager panicWebSocketManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,6 +175,12 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     loadFragment(new AdminRideHistoryFragment());
                 }
+            } else if (itemId == R.id.admin_panic_notifications) {
+                if (!AuthGuard.isUserLoggedIn(this)) {
+                    showLoginFragment();
+                } else {
+                    loadFragment(new AdminPanicListFragment());
+                }
             } else if (itemId == R.id.admin_support) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
@@ -174,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
                     loadFragment(new ProfileFragment());
                 }
             } else if (itemId == R.id.nav_logout) {
+                disconnectPanicWebSocket();
                 AuthGuard.logout(this);
                 Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
                 invalidateOptionsMenu();
@@ -188,6 +203,8 @@ public class MainActivity extends AppCompatActivity {
         handleDeepLink(getIntent());
         // Postavi inicijalni prikaz menu items-a
         updateNavigationMenuVisibility(navigationView);
+        // Connect panic WebSocket for admin
+        connectPanicWebSocketIfAdmin();
     }
 
     @Override
@@ -195,6 +212,14 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         // Provera je li token istekao svaki put kada se aplikacija vrati u foreground
         checkTokenExpiration();
+        // Reconnect WebSocket for admin if needed
+        connectPanicWebSocketIfAdmin();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        disconnectPanicWebSocket();
     }
 
     @Override
@@ -286,6 +311,7 @@ public class MainActivity extends AppCompatActivity {
         } else if ("ADMIN".equalsIgnoreCase(groupType)) {
             showItem(menu, R.id.nav_register_driver);
             showItem(menu, R.id.admin_ride_history);
+            showItem(menu, R.id.admin_panic_notifications);
             showItem(menu, R.id.admin_support);
         }
     }
@@ -323,6 +349,13 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 ivProfileImage.setImageResource(R.drawable.ic_person_placeholder);
             }
+
+            // Add click listener to open ProfileFragment
+            ivProfileImage.setOnClickListener(v -> {
+                if (AuthGuard.isUserLoggedIn(this)) {
+                    loadFragment(new ProfileFragment());
+                }
+            });
         }
     }
 
@@ -484,6 +517,168 @@ public class MainActivity extends AppCompatActivity {
             updateNavigationMenuVisibility(navigationView);
         }
     }
+
+    // ======= PANIC WEBSOCKET (ADMIN ONLY) =======
+
+    public void connectPanicWebSocketIfAdmin() {
+        String userRole = AuthGuard.getUserRole(this);
+        if (!"ADMIN".equalsIgnoreCase(userRole) && !"ADMINISTRATOR".equalsIgnoreCase(userRole)) {
+            return;
+        }
+
+        TokenManager tokenManager = TokenManager.getInstance(this);
+        String email = tokenManager.getUserEmail();
+        if (email == null || email.isEmpty()) return;
+
+        if (panicWebSocketManager != null && panicWebSocketManager.isConnected()) return;
+
+        // Build base WebSocket URL from API_HOST
+        // API_HOST is e.g. "http://192.168.1.23:8080/api/"
+        // We need "ws://192.168.1.23:8080"
+        String apiHost = com.example.uberproject.BuildConfig.API_HOST;
+        String baseWsUrl = apiHost
+                .replace("https://", "wss://")
+                .replace("http://", "ws://");
+        // Remove trailing /api/ or /api
+        baseWsUrl = baseWsUrl.replaceAll("/api/?$", "").replaceAll("/$", "");
+
+        android.util.Log.d("MainActivity", "Connecting admin panic WebSocket: " + baseWsUrl + " as " + email);
+
+        panicWebSocketManager = new PanicWebSocketManager();
+        panicWebSocketManager.setPanicListener(new PanicWebSocketManager.PanicListener() {
+            @Override
+            public void onPanicAlertReceived(PanicWebSocketManager.PanicAlert alert) {
+                runOnUiThread(() -> {
+                    playAdminPanicSound();
+                    showPanicPopup(alert);
+                });
+            }
+
+            @Override
+            public void onConnectionEstablished() {
+                android.util.Log.d("MainActivity", "Admin panic WebSocket connected");
+            }
+
+            @Override
+            public void onConnectionLost() {
+                android.util.Log.d("MainActivity", "Admin panic WebSocket disconnected");
+            }
+
+            @Override
+            public void onError(String error) {
+                android.util.Log.e("MainActivity", "Admin panic WebSocket error: " + error);
+            }
+        });
+        panicWebSocketManager.connect(baseWsUrl, email);
+    }
+
+    private void disconnectPanicWebSocket() {
+        if (panicWebSocketManager != null) {
+            panicWebSocketManager.disconnect();
+            panicWebSocketManager = null;
+        }
+    }
+
+    private void playAdminPanicSound() {
+        try {
+            Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+            if (alarmUri == null) {
+                alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            }
+            MediaPlayer mediaPlayer = MediaPlayer.create(this, alarmUri);
+            if (mediaPlayer != null) {
+                mediaPlayer.setVolume(1.0f, 1.0f);
+                mediaPlayer.start();
+                // Stop after 2.5 seconds
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    try {
+                        if (mediaPlayer.isPlaying()) {
+                            mediaPlayer.stop();
+                        }
+                        mediaPlayer.release();
+                    } catch (Exception ignored) {}
+                }, 2500);
+            }
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Error playing panic sound", e);
+        }
+    }
+
+    private void showPanicPopup(PanicWebSocketManager.PanicAlert alert) {
+        if (isFinishing() || isDestroyed()) return;
+
+        // Mark vehicle on map if coordinates are available
+        if (alert.latitude != null && alert.longitude != null) {
+            markPanicVehicleOnMap(alert.latitude, alert.longitude,
+                    alert.vehicleName != null ? alert.vehicleName : "PANIC");
+        }
+
+        String message = "🚨 PANIC ALERT RECEIVED!\n\n";
+        if (alert.vehicleName != null) message += "Vehicle: " + alert.vehicleName + "\n";
+        if (alert.vehicleLicensePlate != null) message += "Plate: " + alert.vehicleLicensePlate + "\n";
+        if (alert.locationAddress != null) message += "Location: " + alert.locationAddress + "\n";
+        if (alert.reportedBy != null) message += "Reported by: " + alert.reportedBy + "\n";
+        if (alert.rideId != null) message += "Ride ID: " + alert.rideId + "\n";
+        if (alert.timestamp != null) message += "Time: " + alert.timestamp;
+
+        final String finalMessage = message;
+        final Integer panicId = alert.panicId;
+
+        new AlertDialog.Builder(this)
+                .setTitle("🚨 EMERGENCY ALERT")
+                .setMessage(finalMessage)
+                .setCancelable(false)
+                .setPositiveButton("Mark as Handled", (dialog, which) -> {
+                    if (panicId != null) {
+                        handlePanicFromPopup(panicId);
+                    }
+                })
+                .setNegativeButton("Dismiss", null)
+                .setNeutralButton("View All Panics", (dialog, which) -> loadFragment(new AdminPanicListFragment()))
+                .show();
+    }
+
+    private void handlePanicFromPopup(Integer panicId) {
+        com.example.uberproject.api.PanicApi panicApi =
+                com.example.uberproject.api.RetrofitClient.getInstance(this)
+                        .create(com.example.uberproject.api.PanicApi.class);
+        panicApi.handlePanic(panicId).enqueue(new retrofit2.Callback<com.example.uberproject.dto.response.PanicResponseDTO>() {
+            @Override
+            public void onResponse(@androidx.annotation.NonNull retrofit2.Call<com.example.uberproject.dto.response.PanicResponseDTO> call,
+                                   @androidx.annotation.NonNull retrofit2.Response<com.example.uberproject.dto.response.PanicResponseDTO> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(MainActivity.this, "Panic #" + panicId + " handled successfully", Toast.LENGTH_SHORT).show();
+                } else {
+                    android.util.Log.e("MainActivity", "Handle panic failed: " + response.code());
+                    Toast.makeText(MainActivity.this, "Could not mark as handled: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@androidx.annotation.NonNull retrofit2.Call<com.example.uberproject.dto.response.PanicResponseDTO> call,
+                                  @androidx.annotation.NonNull Throwable t) {
+                Toast.makeText(MainActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void markPanicVehicleOnMap(double lat, double lon, String title) {
+        try {
+            Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            if (current instanceof HomeFragment) {
+                Fragment mapFrag = current.getChildFragmentManager()
+                        .findFragmentById(R.id.map_fragment_container);
+                if (mapFrag instanceof com.example.uberproject.fragments.map.MapFragment) {
+                    ((com.example.uberproject.fragments.map.MapFragment) mapFrag)
+                            .markVehiclePanic(lat, lon, title);
+                }
+            }
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Could not mark panic on map", e);
+        }
+    }
+
+    // ======= END PANIC =======
 
     // Novo: Proverava je li token istekao
     private void checkTokenExpiration() {

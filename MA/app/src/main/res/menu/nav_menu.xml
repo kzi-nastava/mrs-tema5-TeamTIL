@@ -74,6 +74,11 @@
             android:icon="@drawable/ic_calendar_placeholder"
             android:orderInCategory="200" />
 
+        <item android:id="@+id/admin_panic_notifications"
+            android:title="Panic Notifications"
+            android:icon="@drawable/ic_warning"
+            android:orderInCategory="250" />
+
         <item android:id="@+id/admin_support"
             android:title="@string/support"
             android:icon="@drawable/support"
