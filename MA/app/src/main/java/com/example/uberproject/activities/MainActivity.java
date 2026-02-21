@@ -32,6 +32,7 @@ import com.example.uberproject.R;
 import com.example.uberproject.api.RetrofitClient;
 import com.example.uberproject.api.RideApi;
 import com.example.uberproject.dto.response.AssignedRideDTO;
+import com.example.uberproject.fragments.admin.ActiveRidesFragment;
 import com.example.uberproject.fragments.admin.AdminPanicListFragment;
 import com.example.uberproject.fragments.admin.AdminRideHistoryFragment;
 import com.example.uberproject.fragments.admin.PriceConfigFragment;
@@ -183,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else if (itemId == R.id.admin_active_rides) {
                 if (!AuthGuard.isUserLoggedIn(this)) { showLoginFragment(); return true; }
-                // TODO: loadFragment(new ActiveRidesFragment());
+                loadFragment(new ActiveRidesFragment());
             } else if (itemId == R.id.admin_reports) {
                 if (!AuthGuard.isUserLoggedIn(this)) { showLoginFragment(); return true; }
                 // TODO: loadFragment(new ReportFragment());

@@ -64,7 +64,7 @@ public class VehicleDetailsFragment extends Fragment {
                         ivBabyIcon.setColorFilter(getResources().getColor(android.R.color.holo_green_dark));
                     } else {
                         tvBabyValue.setText(getString(R.string.no_title));
-                        ivBabyIcon.setImageResource(R.drawable.ic_close);
+                        ivBabyIcon.setImageResource(R.drawable.ic_close_ic);
                         ivBabyIcon.setColorFilter(getResources().getColor(android.R.color.holo_red_dark));
                     }
 
@@ -76,7 +76,7 @@ public class VehicleDetailsFragment extends Fragment {
                         ivPetIcon.setColorFilter(getResources().getColor(android.R.color.holo_green_dark));
                     } else {
                         tvPetValue.setText(getString(R.string.no_title));
-                        ivPetIcon.setImageResource(R.drawable.ic_close);
+                        ivPetIcon.setImageResource(R.drawable.ic_close_ic);
                         ivPetIcon.setColorFilter(getResources().getColor(android.R.color.holo_red_dark));
                     }
                 }

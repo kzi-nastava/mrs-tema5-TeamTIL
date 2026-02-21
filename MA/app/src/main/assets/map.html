@@ -47,7 +47,6 @@
     var markers = [];
     var routeLayer = null;
     var routeMarkers = [];
-    var panicMarkers = [];
 
     // Marker vozila za track ride (odvojen od ostalih markera)
     var vehicleMarker = null;
@@ -145,44 +144,6 @@
 
         map.fitBounds(routeLayer.getBounds(), { padding: [50,50] });
     }
-<<<<<<< HEAD
-    function markVehiclePanic(lat, lng, title) {
-        // Remove previous panic markers
-        panicMarkers.forEach(function(m) { map.removeLayer(m); });
-        panicMarkers = [];
-
-        // Create a red pulsing circle marker for the panicking vehicle
-        var panicCircle = L.circleMarker([lat, lng], {
-            radius: 18,
-            color: '#FF0000',
-            fillColor: '#FF0000',
-            fillOpacity: 0.85,
-            weight: 3
-        }).addTo(map);
-        panicCircle.bindPopup('<strong>🚨 PANIC: ' + title + '</strong>').openPopup();
-        panicMarkers.push(panicCircle);
-
-        // Pulse ring
-        var pulseCircle = L.circleMarker([lat, lng], {
-            radius: 30,
-            color: '#FF0000',
-            fillColor: 'transparent',
-            fillOpacity: 0,
-            weight: 2,
-            opacity: 0.6
-        }).addTo(map);
-        panicMarkers.push(pulseCircle);
-
-        map.setView([lat, lng], 15);
-    }
-
-    function clearPanicMarkers() {
-        panicMarkers.forEach(function(m) { map.removeLayer(m); });
-        panicMarkers = [];
-    }
-
-</script>
-=======
 
     /**
      * Pomjera marker vozila bez brisanja rute.
@@ -209,4 +170,3 @@
 </script>
 </body>
 </html>
->>>>>>> a404ad05c77a39bf89f1f90a56c77b658a2f7379
