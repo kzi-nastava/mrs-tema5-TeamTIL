@@ -1,6 +1,7 @@
 package com.example.uberproject.api;
 
 import com.example.uberproject.dto.request.InconsistencyReportRequestDTO;
+import com.example.uberproject.dto.request.RatingRequestDTO;
 import com.example.uberproject.dto.request.RideEndRequestDTO;
 import com.example.uberproject.dto.response.AssignedRideDTO;
 import com.example.uberproject.dto.request.RideCancelRequestDTO;
@@ -17,6 +18,7 @@ import com.example.uberproject.dto.response.RideStatsResponseDTO;
 import com.example.uberproject.dto.response.RideStopResponseDTO;
 import com.example.uberproject.dto.response.PanicResponseDTO;
 import com.example.uberproject.dto.response.RideTrackingResponseDTO;
+import com.example.uberproject.dto.response.RideDetailsResponseDTO;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -92,6 +94,19 @@ public interface RideApi {
 
     @PUT("rides/{rideId}/end")
     Call<RideEndResponseDTO> endRide(@Path("rideId") Integer rideId, @Body RideEndRequestDTO request);
+
+    // Rating
+    @POST("rides/{rideId}/rate")
+    Call<Object> rateRide(
+            @Path("rideId") int rideId,
+            @Body RatingRequestDTO request
+    );
+
+    // Detalji voznje (za refresh ratinga)
+    @GET("rides/{rideId}/details")
+    Call<RideDetailsResponseDTO> getRideDetails(
+            @Path("rideId") int rideId
+    );
 }
 
 

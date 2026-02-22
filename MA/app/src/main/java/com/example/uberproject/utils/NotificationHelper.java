@@ -18,6 +18,8 @@ public class NotificationHelper {
     // Notification Channel ID-jevi
     public static final String CHANNEL_RIDES    = "ride_notifications";
     public static final String CHANNEL_REMINDER = "ride_reminders";
+    public static final String EXTRA_NAVIGATE_TO = "navigate_to";
+    public static final String NAV_RIDE_HISTORY  = "user_ride_history";
 
     // Notification ID-jevi
     private static final int ID_RIDE_ACCEPTED    = 1001;
@@ -25,6 +27,8 @@ public class NotificationHelper {
     private static final int ID_RIDE_REMINDER    = 1003;
     private static final int ID_NEW_RIDE_ASSIGNED = 1004;
     private static final int ID_RIDE_FINISHED    = 1005;
+    private static final int ID_RIDE_CANCELLED = 1006;
+    private static final int ID_RIDE_STOPPED   = 1007;
 
     public static void createNotificationChannels(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -85,21 +89,54 @@ public class NotificationHelper {
         show(context, CHANNEL_RIDES, ID_NEW_RIDE_ASSIGNED, title, body);
     }
 
+    public static void showRideCancelled(Context context) {
+        show(context, CHANNEL_RIDES, ID_RIDE_CANCELLED,
+                "Ride Cancelled", "The ride has been cancelled.");
+    }
+
+    public static void showRideStopped(Context context) {
+        show(context, CHANNEL_RIDES, ID_RIDE_STOPPED,
+                "Ride Stopped", "The ride has been stopped.");
+    }
 
     public static void showRideFinished(Context context, String from, String to, Double price) {
         String title = "Ride Completed!";
         String priceStr = price != null ? String.format("%.0f RSD", price) : "";
-        String body  = "From " + from + " to " + to +
-                       (priceStr.isEmpty() ? "" : ". Total: " + priceStr);
-        show(context, CHANNEL_RIDES, ID_RIDE_FINISHED, title, body);
+        String body = "From " + from + " to " + to +
+                (priceStr.isEmpty() ? "" : ". Total: " + priceStr);
+
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra(EXTRA_NAVIGATE_TO, NAV_RIDE_HISTORY);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                context, ID_RIDE_FINISHED, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_RIDES)
+                .setSmallIcon(R.drawable.tiltaxi_logo)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .addAction(R.drawable.tiltaxi_logo, "Rate this ride", pendingIntent); // ← action button
+
+        try {
+            NotificationManagerCompat.from(context).notify(ID_RIDE_FINISHED, builder.build());
+        } catch (SecurityException e) {
+            android.util.Log.w("NotificationHelper", "Permission not granted: " + e.getMessage());
+        }
     }
 
     // -------------------------------------------------------------------------
     // Interna helper metoda
     // -------------------------------------------------------------------------
 
-    private static void show(Context context, String channelId, int notifId,
-                              String title, String body) {
+    public static void show(Context context, String channelId, int notifId,
+                            String title, String body) {
         Intent intent = new Intent(context, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 

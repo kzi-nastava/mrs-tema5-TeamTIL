@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_purple_dark_tint"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Handle bar -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="20dp"
+        android:background="#555566"
+        android:alpha="0.7" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/montserrat_semibold_font"
+        android:gravity="center"
+        android:text="Rate Vehicle &amp; Driver"
+        android:textColor="@color/text_white"
+        android:textSize="18sp"
+        android:layout_marginBottom="24dp" />
+
+    <!-- ── DRIVER SECTION ────────────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="20dp">
+
+        <!-- Avatar circle -->
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="14dp">
+            <View
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_yellow_circle" />
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_user_placeholder"
+                app:tint="@color/white" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvRatingDriverName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/montserrat_semibold_font"
+                android:textColor="@color/text_white"
+                android:textSize="15sp"
+                android:layout_marginBottom="8dp"
+                android:text="Driver" />
+
+            <!-- Driver stars -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView android:id="@+id/driverStar1"
+                    android:layout_width="32dp" android:layout_height="32dp"
+                    android:padding="2dp" android:src="@drawable/ic_star_empty"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+                <ImageView android:id="@+id/driverStar2"
+                    android:layout_width="32dp" android:layout_height="32dp"
+                    android:padding="2dp" android:src="@drawable/ic_star_empty"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+                <ImageView android:id="@+id/driverStar3"
+                    android:layout_width="32dp" android:layout_height="32dp"
+                    android:padding="2dp" android:src="@drawable/ic_star_empty"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+                <ImageView android:id="@+id/driverStar4"
+                    android:layout_width="32dp" android:layout_height="32dp"
+                    android:padding="2dp" android:src="@drawable/ic_star_empty"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+                <ImageView android:id="@+id/driverStar5"
+                    android:layout_width="32dp" android:layout_height="32dp"
+                    android:padding="2dp" android:src="@drawable/ic_star_empty"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/text_gray"
+        android:alpha="0.3"
+        android:layout_marginBottom="20dp" />
+
+    <!-- ── VEHICLE SECTION ───────────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="20dp">
+
+        <!-- Car icon -->
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="14dp">
+            <View
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_purple_tint" />
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_vehicle_placeholder"
+                app:tint="@color/white" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvRatingVehicleName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/montserrat_semibold_font"
+                android:textColor="@color/text_white"
+                android:textSize="15sp"
+                android:layout_marginBottom="8dp"
+                android:text="Vehicle" />
+
+            <!-- Vehicle stars -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ImageView android:id="@+id/vehicleStar1"
+                    android:layout_width="32dp" android:layout_height="32dp"
+                    android:padding="2dp" android:src="@drawable/ic_star_empty"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+                <ImageView android:id="@+id/vehicleStar2"
+                    android:layout_width="32dp" android:layout_height="32dp"
+                    android:padding="2dp" android:src="@drawable/ic_star_empty"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+                <ImageView android:id="@+id/vehicleStar3"
+                    android:layout_width="32dp" android:layout_height="32dp"
+                    android:padding="2dp" android:src="@drawable/ic_star_empty"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+                <ImageView android:id="@+id/vehicleStar4"
+                    android:layout_width="32dp" android:layout_height="32dp"
+                    android:padding="2dp" android:src="@drawable/ic_star_empty"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+                <ImageView android:id="@+id/vehicleStar5"
+                    android:layout_width="32dp" android:layout_height="32dp"
+                    android:padding="2dp" android:src="@drawable/ic_star_empty"
+                    android:clickable="true" android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/text_gray"
+        android:alpha="0.3"
+        android:layout_marginBottom="16dp" />
+
+    <!-- ── COMMENT ────────────────────────────────────────────────────────── -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/montserrat_regular_font"
+        android:text="Additional feedback (optional)"
+        android:textColor="@color/text_gray"
+        android:textSize="13sp"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/etRatingComment"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@drawable/bg_purple_tint"
+        android:fontFamily="@font/montserrat_regular_font"
+        android:gravity="top|start"
+        android:hint="Describe your experience…"
+        android:inputType="textMultiLine"
+        android:padding="12dp"
+        android:textColor="@color/text_white"
+        android:textColorHint="@color/text_gray"
+        android:textSize="13sp"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Submit -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSubmitRating"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/button_yellow_rounded"
+        android:fontFamily="@font/montserrat_semibold_font"
+        android:text="Submit Rating"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="15sp"
+        android:layout_marginBottom="8dp" />
+
+</LinearLayout>

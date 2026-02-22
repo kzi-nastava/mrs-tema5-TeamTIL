@@ -37,15 +37,19 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/**
- * BottomSheet za prijavu nekonzistentnosti vožnje.
- * Identično Angular ReportDriver dijalogu.
- *
- * Koristiti:
- *  ReportInconsistencyBottomSheet.newInstance(rideId, passengerEmail)
- *      .show(getChildFragmentManager(), "report_inconsistency");
- */
 public class ReportInconsistencyBottomSheet extends BottomSheetDialogFragment {
+
+    // callback
+
+    public interface OnReportSubmittedListener {
+        void onReportSubmitted();
+    }
+
+    private OnReportSubmittedListener reportListener;
+
+    public void setOnReportSubmittedListener(OnReportSubmittedListener l) {
+        this.reportListener = l;
+    }
 
     private static final String TAG = "ReportSheet";
     private static final String ARG_RIDE_ID = "rideId";
@@ -116,7 +120,18 @@ public class ReportInconsistencyBottomSheet extends BottomSheetDialogFragment {
         ivAttachmentPreview = view.findViewById(R.id.ivAttachmentPreview);
 
         btnUploadAttachment.setOnClickListener(v -> openImagePicker());
-        btnSubmit.setOnClickListener(v -> submitReport());
+
+        btnSubmit.setOnClickListener(v -> {
+            String description = etDescription.getText() != null
+                    ? etDescription.getText().toString().trim() : "";
+
+            if (description.isEmpty()) {
+                Toast.makeText(getContext(), "Please describe the issue", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            submitReport(description, btnSubmit);
+        });
 
         return view;
     }
@@ -170,58 +185,42 @@ public class ReportInconsistencyBottomSheet extends BottomSheetDialogFragment {
 
     // ─── Submit ───────────────────────────────────────────────────────────────
 
-    private void submitReport() {
-        String description = etDescription.getText() != null
-                ? etDescription.getText().toString().trim() : "";
-
-        if (description.isEmpty()) {
-            etDescription.setError("Please describe the issue");
-            return;
-        }
-
-        if (rideId <= 0 || passengerEmail == null || passengerEmail.isEmpty()) {
-            Toast.makeText(getContext(), "Invalid ride or user data", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
+    private void submitReport(String description, Button btnSubmit) {
         btnSubmit.setEnabled(false);
         btnSubmit.setText("Submitting...");
 
-        InconsistencyReportRequestDTO request = new InconsistencyReportRequestDTO(
-                passengerEmail,
-                description,
-                attachmentBase64  // može biti null ako nema slike
-        );
+        InconsistencyReportRequestDTO request =
+                new InconsistencyReportRequestDTO(passengerEmail, description, null);
 
-        RideApi api = RetrofitClient.getInstance(requireContext()).create(RideApi.class);
-        api.reportInconsistency(rideId, request).enqueue(new Callback<InconsistencyReportResponseDTO>() {
-            @Override
-            public void onResponse(@NonNull Call<InconsistencyReportResponseDTO> call,
-                                   @NonNull Response<InconsistencyReportResponseDTO> response) {
-                if (!isAdded()) return;
+        RetrofitClient.getInstance(requireContext()).create(RideApi.class)
+                .reportInconsistency(rideId, request)
+                .enqueue(new Callback<InconsistencyReportResponseDTO>() {
+                    @Override
+                    public void onResponse(@NonNull Call<InconsistencyReportResponseDTO> call,
+                                           @NonNull Response<InconsistencyReportResponseDTO> response) {
+                        if (!isAdded()) return;
+                        if (response.isSuccessful()) {
+                            Toast.makeText(getContext(), "Report submitted!", Toast.LENGTH_SHORT).show();
+                            // Fire callback BEFORE dismiss so parent can refresh
+                            if (reportListener != null) reportListener.onReportSubmitted();
+                            dismiss();
+                        } else {
+                            Toast.makeText(getContext(), "Failed to submit report", Toast.LENGTH_SHORT).show();
+                            resetButton(btnSubmit);
+                        }
+                    }
 
-                if (response.isSuccessful()) {
-                    Toast.makeText(getContext(), "Report submitted successfully", Toast.LENGTH_SHORT).show();
-                    dismiss();
-                } else {
-                    Log.e(TAG, "Report failed: " + response.code());
-                    Toast.makeText(getContext(), "Failed to submit report", Toast.LENGTH_SHORT).show();
-                    resetSubmitButton();
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<InconsistencyReportResponseDTO> call, @NonNull Throwable t) {
-                if (!isAdded()) return;
-                Log.e(TAG, "Report network error", t);
-                Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                resetSubmitButton();
-            }
-        });
+                    @Override
+                    public void onFailure(@NonNull Call<InconsistencyReportResponseDTO> call, @NonNull Throwable t) {
+                        if (!isAdded()) return;
+                        Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        resetButton(btnSubmit);
+                    }
+                });
     }
 
-    private void resetSubmitButton() {
-        btnSubmit.setEnabled(true);
-        btnSubmit.setText("Submit Report");
+    private void resetButton(Button btn) {
+        btn.setEnabled(true);
+        btn.setText("Submit Report");
     }
 }

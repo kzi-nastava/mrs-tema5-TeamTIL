@@ -57,6 +57,16 @@ public class RideWebSocketManager {
         public Double price;
     }
 
+    public static class RideCancelledNotification {
+        public Integer rideId;
+        public String message;
+    }
+
+    public static class RideStoppedNotification {
+        public Integer rideId;
+        public String message;
+    }
+
     // -------------------------------------------------------------------------
     // Listener interface
     // -------------------------------------------------------------------------
@@ -71,6 +81,8 @@ public class RideWebSocketManager {
         void onNewRideAssigned(NewRideAssignedNotification notification);
 
         void onRideFinished(RideFinishedNotification notification);
+        void onRideCancelled(RideCancelledNotification notification);
+        void onRideStopped(RideStoppedNotification notification);
 
         void onConnectionEstablished();
 
@@ -202,6 +214,20 @@ public class RideWebSocketManager {
                 case "PANIC_ALERT":
                     // Panic handleuje PanicWebSocketManager, ovde ignorisemo
                     Log.d(TAG, "PANIC_ALERT received, handled by PanicWebSocketManager");
+                    break;
+
+                case "RIDE_CANCELLED":
+                    if (listener != null) {
+                        RideCancelledNotification n = gson.fromJson(message, RideCancelledNotification.class);
+                        listener.onRideCancelled(n);
+                    }
+                    break;
+
+                case "RIDE_STOPPED":
+                    if (listener != null) {
+                        RideStoppedNotification n = gson.fromJson(message, RideStoppedNotification.class);
+                        listener.onRideStopped(n);
+                    }
                     break;
 
                 default:
