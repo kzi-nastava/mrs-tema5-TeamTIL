@@ -38,24 +38,24 @@
                 android:fontFamily="@font/montserrat_semibold_font"
                 android:textColor="@color/white"
                 android:textSize="14sp"
-                android:layout_marginTop="12dp"/>
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="10dp"/>
 
-            <!-- MAP WebView -->
+            <!-- MAP -->
             <WebView
                 android:id="@+id/webViewRideMap"
                 android:layout_width="match_parent"
                 android:layout_height="220dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="6dp" />
+                android:layout_marginBottom="12dp" />
 
-            <!-- DETAILS CARD -->
+            <!-- ── DETAILS CARD ──────────────────────────────────────────── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="12dp"
+                android:padding="14dp"
                 android:background="@drawable/bg_purple_dark_tint"
-                android:layout_marginTop="8dp">
+                android:layout_marginBottom="10dp">
 
                 <!-- DRIVER + PASSENGER ROW -->
                 <LinearLayout
@@ -63,7 +63,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <!-- LEFT: Driver -->
+                    <!-- Driver -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -76,27 +76,26 @@
                             android:layout_height="wrap_content"
                             android:text="Driver"
                             android:textColor="@color/text_gray"
-                            android:textSize="13sp"
-                            android:fontFamily="@font/montserrat_semibold_font"/>
+                            android:textSize="12sp"
+                            android:fontFamily="@font/montserrat_semibold_font"
+                            android:layout_marginBottom="6dp"/>
 
                         <LinearLayout
                             android:id="@+id/driversContainer"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_marginTop="6dp"/>
-
+                            android:orientation="vertical"/>
                     </LinearLayout>
 
-                    <!-- DIVIDER -->
                     <View
                         android:layout_width="1dp"
                         android:layout_height="match_parent"
                         android:background="@color/text_gray"
+                        android:alpha="0.4"
                         android:layout_marginStart="4dp"
                         android:layout_marginEnd="4dp"/>
 
-                    <!-- RIGHT: Passenger -->
+                    <!-- Passenger -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -109,71 +108,73 @@
                             android:layout_height="wrap_content"
                             android:text="Passenger"
                             android:textColor="@color/text_gray"
-                            android:textSize="13sp"
-                            android:fontFamily="@font/montserrat_semibold_font"/>
+                            android:textSize="12sp"
+                            android:fontFamily="@font/montserrat_semibold_font"
+                            android:layout_marginBottom="6dp"/>
 
                         <LinearLayout
                             android:id="@+id/passengersContainer"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_marginTop="6dp"/>
-
+                            android:orientation="vertical"/>
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- VEHICLE INFO -->
+                <!-- VEHICLE -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="@color/text_gray"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="8dp"/>
+                    android:alpha="0.3"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="10dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Vehicle"
                     android:textColor="@color/text_gray"
-                    android:textSize="13sp"
-                    android:fontFamily="@font/montserrat_semibold_font"/>
+                    android:textSize="12sp"
+                    android:fontFamily="@font/montserrat_semibold_font"
+                    android:layout_marginBottom="4dp"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="4dp">
+                    android:gravity="center_vertical">
 
                     <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
                         android:src="@drawable/ic_vehicle_placeholder"
-                        app:tint="@color/text_white"/>
+                        app:tint="@color/text_white"
+                        android:layout_marginEnd="6dp"/>
 
                     <TextView
                         android:id="@+id/tvVehicleInfo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
                         android:textColor="@color/text_white"
                         android:textSize="13sp"
                         android:fontFamily="@font/montserrat_regular_font"/>
                 </LinearLayout>
 
-                <!-- TIMES -->
+                <!-- TIMES + DURATION + DISTANCE -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="@color/text_gray"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="8dp"/>
+                    android:alpha="0.3"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="10dp"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <!-- Start/End time -->
+                    <!-- Start / End -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -186,14 +187,14 @@
                             android:layout_height="wrap_content"
                             android:text="Start time"
                             android:textColor="@color/text_gray"
-                            android:textSize="13sp"
+                            android:textSize="12sp"
                             android:fontFamily="@font/montserrat_semibold_font"/>
                         <TextView
                             android:id="@+id/tvStartTime"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/text_white"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             android:fontFamily="@font/montserrat_regular_font"
                             android:layout_marginBottom="8dp"/>
 
@@ -202,26 +203,26 @@
                             android:layout_height="wrap_content"
                             android:text="End time"
                             android:textColor="@color/text_gray"
-                            android:textSize="13sp"
+                            android:textSize="12sp"
                             android:fontFamily="@font/montserrat_semibold_font"/>
                         <TextView
                             android:id="@+id/tvEndTime"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/text_white"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             android:fontFamily="@font/montserrat_regular_font"/>
                     </LinearLayout>
 
-                    <!-- DIVIDER -->
                     <View
                         android:layout_width="1dp"
                         android:layout_height="match_parent"
                         android:background="@color/text_gray"
+                        android:alpha="0.4"
                         android:layout_marginStart="4dp"
                         android:layout_marginEnd="4dp"/>
 
-                    <!-- Duration/Distance -->
+                    <!-- Duration / Distance -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -234,14 +235,14 @@
                             android:layout_height="wrap_content"
                             android:text="Duration"
                             android:textColor="@color/text_gray"
-                            android:textSize="13sp"
+                            android:textSize="12sp"
                             android:fontFamily="@font/montserrat_semibold_font"/>
                         <TextView
                             android:id="@+id/tvDuration"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/text_white"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             android:fontFamily="@font/montserrat_regular_font"
                             android:layout_marginBottom="8dp"/>
 
@@ -250,14 +251,14 @@
                             android:layout_height="wrap_content"
                             android:text="Distance"
                             android:textColor="@color/text_gray"
-                            android:textSize="13sp"
+                            android:textSize="12sp"
                             android:fontFamily="@font/montserrat_semibold_font"/>
                         <TextView
                             android:id="@+id/tvDistance"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/text_white"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             android:fontFamily="@font/montserrat_regular_font"/>
                     </LinearLayout>
                 </LinearLayout>
@@ -267,8 +268,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="@color/text_gray"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="8dp"/>
+                    android:alpha="0.3"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="10dp"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -287,7 +289,7 @@
                             android:layout_height="wrap_content"
                             android:text="Price"
                             android:textColor="@color/text_gray"
-                            android:textSize="13sp"
+                            android:textSize="12sp"
                             android:fontFamily="@font/montserrat_semibold_font"/>
                         <TextView
                             android:id="@+id/tvPrice"
@@ -306,8 +308,158 @@
                         android:textAllCaps="false"
                         android:textColor="@color/text_white"
                         android:fontFamily="@font/montserrat_semibold_font"
-                        android:textSize="14sp"/>
+                        android:textSize="13sp"/>
                 </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- ── RATING SECTION ────────────────────────────────────────── -->
+            <!-- Visibility controlled by code (VISIBLE for all, GONE for non-passengers on active rides) -->
+            <LinearLayout
+                android:id="@+id/ratingSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp"
+                android:background="@drawable/bg_purple_dark_tint"
+                android:layout_marginBottom="10dp"
+                android:visibility="gone">
+
+                <!-- Header row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Ride Rating"
+                        android:textColor="@color/text_white"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/montserrat_semibold_font"/>
+
+                    <TextView
+                        android:id="@+id/tvRatingStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Unrated"
+                        android:textColor="@color/text_white"
+                        android:textSize="11sp"
+                        android:fontFamily="@font/montserrat_semibold_font"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="3dp"
+                        android:paddingBottom="3dp"
+                        android:background="@drawable/badge_grey"/>
+                </LinearLayout>
+
+                <!-- Stars display -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView android:id="@+id/ratingStar1"
+                        android:layout_width="28dp" android:layout_height="28dp"
+                        android:padding="2dp" android:src="@drawable/ic_star_empty"/>
+                    <ImageView android:id="@+id/ratingStar2"
+                        android:layout_width="28dp" android:layout_height="28dp"
+                        android:padding="2dp" android:src="@drawable/ic_star_empty"/>
+                    <ImageView android:id="@+id/ratingStar3"
+                        android:layout_width="28dp" android:layout_height="28dp"
+                        android:padding="2dp" android:src="@drawable/ic_star_empty"/>
+                    <ImageView android:id="@+id/ratingStar4"
+                        android:layout_width="28dp" android:layout_height="28dp"
+                        android:padding="2dp" android:src="@drawable/ic_star_empty"/>
+                    <ImageView android:id="@+id/ratingStar5"
+                        android:layout_width="28dp" android:layout_height="28dp"
+                        android:padding="2dp" android:src="@drawable/ic_star_empty"/>
+                </LinearLayout>
+
+                <!-- Comment (shown when rated + comment exists) -->
+                <TextView
+                    android:id="@+id/tvRatingComment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#d0c8da"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/montserrat_regular_font"
+                    android:textStyle="italic"
+                    android:background="@drawable/bg_purple_tint"
+                    android:padding="10dp"
+                    android:layout_marginBottom="12dp"
+                    android:visibility="gone"/>
+
+                <!-- Rate / Change button — hidden for admin/driver via code -->
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnRateRide"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:background="@drawable/button_yellow_rounded"
+                    android:fontFamily="@font/montserrat_semibold_font"
+                    android:text="Rate this ride"
+                    android:textAllCaps="false"
+                    android:textColor="#000000"
+                    android:textSize="14sp"
+                    android:visibility="gone"/>
+
+            </LinearLayout>
+
+            <!-- ── ISSUES SECTION ─────────────────────────────────────────── -->
+            <LinearLayout
+                android:id="@+id/issuesSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp"
+                android:background="@drawable/bg_purple_dark_tint"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Inconsistency Reports"
+                    android:textColor="@color/text_white"
+                    android:textSize="15sp"
+                    android:fontFamily="@font/montserrat_semibold_font"
+                    android:layout_marginBottom="10dp"/>
+
+                <TextView
+                    android:id="@+id/tvNoIssues"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No inconsistency reports for this ride."
+                    android:textColor="@color/text_gray"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/montserrat_regular_font"
+                    android:layout_marginBottom="12dp"
+                    android:visibility="visible"/>
+
+                <LinearLayout
+                    android:id="@+id/issuesContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- Report button — hidden for admin/driver via code -->
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnReportInconsistency"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:background="@drawable/button_yellow_rounded"
+                    android:fontFamily="@font/montserrat_semibold_font"
+                    android:text="Report an inconsistency"
+                    android:textAllCaps="false"
+                    android:textColor="#000000"
+                    android:textSize="14sp"
+                    android:visibility="gone"/>
 
             </LinearLayout>
 
@@ -315,4 +467,3 @@
     </ScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

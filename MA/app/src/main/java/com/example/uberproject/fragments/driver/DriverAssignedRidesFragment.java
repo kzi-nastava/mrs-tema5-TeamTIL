@@ -258,7 +258,6 @@ public class DriverAssignedRidesFragment extends Fragment implements AssignedRid
                     .addToBackStack(null)
                     .commit();
         }
-        // TODO: Navigate to map or ride details
     }
 
     @Override
