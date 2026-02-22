@@ -1,9 +1,12 @@
 package com.example.uberproject.activities;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,18 +19,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.activity.OnBackPressedCallback;
-import androidx.appcompat.app.AlertDialog;
 
 import com.bumptech.glide.Glide;
+import com.example.uberproject.BuildConfig;
 import com.example.uberproject.R;
 import com.example.uberproject.api.RetrofitClient;
 import com.example.uberproject.api.RideApi;
@@ -41,22 +46,24 @@ import com.example.uberproject.fragments.driver.DriverAssignedRidesFragment;
 import com.example.uberproject.fragments.driver.DriverRideHistoryFragment;
 import com.example.uberproject.fragments.driver.DriverRideStatsFragment;
 import com.example.uberproject.fragments.forms.DriverRegisterFragment;
+import com.example.uberproject.fragments.forms.LoginFragment;
+import com.example.uberproject.fragments.forms.NewPasswordFragment;
+import com.example.uberproject.fragments.forms.ProfileFragment;
+import com.example.uberproject.fragments.forms.RegisterFragment;
+import com.example.uberproject.fragments.forms.ResetPasswordFragment;
+import com.example.uberproject.fragments.forms.RideBookingFragment;
 import com.example.uberproject.fragments.home.HomeFragment;
 import com.example.uberproject.fragments.support.SupportChatsFragment;
 import com.example.uberproject.fragments.tracking.TrackRideFragment;
 import com.example.uberproject.fragments.user.RideStatsFragment;
 import com.example.uberproject.fragments.user.UserRideHistoryFragment;
-import com.example.uberproject.fragments.forms.ProfileFragment;
-import com.example.uberproject.fragments.forms.LoginFragment;
-import com.example.uberproject.fragments.forms.RegisterFragment;
-import com.example.uberproject.fragments.forms.ResetPasswordFragment;
-import com.example.uberproject.fragments.forms.NewPasswordFragment;
 import com.example.uberproject.utils.AuthGuard;
+import com.example.uberproject.utils.NotificationHelper;
 import com.example.uberproject.utils.TokenManager;
 import com.example.uberproject.websocket.PanicWebSocketManager;
+import com.example.uberproject.websocket.RideWebSocketManager;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
-import com.example.uberproject.fragments.forms.RideBookingFragment;
 
 import java.util.List;
 
@@ -69,6 +76,9 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
     private MaterialToolbar toolbar;
     private PanicWebSocketManager panicWebSocketManager;
+    private RideWebSocketManager rideWebSocketManager;
+
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 200;
 
     private Integer activeRideId = null;
 
@@ -77,10 +87,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // kreiraj notification kanale pre svake notif
+        NotificationHelper.createNotificationChannels(this);
+
+        // trazi POST_NOTIFICATIONS permisiju
+        requestNotificationPermissionIfNeeded();
+
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new HomeFragment())
                 .commit();
-        // Provera je li token istekao
+
         checkTokenExpiration();
 
         toolbar = findViewById(R.id.toolbar);
@@ -110,14 +126,10 @@ public class MainActivity extends AppCompatActivity {
 
         navigationView.setNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
-            String userRole = AuthGuard.getUserRole(this);
 
-            // HOME - COMMON FOR ALL USERS
             if (itemId == R.id.nav_home) {
                 loadFragment(new HomeFragment());
-            }
-            // REGISTERED USER ITEMS
-            else if (itemId == R.id.book_an_uber) {
+            } else if (itemId == R.id.book_an_uber) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
                     showLoginFragment();
@@ -149,7 +161,6 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     loadFragment(new SupportChatsFragment());
                 }
-            // DRIVER ITEMS
             } else if (itemId == R.id.my_rides) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
@@ -174,9 +185,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     loadFragment(new SupportChatsFragment());
                 }
-            }
-            // ADMIN ITEMS
-            else if (itemId == R.id.nav_register_driver) {
+            } else if (itemId == R.id.nav_register_driver) {
                 if (!AuthGuard.isUserLoggedIn(this)) {
                     showLoginFragment();
                 } else {
@@ -213,9 +222,9 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     loadFragment(new SupportChatsFragment());
                 }
-            // LOGOUT
             } else if (itemId == R.id.nav_logout) {
                 disconnectPanicWebSocket();
+                disconnectRideWebSocket();
                 AuthGuard.logout(this);
                 Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
                 invalidateOptionsMenu();
@@ -226,13 +235,116 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        // Handle deep link kada se aplikacija prvi put otvori
         handleDeepLink(getIntent());
-        // Postavi inicijalni prikaz menu items-a
         updateNavigationMenuVisibility(navigationView);
-        // Connect panic WebSocket for admin
         connectPanicWebSocketIfAdmin();
     }
+
+    // ======= RIDE WEBSOCKET =======
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        REQUEST_NOTIFICATION_PERMISSION
+                );
+            }
+        }
+    }
+
+    public void connectRideWebSocket() {
+        String userEmail = TokenManager.getInstance(this).getUserEmail();
+        if (userEmail == null) return;
+
+        String wsBaseUrl = BuildConfig.WS_HOST;
+
+        rideWebSocketManager = RideWebSocketManager.getInstance();
+        rideWebSocketManager.setListener(new RideWebSocketManager.RideNotificationListener() {
+
+            @Override
+            public void onRideAccepted(RideWebSocketManager.RideAcceptedNotification n) {
+                NotificationHelper.showRideAccepted(
+                        MainActivity.this,
+                        n.driverName != null ? n.driverName : "",
+                        n.vehicle    != null ? n.vehicle    : ""
+                );
+            }
+
+            @Override
+            public void onRideRejected(RideWebSocketManager.RideRejectedNotification n) {
+                NotificationHelper.showRideRejected(MainActivity.this);
+            }
+
+            @Override
+            public void onRideReminder(RideWebSocketManager.RideReminderNotification n) {
+                long minutes = extractMinutesFromMessage(n.message);
+                NotificationHelper.showRideReminder(
+                        MainActivity.this,
+                        minutes,
+                        n.from != null ? n.from : "",
+                        n.to   != null ? n.to   : ""
+                );
+            }
+
+            @Override
+            public void onNewRideAssigned(RideWebSocketManager.NewRideAssignedNotification n) {
+                NotificationHelper.showNewRideAssigned(
+                        MainActivity.this,
+                        n.passengerName != null ? n.passengerName : "",
+                        n.from          != null ? n.from          : "",
+                        n.to            != null ? n.to            : ""
+                );
+            }
+
+            @Override
+            public void onRideFinished(RideWebSocketManager.RideFinishedNotification n) {
+                NotificationHelper.showRideFinished(
+                        MainActivity.this,
+                        n.from  != null ? n.from  : "",
+                        n.to    != null ? n.to    : "",
+                        n.price
+                );
+            }
+
+            @Override
+            public void onConnectionEstablished() {
+                android.util.Log.d("MainActivity", "Ride WebSocket connected");
+            }
+
+            @Override
+            public void onConnectionLost() {
+                android.util.Log.d("MainActivity", "Ride WebSocket disconnected");
+            }
+        });
+
+        rideWebSocketManager.connect(wsBaseUrl, userEmail);
+    }
+
+    private long extractMinutesFromMessage(String message) {
+        if (message == null) return 0;
+        try {
+            // Poruka: "Reminder: Your ride starts in 15 minutes!"
+            String[] parts = message.split(" ");
+            for (int i = 0; i < parts.length - 1; i++) {
+                if (parts[i + 1].startsWith("minute")) {
+                    return Long.parseLong(parts[i]);
+                }
+            }
+        } catch (Exception ignored) {}
+        return 0;
+    }
+
+    private void disconnectRideWebSocket() {
+        if (rideWebSocketManager != null) {
+            rideWebSocketManager.disconnect();
+            rideWebSocketManager = null;
+        }
+    }
+
+    // ======= END RIDE WEBSOCKET =======
 
     private void checkForActiveRide() {
         String userRole = AuthGuard.getUserRole(this);
@@ -264,18 +376,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Provera je li token istekao svaki put kada se aplikacija vrati u foreground
         checkTokenExpiration();
-        // Reconnect WebSocket for admin if needed
         connectPanicWebSocketIfAdmin();
-        // Provera da li postoji aktivna voznja
         checkForActiveRide();
+        // Konektuj ride WebSocket ako je korisnik ulogovan i WebSocket nije aktivan
+        if (TokenManager.getInstance(this).hasToken()) {
+            if (rideWebSocketManager == null || !rideWebSocketManager.isConnected()) {
+                connectRideWebSocket();
+            }
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         disconnectPanicWebSocket();
+        disconnectRideWebSocket();
     }
 
     @Override
@@ -286,15 +402,9 @@ public class MainActivity extends AppCompatActivity {
 
         boolean isLoggedIn = AuthGuard.isUserLoggedIn(this);
 
-        if (loginItem != null) {
-            loginItem.setVisible(!isLoggedIn);
-        }
-        if (registerItem != null) {
-            registerItem.setVisible(!isLoggedIn);
-        }
-        if (profileItem != null) {
-            profileItem.setVisible(isLoggedIn);
-        }
+        if (loginItem != null) loginItem.setVisible(!isLoggedIn);
+        if (registerItem != null) registerItem.setVisible(!isLoggedIn);
+        if (profileItem != null) profileItem.setVisible(isLoggedIn);
 
         if (isLoggedIn && profileItem != null) {
             updateToolbarProfile(profileItem);
@@ -304,11 +414,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateNavigationMenuVisibility(NavigationView navigationView) {
-        // Prvo proveravamo da li je token istekao
         if (AuthGuard.isUserLoggedIn(this)) {
             TokenManager tokenManager = TokenManager.getInstance(this);
             if (tokenManager.isTokenExpired()) {
-                // Ako je token istekao, logout automatski
                 AuthGuard.logout(this);
             }
         }
@@ -317,39 +425,28 @@ public class MainActivity extends AppCompatActivity {
         String userRole = AuthGuard.getUserRole(this);
 
         Menu menu = navigationView.getMenu();
-
-        // Prvo sakrij sve items
         hideAllMenuItems(menu);
-
-        // Prikaži Home i Logout za sve
         showItem(menu, R.id.nav_home);
+
         MenuItem logoutItem = menu.findItem(R.id.nav_logout);
-        if (logoutItem != null) {
-            logoutItem.setVisible(isLoggedIn);
-        }
+        if (logoutItem != null) logoutItem.setVisible(isLoggedIn);
 
         if (!isLoggedIn) {
-            // Ako korisnik nije ulogovan, prikaži samo REGISTERED_USER items
             showMenuGroup(menu, "REGISTERED_USER");
         } else if ("REGISTERED_USER".equalsIgnoreCase(userRole)) {
-            // Prikaži samo REGISTERED_USER grupu
             showMenuGroup(menu, "REGISTERED_USER");
         } else if ("DRIVER".equalsIgnoreCase(userRole)) {
-            // Prikaži samo DRIVER grupu
             showMenuGroup(menu, "DRIVER");
         } else if ("ADMIN".equalsIgnoreCase(userRole) || "ADMINISTRATOR".equalsIgnoreCase(userRole)) {
-            // Prikaži samo ADMIN grupu
             showMenuGroup(menu, "ADMIN");
         } else {
-            // Defaultna gruupa za neregistrovane korisnike
             showMenuGroup(menu, "REGISTERED_USER");
         }
     }
 
     private void hideAllMenuItems(Menu menu) {
         for (int i = 0; i < menu.size(); i++) {
-            MenuItem item = menu.getItem(i);
-            item.setVisible(false);
+            menu.getItem(i).setVisible(false);
         }
     }
 
@@ -381,9 +478,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showItem(Menu menu, int itemId) {
         MenuItem item = menu.findItem(itemId);
-        if (item != null) {
-            item.setVisible(true);
-        }
+        if (item != null) item.setVisible(true);
     }
 
     private void updateToolbarProfile(MenuItem profileItem) {
@@ -398,8 +493,7 @@ public class MainActivity extends AppCompatActivity {
         String profilePictureUrl = tokenManager.getProfilePictureUrl();
 
         if (email != null && tvUsername != null) {
-            String username = email.split("@")[0];
-            tvUsername.setText(username);
+            tvUsername.setText(email.split("@")[0]);
         }
 
         if (ivProfileImage != null) {
@@ -413,7 +507,6 @@ public class MainActivity extends AppCompatActivity {
                 ivProfileImage.setImageResource(R.drawable.ic_person_placeholder);
             }
 
-            // Add click listener to open ProfileFragment
             ivProfileImage.setOnClickListener(v -> {
                 if (AuthGuard.isUserLoggedIn(this)) {
                     loadFragment(new ProfileFragment());
@@ -429,24 +522,16 @@ public class MainActivity extends AppCompatActivity {
         MenuItem loginItem = menu.findItem(R.id.nav_login);
         if (loginItem != null) {
             SpannableString loginSpan = new SpannableString(loginItem.getTitle());
-            loginSpan.setSpan(
-                    new ForegroundColorSpan(ContextCompat.getColor(this, R.color.white)),
-                    0,
-                    loginSpan.length(),
-                    0
-            );
+            loginSpan.setSpan(new ForegroundColorSpan(ContextCompat.getColor(this, R.color.white)),
+                    0, loginSpan.length(), 0);
             loginItem.setTitle(loginSpan);
         }
 
         MenuItem registerItem = menu.findItem(R.id.nav_register);
         if (registerItem != null) {
             SpannableString registerSpan = new SpannableString(registerItem.getTitle());
-            registerSpan.setSpan(
-                    new ForegroundColorSpan(ContextCompat.getColor(this, R.color.white)),
-                    0,
-                    registerSpan.length(),
-                    0
-            );
+            registerSpan.setSpan(new ForegroundColorSpan(ContextCompat.getColor(this, R.color.white)),
+                    0, registerSpan.length(), 0);
             registerItem.setTitle(registerSpan);
         }
 
@@ -492,41 +577,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleDeepLink(Intent intent) {
-        if (intent == null || intent.getData() == null) {
-            return;
-        }
+        if (intent == null || intent.getData() == null) return;
 
         Uri data = intent.getData();
         String path = data.getPath();
+        if (path == null) return;
 
-        if (path == null) {
-            return;
-        }
-
-        // Handle driver activation - /new-password
         if (path.contains("/new-password")) {
             String token = data.getQueryParameter("token");
-            if (token != null && !token.isEmpty()) {
-                openNewPasswordFragment(token);
-            }
+            if (token != null && !token.isEmpty()) openNewPasswordFragment(token);
         }
 
-        // Handle reset password - /reset-password
         if (path.contains("/reset-password")) {
             String token = data.getQueryParameter("token");
-            if (token != null && !token.isEmpty()) {
-                openResetPasswordFragment(token);
-            }
+            if (token != null && !token.isEmpty()) openResetPasswordFragment(token);
         }
     }
 
     private void openNewPasswordFragment(String token) {
         Bundle bundle = new Bundle();
         bundle.putString("token", token);
-
         NewPasswordFragment fragment = new NewPasswordFragment();
         fragment.setArguments(bundle);
-
         hideToolbar();
         loadFragment(fragment);
     }
@@ -534,24 +606,18 @@ public class MainActivity extends AppCompatActivity {
     private void openResetPasswordFragment(String token) {
         Bundle bundle = new Bundle();
         bundle.putString("resetToken", token);
-
         ResetPasswordFragment fragment = new ResetPasswordFragment();
         fragment.setArguments(bundle);
-
         hideToolbar();
         loadFragment(fragment);
     }
 
     private void hideToolbar() {
-        if (toolbar != null) {
-            toolbar.setVisibility(View.GONE);
-        }
+        if (toolbar != null) toolbar.setVisibility(View.GONE);
     }
 
     public void showToolbar() {
-        if (toolbar != null) {
-            toolbar.setVisibility(View.VISIBLE);
-        }
+        if (toolbar != null) toolbar.setVisibility(View.VISIBLE);
     }
 
     public void refreshToolbarImage(String photoUrlOrBase64) {
@@ -560,7 +626,6 @@ public class MainActivity extends AppCompatActivity {
             if (profileItem != null) {
                 View actionView = profileItem.getActionView();
                 if (actionView == null) return;
-
                 ImageView ivProfileImage = actionView.findViewById(R.id.ivProfileImage);
                 if (ivProfileImage != null) {
                     Glide.with(this)
@@ -576,34 +641,26 @@ public class MainActivity extends AppCompatActivity {
 
     public void refreshNavigationMenu() {
         NavigationView navigationView = findViewById(R.id.nav_view);
-        if (navigationView != null) {
-            updateNavigationMenuVisibility(navigationView);
-        }
+        if (navigationView != null) updateNavigationMenuVisibility(navigationView);
     }
 
     // ======= PANIC WEBSOCKET (ADMIN ONLY) =======
 
     public void connectPanicWebSocketIfAdmin() {
         String userRole = AuthGuard.getUserRole(this);
-        if (!"ADMIN".equalsIgnoreCase(userRole) && !"ADMINISTRATOR".equalsIgnoreCase(userRole)) {
-            return;
-        }
+        if (!"ADMIN".equalsIgnoreCase(userRole) && !"ADMINISTRATOR".equalsIgnoreCase(userRole)) return;
 
-        TokenManager tokenManager = TokenManager.getInstance(this);
-        String email = tokenManager.getUserEmail();
+        String email = TokenManager.getInstance(this).getUserEmail();
         if (email == null || email.isEmpty()) return;
 
         if (panicWebSocketManager != null && panicWebSocketManager.isConnected()) return;
 
-        // Build base WebSocket URL from API_HOST
-        // API_HOST is e.g. "http://192.168.1.23:8080/api/"
-        // We need "ws://192.168.1.23:8080"
-        String apiHost = com.example.uberproject.BuildConfig.API_HOST;
+        String apiHost = BuildConfig.API_HOST;
         String baseWsUrl = apiHost
                 .replace("https://", "wss://")
-                .replace("http://", "ws://");
-        // Remove trailing /api/ or /api
-        baseWsUrl = baseWsUrl.replaceAll("/api/?$", "").replaceAll("/$", "");
+                .replace("http://", "ws://")
+                .replaceAll("/api/?$", "")
+                .replaceAll("/$", "");
 
         android.util.Log.d("MainActivity", "Connecting admin panic WebSocket: " + baseWsUrl + " as " + email);
 
@@ -652,12 +709,9 @@ public class MainActivity extends AppCompatActivity {
             if (mediaPlayer != null) {
                 mediaPlayer.setVolume(1.0f, 1.0f);
                 mediaPlayer.start();
-                // Stop after 2.5 seconds
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     try {
-                        if (mediaPlayer.isPlaying()) {
-                            mediaPlayer.stop();
-                        }
+                        if (mediaPlayer.isPlaying()) mediaPlayer.stop();
                         mediaPlayer.release();
                     } catch (Exception ignored) {}
                 }, 2500);
@@ -670,7 +724,6 @@ public class MainActivity extends AppCompatActivity {
     private void showPanicPopup(PanicWebSocketManager.PanicAlert alert) {
         if (isFinishing() || isDestroyed()) return;
 
-        // Mark vehicle on map if coordinates are available
         if (alert.latitude != null && alert.longitude != null) {
             markPanicVehicleOnMap(alert.latitude, alert.longitude,
                     alert.vehicleName != null ? alert.vehicleName : "PANIC");
@@ -692,9 +745,7 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage(finalMessage)
                 .setCancelable(false)
                 .setPositiveButton("Mark as Handled", (dialog, which) -> {
-                    if (panicId != null) {
-                        handlePanicFromPopup(panicId);
-                    }
+                    if (panicId != null) handlePanicFromPopup(panicId);
                 })
                 .setNegativeButton("Dismiss", null)
                 .setNeutralButton("View All Panics", (dialog, which) -> loadFragment(new AdminPanicListFragment()))
@@ -703,23 +754,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void handlePanicFromPopup(Integer panicId) {
         com.example.uberproject.api.PanicApi panicApi =
-                com.example.uberproject.api.RetrofitClient.getInstance(this)
-                        .create(com.example.uberproject.api.PanicApi.class);
+                RetrofitClient.getInstance(this).create(com.example.uberproject.api.PanicApi.class);
         panicApi.handlePanic(panicId).enqueue(new retrofit2.Callback<com.example.uberproject.dto.response.PanicResponseDTO>() {
             @Override
-            public void onResponse(@androidx.annotation.NonNull retrofit2.Call<com.example.uberproject.dto.response.PanicResponseDTO> call,
-                                   @androidx.annotation.NonNull retrofit2.Response<com.example.uberproject.dto.response.PanicResponseDTO> response) {
+            public void onResponse(@NonNull retrofit2.Call<com.example.uberproject.dto.response.PanicResponseDTO> call,
+                                   @NonNull retrofit2.Response<com.example.uberproject.dto.response.PanicResponseDTO> response) {
                 if (response.isSuccessful()) {
                     Toast.makeText(MainActivity.this, "Panic #" + panicId + " handled successfully", Toast.LENGTH_SHORT).show();
                 } else {
-                    android.util.Log.e("MainActivity", "Handle panic failed: " + response.code());
                     Toast.makeText(MainActivity.this, "Could not mark as handled: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(@androidx.annotation.NonNull retrofit2.Call<com.example.uberproject.dto.response.PanicResponseDTO> call,
-                                  @androidx.annotation.NonNull Throwable t) {
+            public void onFailure(@NonNull retrofit2.Call<com.example.uberproject.dto.response.PanicResponseDTO> call,
+                                  @NonNull Throwable t) {
                 Toast.makeText(MainActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
@@ -743,32 +792,27 @@ public class MainActivity extends AppCompatActivity {
 
     // ======= END PANIC =======
 
-    // Novo: Proverava je li token istekao
     private void checkTokenExpiration() {
         TokenManager tokenManager = TokenManager.getInstance(this);
-
-        // Proverava samo ako je korisnik ulogovan
         if (AuthGuard.isUserLoggedIn(this)) {
             if (tokenManager.isTokenExpired()) {
-                // Token je istekao - odjavi korisnika
                 Toast.makeText(this, "Your session has expired. Please login again.", Toast.LENGTH_LONG).show();
                 AuthGuard.logout(this);
                 invalidateOptionsMenu();
                 NavigationView navigationView = findViewById(R.id.nav_view);
-                if (navigationView != null) {
-                    updateNavigationMenuVisibility(navigationView);
-                }
+                if (navigationView != null) updateNavigationMenuVisibility(navigationView);
                 showLoginFragment();
             }
         }
     }
 
-    // poziva se nakon uspešnog Logina
+    // Poziva se nakon uspesnog logina
     public void onLoginSuccess() {
         invalidateOptionsMenu();
         NavigationView nav = findViewById(R.id.nav_view);
         updateNavigationMenuVisibility(nav);
         connectPanicWebSocketIfAdmin();
+        connectRideWebSocket();
         checkForActiveRide();
     }
 }
