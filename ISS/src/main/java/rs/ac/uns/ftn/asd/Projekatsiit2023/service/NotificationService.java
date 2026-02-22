@@ -142,4 +142,34 @@ public class NotificationService {
             e.printStackTrace();
         }
     }
+
+    public void sendRideCancelledNotification(String passengerEmail, String driverEmail, Integer rideId) {
+        try {
+            Map<String, Object> payload = Map.of(
+                    "type", "RIDE_CANCELLED",
+                    "rideId", rideId,
+                    "message", "The ride has been cancelled."
+            );
+            String json = objectMapper.writeValueAsString(payload);
+            notificationHandler.sendToUser(passengerEmail, json);
+            notificationHandler.sendToUser(driverEmail, json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendRideStoppedNotification(String passengerEmail, String driverEmail, Integer rideId) {
+        try {
+            Map<String, Object> payload = Map.of(
+                    "type", "RIDE_FINISHED",
+                    "rideId", rideId,
+                    "message", "The ride has been stopped."
+            );
+            String json = objectMapper.writeValueAsString(payload);
+            notificationHandler.sendToUser(passengerEmail, json);
+            notificationHandler.sendToUser(driverEmail, json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
