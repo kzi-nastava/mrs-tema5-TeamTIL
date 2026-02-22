@@ -2,6 +2,8 @@ package com.example.uberproject.fragments.map;
 
 import android.animation.AnimatorInflater;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,6 +52,9 @@ public class MapFragment extends Fragment {
     private Integer currentRideId;
     private Double currentUserLat;
     private Double currentUserLon;
+    private Handler vehicleRefreshHandler;
+    private Runnable vehicleRefreshRunnable;
+    private static final int VEHICLE_REFRESH_INTERVAL = 10000; // 10s
 
     @Nullable
     @Override
@@ -82,12 +87,37 @@ public class MapFragment extends Fragment {
             }
         });
 
+        vehicleRefreshHandler = new Handler(Looper.getMainLooper());
+        vehicleRefreshRunnable = new Runnable() {
+            @Override
+            public void run() {
+                loadActiveVehicles();
+                vehicleRefreshHandler.postDelayed(this, VEHICLE_REFRESH_INTERVAL);
+            }
+        };
+
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                loadActiveVehicles();
+                vehicleRefreshHandler.postDelayed(vehicleRefreshRunnable, VEHICLE_REFRESH_INTERVAL);
+            }
+        });
+
         btnEstimateRide.setOnClickListener(v -> showRideEstimationForm());
 
         // Setup panic button
         btnPanic.setOnClickListener(v -> handlePanicClick());
 
         return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (vehicleRefreshHandler != null && vehicleRefreshRunnable != null) {
+            vehicleRefreshHandler.removeCallbacks(vehicleRefreshRunnable);
+        }
     }
 
     private void showRideEstimationForm() {

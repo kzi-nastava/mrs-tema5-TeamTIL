@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -60,6 +61,7 @@ import com.example.uberproject.fragments.user.UserRideHistoryFragment;
 import com.example.uberproject.utils.AuthGuard;
 import com.example.uberproject.utils.NotificationHelper;
 import com.example.uberproject.utils.TokenManager;
+import com.example.uberproject.websocket.NotificationWebSocketClient;
 import com.example.uberproject.websocket.PanicWebSocketManager;
 import com.example.uberproject.websocket.RideWebSocketManager;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -81,6 +83,22 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_NOTIFICATION_PERMISSION = 200;
 
     private Integer activeRideId = null;
+
+    private NotificationWebSocketClient notificationWsClient;
+
+    private void createNotificationChannel() {
+        NotificationChannel channel = new NotificationChannel(
+                "ride_notifications",
+                "Ride Notifications",
+                NotificationManager.IMPORTANCE_HIGH
+        );
+        channel.setDescription("Notifications for ride status updates");
+        channel.enableVibration(true);
+        channel.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION), null);
+
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        manager.createNotificationChannel(channel);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -238,6 +256,7 @@ public class MainActivity extends AppCompatActivity {
         handleDeepLink(getIntent());
         updateNavigationMenuVisibility(navigationView);
         connectPanicWebSocketIfAdmin();
+        connectNotificationSocket();
     }
 
     // ======= RIDE WEBSOCKET =======
@@ -814,5 +833,80 @@ public class MainActivity extends AppCompatActivity {
         connectPanicWebSocketIfAdmin();
         connectRideWebSocket();
         checkForActiveRide();
+        connectNotificationSocket();
+    }
+
+    private void connectNotificationSocket() {
+        if (notificationWsClient != null && notificationWsClient.isConnected()) return;
+
+        String email = TokenManager.getInstance(this).getUserEmail();
+        if (email == null || email.isEmpty()) return;
+
+        notificationWsClient = new NotificationWebSocketClient(BuildConfig.WS_HOST);
+        notificationWsClient.setListener(new NotificationWebSocketClient.NotificationListener() {
+
+            @Override
+            public void onRideFinished(int rideId, String message) {
+                showRideNotification("🏁 Ride Finished", message);
+                broadcastRideEvent("RIDE_FINISHED", rideId);
+            }
+
+            @Override
+            public void onRideAccepted(int rideId, String driverName, String vehicle, String message) {
+                // message vec sadrzi kontekst - da li je obicni passenger ili coPassenger
+                // "Your ride has been accepted! Driver: ..." ili "You've been added to a ride! Driver: ..."
+                showRideNotification("✅ Ride Accepted", message);
+                broadcastRideEvent("RIDE_ACCEPTED", rideId);
+            }
+
+            @Override
+            public void onRideRejected(String message) {
+                showRideNotification("❌ No Drivers Available", message);
+            }
+
+            @Override
+            public void onNewRideAssigned(int rideId, String from, String to, String passengerName, String message) {
+                showRideNotification("🚗 New Ride Assigned", message);
+                broadcastRideEvent("NEW_RIDE_ASSIGNED", rideId);
+            }
+
+            @Override
+            public void onRideCancelled(int rideId, String message) {
+                showRideNotification("❌ Ride Cancelled", message);
+                broadcastRideEvent("RIDE_CANCELLED", rideId);
+            }
+
+            @Override
+            public void onRideReminder(int rideId, String message) {
+                showRideNotification("⏰ Ride Reminder", message);
+            }
+
+            @Override
+            public void onConnected() {
+                Log.d("MainActivity", "Notification WS connected");
+            }
+
+            @Override
+            public void onDisconnected() {
+                Log.d("MainActivity", "Notification WS disconnected");
+            }
+        });
+        notificationWsClient.connect(email);
+    }
+
+    private void showRideNotification(String title, String message) {
+        // Toast za kada je app u fokusu (foreground)
+        runOnUiThread(() -> Toast.makeText(this, message, Toast.LENGTH_LONG).show());
+        // Sistemska notifikacija - vidljiva i kad je app u pozadini
+        NotificationHelper.show(this, title, message);
+    }
+
+    // Broadcast prema trenutno aktivnom fragmentu
+    private void broadcastRideEvent(String type, int rideId) {
+        Fragment current = getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_container);
+        if (current instanceof HomeFragment) {
+            ((HomeFragment) current).onRideEventReceived(type, rideId);
+        }
     }
 }

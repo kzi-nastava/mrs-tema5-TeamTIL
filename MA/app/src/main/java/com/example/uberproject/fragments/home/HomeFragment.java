@@ -1,5 +1,8 @@
 package com.example.uberproject.fragments.home;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -73,6 +76,13 @@ public class HomeFragment extends Fragment {
     private AssignedRideDTO currentRide;
     private RideApi rideApi;
     private String userRole;
+
+    private BroadcastReceiver rideStatusReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            loadActiveRideIfNeeded();
+        }
+    };
 
     @Nullable
     @Override
@@ -728,6 +738,17 @@ public class HomeFragment extends Fragment {
             return date != null ? outputSdf.format(date) : time;
         } catch (ParseException e) {
             return time;
+        }
+    }
+
+    public void onRideEventReceived(String type, int rideId) {
+        switch (type) {
+            case "RIDE_FINISHED":
+            case "RIDE_CANCELLED":
+            case "RIDE_ACCEPTED":
+            case "NEW_RIDE_ASSIGNED":
+                loadActiveRideIfNeeded(); // osveži karticu
+                break;
         }
     }
 }

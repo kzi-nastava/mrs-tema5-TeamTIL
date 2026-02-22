@@ -113,6 +113,12 @@ public class RideService {
         ride.setRideStatus(RideStatus.CANCELED);
         Ride savedRide = rideRepository.save(ride);
 
+        notificationService.sendRideCancelledNotification(ride.getPassenger().getEmail(), ride.getDriver().getEmail(), ride.getId());
+
+        for(RegisteredUser passenger : ride.getCoPassengers()){
+            notificationService.sendRideCancelledNotification(passenger.getEmail(), ride.getDriver().getEmail(), ride.getId());
+        }
+
         return new RideCancelResponseDTO(
                 savedRide.getId(),
                 savedRide.getRideStatus().name(),
@@ -643,6 +649,12 @@ public class RideService {
 
         // Zaustavi simulaciju i obavesti klijente
         rideSimulationService.stopSimulation(rideId);
+
+        notificationService.sendRideStoppedNotification(ride.getPassenger().getEmail(), ride.getDriver().getEmail(), ride.getId());
+
+        for(RegisteredUser passenger : ride.getCoPassengers()){
+            notificationService.sendRideStoppedNotification(passenger.getEmail(), ride.getDriver().getEmail(), ride.getId());
+        }
 
         long durationMinutes = 0;
         if (ride.getStartTime() != null && ride.getEndTime() != null) {
